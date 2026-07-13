@@ -15,7 +15,7 @@ jobs:
 
       - name: Gerar analise AI
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.API_CHATGPT || secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4o-mini' }}
         run: node scripts/generate-ai-summary.mjs
 
