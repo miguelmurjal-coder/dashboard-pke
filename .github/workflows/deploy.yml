@@ -22,6 +22,8 @@ jobs:
       - name: Publicar no Neocities
         uses: bcomnes/deploy-to-neocities@v3
         with:
-          api_key: ${{ secrets.NEOCITIES_API_KEY }}
+          api_key: ${{ secrets.NEOCITIES_API_KEY || secrets.NEOCITIES_API_TOKEN }}
           cleanup: false
+          neocities_supporter: false
+          preview_before_deploy: true
           dist_dir: public
