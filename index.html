@@ -1141,6 +1141,7 @@ input::placeholder { color: #7f93b3; }
   }
   const SHEET_ID = "1NdCeyxLExmZtGmdQ6m63Iv2XCzzWiUnadWj4UOwmJjM";
   const VSP_RESULTS_SHEET_ID = "1uEZW2WNYacxLNfb9isMrgvwCng6bHDUZPxfNqgakcZo";
+  const BO_RESULTS_SHEET_ID = "1wkshQPJMKs3VuQXXzAm9tZnS_5DCfeAbpsuW79Xwap4";
   const DASHBOARD_GID = "1179921659";
   const SPREADSHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
   const SHEETS = [
@@ -1149,7 +1150,8 @@ input::placeholder { color: #7f93b3; }
     { name: "Ficheiro JM", label: "Ficheiro JM" },
     { name: "Leads Di\xE1rios", label: "Leads Di\xE1rios" },
     { name: "Log Tarefas", label: "Log Tarefas" },
-    { name: "Resultados VSP", label: "Resultados VSP" }
+    { name: "Resultados VSP", label: "Resultados VSP" },
+    { name: "Resultados BO", label: "Resultados BO" }
   ];
   const SHEET_GIDS = {
     "Ficheiro JM": "785129550",
@@ -3749,6 +3751,176 @@ input::placeholder { color: #7f93b3; }
   function VspDataTable({ columns, rows, rowKey }) {
     return h("div", { className: "overflow-auto" }, h("table", { className: "min-w-full text-sm" }, h("thead", null, h("tr", { className: "text-left text-slate-400" }, columns.map((c) => h("th", { key: c.key, className: `px-3 py-1.5 text-xs ${c.align === "right" ? "text-right" : ""}` }, c.label)))), h("tbody", null, rows.map((row, i) => h("tr", { key: rowKey ? rowKey(row, i) : i, className: "border-t border-slate-200" }, columns.map((c) => h("td", { key: c.key, className: `px-3 py-1.5 ${c.align === "right" ? "text-right tabular-nums" : ""} ${c.className || ""}` }, c.render ? c.render(row, i) : row[c.key])))))));
   }
+  const BO_DATE_COL = 2;
+  const BO_ORDER_COL = 1;
+  const BO_AUTHOR_COL = 3;
+  const BO_URL_COL = 5;
+  const BO_UTM_SOURCE_COL = 6;
+  const BO_UTM_MEDIUM_COL = 7;
+  const BO_UTM_CAMPAIGN_COL = 8;
+  const BO_UTM_CONTENT_COL = 10;
+  const BO_VALUE_COL = 11;
+  const BO_BRAND_COL = 14;
+  const BO_MODEL_COL = 15;
+  const BO_SERVICES_COL = 18;
+  function boSourceLabel(row) {
+    const source = textValue(row, BO_UTM_SOURCE_COL).toLowerCase();
+    const url = textValue(row, BO_URL_COL).toLowerCase();
+    if (source === "ig" || source.includes("instagram")) return "Instagram";
+    if (source === "fb" || source.includes("facebook")) return "Facebook";
+    if (source.includes("meta")) return "METAADS";
+    if (source.includes("google") || source === "gad" || source === "gads") return "Google";
+    if (source.includes("mail") || source.includes("newsletter")) return "Email/newsletter";
+    if (source) return textValue(row, BO_UTM_SOURCE_COL);
+    if (url.includes("fbclid")) return "Meta sem UTM";
+    if (url.includes("gclid")) return "Google sem UTM";
+    if (url.includes("pke.pt")) return "Direto/Website";
+    return "Sem origem";
+  }
+  function boServiceCategories(row) {
+    const text = [BO_SERVICES_COL, 19, 21, 23, 25, 27].map((idx) => textValue(row, idx)).join(" ").toLowerCase();
+    const cats = [];
+    if (/fap|dpf|part[ií]culas/.test(text)) cats.push("FAP");
+    if (/adblue|ad blue/.test(text)) cats.push("AdBlue");
+    if (/flexdrive|flex drive/.test(text)) cats.push("FlexDRIVE");
+    if (/sw|software|solu[cç][aã]o|off/.test(text)) cats.push("SW/Solu\xE7\xE3o Definitiva");
+    if (/stage|reprograma/.test(text)) cats.push("Reprograma\xE7\xE3o");
+    if (/desconto/.test(text)) cats.push("Com desconto");
+    return cats.length ? cats : ["Outros"];
+  }
+  function boHasAnyUtm(row) {
+    return [BO_UTM_SOURCE_COL, BO_UTM_MEDIUM_COL, BO_UTM_CAMPAIGN_COL, 9, BO_UTM_CONTENT_COL].some((idx) => textValue(row, idx));
+  }
+  function boHasCoreUtm(row) {
+    return [BO_UTM_SOURCE_COL, BO_UTM_MEDIUM_COL, BO_UTM_CAMPAIGN_COL, BO_UTM_CONTENT_COL].every((idx) => textValue(row, idx));
+  }
+  function boGroupStats(rows, getLabel, limit = 10, minCount = 1) {
+    const map = new Map();
+    rows.forEach((row) => {
+      const label = compactLabel(getLabel(row), "Sem valor");
+      if (!map.has(label)) map.set(label, { label, proposals: 0, orders: 0, value: 0 });
+      const item = map.get(label);
+      item.proposals += 1;
+      item.value += numericValue(row, BO_VALUE_COL);
+      if (textValue(row, BO_ORDER_COL)) item.orders += 1;
+    });
+    return Array.from(map.values()).filter((item) => item.proposals >= minCount).map((item) => ({
+      ...item,
+      orderRate: item.proposals ? item.orders / item.proposals : 0,
+      avgValue: item.proposals ? item.value / item.proposals : 0
+    })).sort((a, b) => b.proposals - a.proposals).slice(0, limit);
+  }
+  function boMonthStats(rows) {
+    const map = new Map();
+    rows.forEach((row) => {
+      const date = parseRowDate(row, BO_DATE_COL);
+      const month = date ? MONTH_NAMES[date.getMonth()] : "Sem data";
+      if (!map.has(month)) map.set(month, { month, proposals: 0, orders: 0, value: 0, orderValue: 0, monthIdx: date ? date.getMonth() : 99 });
+      const item = map.get(month);
+      item.proposals += 1;
+      item.value += numericValue(row, BO_VALUE_COL);
+      if (textValue(row, BO_ORDER_COL)) {
+        item.orders += 1;
+        item.orderValue += numericValue(row, BO_VALUE_COL);
+      }
+    });
+    return Array.from(map.values()).sort((a, b) => a.monthIdx - b.monthIdx);
+  }
+  function boServiceStats(rows, limit = 8) {
+    const map = new Map();
+    rows.forEach((row) => {
+      boServiceCategories(row).forEach((label) => {
+        if (!map.has(label)) map.set(label, { label, proposals: 0, orders: 0, value: 0 });
+        const item = map.get(label);
+        item.proposals += 1;
+        item.value += numericValue(row, BO_VALUE_COL);
+        if (textValue(row, BO_ORDER_COL)) item.orders += 1;
+      });
+    });
+    return Array.from(map.values()).map((item) => ({
+      ...item,
+      orderRate: item.proposals ? item.orders / item.proposals : 0,
+      avgValue: item.proposals ? item.value / item.proposals : 0
+    })).sort((a, b) => b.proposals - a.proposals).slice(0, limit);
+  }
+  function ResultadosBOView({ selectedMonths }) {
+    const fetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const { table, loading, error, updatedAt, reload } = useSheetData("Resultados BO", fetchOpts);
+    if (loading && !table) return h(LoadingState, null);
+    if (error) return h(ErrorState, { message: error, onRetry: reload, sheetName: "Resultados BO" });
+    if (!table) return h(EmptyState, { text: "Sem dados para mostrar." });
+    const datedRows = (table.rows || []).filter((row) => parseRowDate(row, BO_DATE_COL));
+    const filteredRows = datedRows.filter((row) => selectedMonths.has(parseRowDate(row, BO_DATE_COL).getMonth()));
+    const totalProposals = filteredRows.length;
+    const totalOrders = filteredRows.filter((row) => textValue(row, BO_ORDER_COL)).length;
+    const totalValue = sumValue(filteredRows, BO_VALUE_COL);
+    const orderRate = totalProposals ? totalOrders / totalProposals : 0;
+    const avgProposalValue = totalProposals ? totalValue / totalProposals : 0;
+    const anyUtmRows = filteredRows.filter(boHasAnyUtm);
+    const coreUtmRows = filteredRows.filter(boHasCoreUtm);
+    const monthRows = boMonthStats(filteredRows);
+    const monthlyChart = monthRows.map((row) => ({ month: row.month, a: row.value, b: row.orderValue }));
+    const sourceRows = boGroupStats(filteredRows, boSourceLabel, 10, 1);
+    const campaignRows = boGroupStats(filteredRows, (row) => textValue(row, BO_UTM_CAMPAIGN_COL) || "Sem campanha", 10, 1);
+    const weakCampaignRows = boGroupStats(filteredRows, (row) => textValue(row, BO_UTM_CAMPAIGN_COL) || "Sem campanha", 12, 10).filter((row) => row.label !== "Sem campanha").sort((a, b) => a.orderRate - b.orderRate || b.proposals - a.proposals).slice(0, 8);
+    const brandRows = boGroupStats(filteredRows, (row) => textValue(row, BO_BRAND_COL) || "Sem marca", 10, 1);
+    const modelRows = boGroupStats(filteredRows, (row) => textValue(row, BO_MODEL_COL) || "Sem modelo", 10, 1);
+    const serviceRows = boServiceStats(filteredRows, 8);
+    const authorRows = boGroupStats(filteredRows, (row) => textValue(row, BO_AUTHOR_COL) || "Sem autor", 8, 1);
+    const unparsedCount = countUnparsedDateRows(table, BO_DATE_COL, [0, BO_VALUE_COL, BO_URL_COL]);
+    const sourceChartRows = sourceRows.slice(0, 8).map((row) => ({ label: row.label, value: row.proposals }));
+    const campaignChartRows = campaignRows.slice(0, 8).map((row) => ({ label: row.label, value: row.proposals }));
+    const Card = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
+    const statColumns = [
+      { key: "label", label: "Origem", className: "font-semibold text-slate-800 max-w-xs truncate" },
+      { key: "proposals", label: "Propostas", align: "right", render: (r) => fmtNumber(r.proposals) },
+      { key: "orders", label: "Encom.", align: "right", render: (r) => fmtNumber(r.orders) },
+      { key: "orderRate", label: "Conv.", align: "right", className: "font-semibold", render: (r) => fmtPercent(r.orderRate) },
+      { key: "avgValue", label: "M\xE9dia", align: "right", render: (r) => fmtCurrency(r.avgValue) }
+    ];
+    return h("div", { className: "space-y-6" },
+      h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
+      h("p", { className: "text-xs text-slate-400" }, "BackOffice \xB7 propostas e encomendas \xB7 ", periodFilterLabel(selectedMonths), " \xB7 ", totalProposals, " ", totalProposals === 1 ? "proposta" : "propostas"),
+      h(DateParseWarning, { count: unparsedCount }),
+      !filteredRows.length ? h(EmptyState, { text: "Sem dados para o per\xEDodo selecionado." }) : h(React.Fragment, null,
+        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+          h(KpiCard, { label: "Propostas BO", numeric: totalProposals, format: "number", icon: Target, kind: "volume" }),
+          h(KpiCard, { label: "Valor proposto", numeric: totalValue, format: "currency", icon: Euro, kind: "money" }),
+          h(KpiCard, { label: "Encomendas", numeric: totalOrders, format: "number", icon: TrendingUp, kind: "volume", tone: totalOrders ? "good" : "neutral" }),
+          h(KpiCard, { label: "Convers\xE3o proposta \u2192 encomenda", numeric: orderRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: orderRate >= 0.06 ? "good" : orderRate >= 0.035 ? "warn" : "bad" })
+        ),
+        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+          h(KpiCard, { label: "Valor m\xE9dio/proposta", numeric: avgProposalValue, format: "currency", icon: Euro, kind: "money" }),
+          h(KpiCard, { label: "Com algum UTM", numeric: totalProposals ? anyUtmRows.length / totalProposals : 0, format: "percent", gauge: true, icon: Target, kind: "ratio", tone: anyUtmRows.length / totalProposals >= 0.7 ? "good" : "warn" }),
+          h(KpiCard, { label: "UTMs principais completos", numeric: totalProposals ? coreUtmRows.length / totalProposals : 0, format: "percent", gauge: true, icon: Target, kind: "ratio", tone: coreUtmRows.length / totalProposals >= 0.7 ? "good" : "bad" }),
+          h(KpiCard, { label: `Principal autor: ${authorRows[0] ? authorRows[0].label : "\u2014"}`, numeric: authorRows[0] ? authorRows[0].proposals / totalProposals : 0, format: "percent", gauge: true, icon: Target, kind: "ratio", tone: "neutral" })
+        ),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          h(Card, { title: "Evolu\xE7\xE3o mensal", subtitle: "Valor total de propostas e valor associado aos meses com encomendas." }, h(MonthlyComparisonChart, { data: monthlyChart, nameA: "Valor proposto", nameB: "Valor com encomenda" })),
+          h(Card, { title: "Origem dos leads/propostas", subtitle: "Volume de propostas por origem normalizada." }, h(CategoryBarChart, { data: sourceChartRows, unit: "number" }))
+        ),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          h(Card, { title: "Qualidade por origem", subtitle: "Ordenado por volume, com taxa de passagem para encomenda." }, h(VspDataTable, { rows: sourceRows, rowKey: (row) => row.label, columns: statColumns })),
+          h(Card, { title: "Campanhas com mais propostas", subtitle: "Campanhas UTM principais por volume." }, h(CategoryBarChart, { data: campaignChartRows, unit: "number" }))
+        ),
+        h(Card, { title: "Campanhas a rever", subtitle: "Campanhas com pelo menos 10 propostas, ordenadas por menor convers\xE3o para encomenda." }, h(VspDataTable, { rows: weakCampaignRows, rowKey: (row) => row.label, columns: [
+          { key: "label", label: "Campanha", className: "font-semibold text-slate-800 max-w-xs truncate" },
+          { key: "proposals", label: "Propostas", align: "right", render: (r) => fmtNumber(r.proposals) },
+          { key: "orders", label: "Encom.", align: "right", render: (r) => fmtNumber(r.orders) },
+          { key: "orderRate", label: "Conv.", align: "right", className: "font-semibold", render: (r) => fmtPercent(r.orderRate) },
+          { key: "value", label: "Valor", align: "right", render: (r) => fmtCurrency(r.value) }
+        ] })),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          h(Card, { title: "Servi\xE7os mais pedidos", subtitle: "Categorias inferidas a partir do texto dos servi\xE7os." }, h(VspDataTable, { rows: serviceRows, rowKey: (row) => row.label, columns: statColumns.map((col) => col.key === "label" ? { ...col, label: "Servi\xE7o" } : col) })),
+          h(Card, { title: "Top marcas", subtitle: "Volume, valor m\xE9dio e convers\xE3o por marca." }, h(VspDataTable, { rows: brandRows, rowKey: (row) => row.label, columns: statColumns.map((col) => col.key === "label" ? { ...col, label: "Marca" } : col) }))
+        ),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          h(Card, { title: "Top modelos", subtitle: "Modelos mais frequentes nas propostas BO." }, h(VspDataTable, { rows: modelRows, rowKey: (row) => row.label, columns: statColumns.map((col) => col.key === "label" ? { ...col, label: "Modelo" } : col) })),
+          h(Card, { title: "Autores da proposta", subtitle: "Separar Website e equipa ajuda a preparar o futuro painel global." }, h(VspDataTable, { rows: authorRows, rowKey: (row) => row.label, columns: statColumns.map((col) => col.key === "label" ? { ...col, label: "Autor" } : col) }))
+        )
+      )
+    );
+  }
   function currentMonthPace(model) {
     const now = /* @__PURE__ */ new Date();
     const month = now.getMonth();
@@ -4649,7 +4821,7 @@ input::placeholder { color: #7f93b3; }
         toStage,
         setToStage
       }
-    ) : selected === "UTM Creator" ? /* @__PURE__ */ React.createElement(UtmCreatorView, null) : selected === "Ficheiro JM" ? /* @__PURE__ */ React.createElement(FicheiroJMView, { selectedMonths }) : selected === "Resultados VSP" ? /* @__PURE__ */ React.createElement(ResultadosVSPView, { selectedMonths }) : selected === "Leads Di\xE1rios" ? /* @__PURE__ */ React.createElement(LeadsDiariosView, { selectedMonths }) : selected === "Log Tarefas" ? /* @__PURE__ */ React.createElement(TaskLogView, { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "UTM Creator" ? /* @__PURE__ */ React.createElement(UtmCreatorView, null) : selected === "Ficheiro JM" ? /* @__PURE__ */ React.createElement(FicheiroJMView, { selectedMonths }) : selected === "Resultados VSP" ? /* @__PURE__ */ React.createElement(ResultadosVSPView, { selectedMonths }) : selected === "Resultados BO" ? /* @__PURE__ */ React.createElement(ResultadosBOView, { selectedMonths }) : selected === "Leads Di\xE1rios" ? /* @__PURE__ */ React.createElement(LeadsDiariosView, { selectedMonths }) : selected === "Log Tarefas" ? /* @__PURE__ */ React.createElement(TaskLogView, { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
