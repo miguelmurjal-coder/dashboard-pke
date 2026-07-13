@@ -3747,6 +3747,116 @@ input::placeholder { color: #7f93b3; }
   function VspDataTable({ columns, rows, rowKey }) {
     return h("div", { className: "overflow-auto" }, h("table", { className: "min-w-full text-sm" }, h("thead", null, h("tr", { className: "text-left text-slate-400" }, columns.map((c) => h("th", { key: c.key, className: `px-3 py-1.5 text-xs ${c.align === "right" ? "text-right" : ""}` }, c.label)))), h("tbody", null, rows.map((row, i) => h("tr", { key: rowKey ? rowKey(row, i) : i, className: "border-t border-slate-200" }, columns.map((c) => h("td", { key: c.key, className: `px-3 py-1.5 ${c.align === "right" ? "text-right tabular-nums" : ""} ${c.className || ""}` }, c.render ? c.render(row, i) : row[c.key])))))));
   }
+  function currentMonthPace(model) {
+    const now = /* @__PURE__ */ new Date();
+    const month = now.getMonth();
+    const daysInMonth = new Date(now.getFullYear(), month + 1, 0).getDate();
+    const expected = Math.min(1, now.getDate() / daysInMonth);
+    const obj = model.revenue.objetivo ? model.revenue.objetivo.monthly[month] || 0 : 0;
+    const real = model.revenue.real ? model.revenue.real.monthly[month] || 0 : 0;
+    const actual = obj ? real / obj : 0;
+    const diff = actual - expected;
+    return { month, expected, actual, diff, obj, real, tone: diff >= 0 ? "good" : diff >= -0.1 ? "warn" : "bad" };
+  }
+  function weakestRevenueLine(model, selectedMonths) {
+    const fo = model.faturacaoObjetivada;
+    const fr = model.faturacaoReal;
+    if (!fo || !fr) return null;
+    return ["PS", "FAP", "AdBlue"].map((key) => {
+      const objLine = fo.lines[key] && fo.lines[key].value;
+      const realLine = fr.lines[key] && fr.lines[key].value;
+      const obj = objLine ? sumByMonths(objLine.monthly, selectedMonths) : 0;
+      const real = realLine ? sumByMonths(realLine.monthly, selectedMonths) : 0;
+      return { key, obj, real, pct: obj ? real / obj : null, gap: obj - real };
+    }).filter((r) => r.obj > 0 && r.pct !== null).sort((a, b) => a.pct - b.pct)[0] || null;
+  }
+  function leadQualityScore(item) {
+    if (!item) return 0;
+    const severity = Math.min(1, (item.avgSeverity || 0) / 5);
+    const urgency = Math.min(1, (item.avgUrgency || 0) / 5);
+    return (item.completion || 0) * 0.45 + (item.replacementRate || 0) * 0.2 + severity * 0.2 + urgency * 0.15;
+  }
+  function diagnosisSmallNumber(v) {
+    return v ? fmtNumber(v) : "\u2014";
+  }
+  function buildVspExecutiveSignals(vspTable, selectedMonths) {
+    const rows = (vspTable && vspTable.rows || []).filter((r) => {
+      const d = parseRowDate(r, VSP_DATE_COL);
+      return d && selectedMonths.has(d.getMonth());
+    });
+    const scorecardRows = scorecardCompletionRows(rows);
+    const sourceRows = groupedLeadStats(rows, trafficSourceLabel, 10).filter((r) => r.leads >= 2);
+    const campaignRows = groupedLeadStats(rows, (r) => textValue(r, VSP_UTM_CAMPAIGN_COL) || "Sem campanha", 12).filter((r) => r.leads >= 2);
+    const landingRows = groupedLeadStats(rows, (r) => landingPageLabel(textValue(r, VSP_LANDING_COL)), 10).filter((r) => r.leads >= 2);
+    const symptomRows = symptomStats(scorecardRows, 10);
+    const bestSource = sourceRows.map((r) => ({ ...r, quality: leadQualityScore(r) })).sort((a, b) => b.quality - a.quality || b.leads - a.leads)[0] || null;
+    const weakCampaigns = campaignRows.map((r) => ({ ...r, quality: leadQualityScore(r) })).filter((r) => r.leads >= 3 && (r.completion < 0.45 || r.quality < 0.35)).sort((a, b) => b.leads - a.leads || a.quality - b.quality).slice(0, 2);
+    const bestLanding = landingRows.map((r) => ({ ...r, potential: Math.max(r.avgClean || 0, r.avgReplace || 0), quality: leadQualityScore(r) })).sort((a, b) => b.potential - a.potential || b.quality - a.quality || b.leads - a.leads)[0] || null;
+    const urgentSymptom = symptomRows.sort((a, b) => (b.avgUrgency || 0) - (a.avgUrgency || 0) || b.leads - a.leads)[0] || null;
+    return { rows, scorecardRows, bestSource, weakCampaigns, bestLanding, urgentSymptom };
+  }
+  function buildExecutiveDiagnosis({ model, selectedMonths, pctAtingido, alertThreshold, vspTable }) {
+    const pace = currentMonthPace(model);
+    const weakest = weakestRevenueLine(model, selectedMonths);
+    const vsp = buildVspExecutiveSignals(vspTable, selectedMonths);
+    const riskPoints = (pctAtingido < alertThreshold / 100 ? 1 : 0) + (pace.tone === "bad" ? 1 : 0) + (weakest && weakest.pct < 0.7 ? 1 : 0);
+    const tone = pctAtingido >= 1 && pace.tone !== "bad" && (!weakest || weakest.pct >= 0.8) ? "good" : riskPoints >= 2 ? "bad" : "warn";
+    const actions = [];
+    if (weakest) actions.push(`Priorizar ${weakest.key}: rever campanhas, follow-up comercial e propostas em aberto ate recuperar ${fmtCurrency(Math.max(0, weakest.gap))} de desvio.`);
+    if (pace.diff < 0) actions.push(`Acelerar o ritmo de ${MONTH_NAMES[pace.month]}: falta ${fmtPercent(Math.abs(pace.diff))} face ao ritmo esperado do mes.`);
+    if (vsp.weakCampaigns.length) actions.push(`Otimizar ${vsp.weakCampaigns.map((c) => c.label).join(" / ")}: muito volume, mas baixa qualidade de lead.`);
+    if (vsp.bestSource) actions.push(`Reforcar o canal ${vsp.bestSource.label}, que apresenta a melhor qualidade relativa dos leads VSP.`);
+    if (vsp.urgentSymptom) actions.push(`Dar prioridade a leads com "${vsp.urgentSymptom.label}", por maior urgencia media.`);
+    if (!actions.length) actions.push("Manter investimento e acompanhamento comercial, com revisao diaria de faturacao, funil e qualidade dos leads.");
+    return {
+      tone,
+      status: tone === "good" ? "Saudavel" : tone === "warn" ? "Atencao" : "Risco",
+      metrics: [
+        { label: "Faturacao vs objetivo", value: fmtPercent(pctAtingido), detail: `${fmtCurrency(model.revenue.real ? sumByMonths(model.revenue.real.monthly, selectedMonths) : 0)} realizados`, tone: toneForPercent(pctAtingido, alertThreshold) },
+        { label: `Ritmo de ${MONTH_NAMES[pace.month]}`, value: fmtPercent(pace.actual), detail: pace.diff >= 0 ? `${fmtPercent(pace.diff)} acima do esperado` : `${fmtPercent(Math.abs(pace.diff))} abaixo do esperado`, tone: pace.tone },
+        { label: "Linha mais fraca", value: weakest ? weakest.key : "Sem dados", detail: weakest ? `${fmtPercent(weakest.pct)} do objetivo` : "Sem objetivo por linha", tone: weakest ? weakest.pct >= 0.8 ? "warn" : "bad" : "neutral" },
+        { label: "Estado geral", value: tone === "good" ? "Saudavel" : tone === "warn" ? "Atencao" : "Risco", detail: `${periodFilterLabel(selectedMonths)} analisado`, tone }
+      ],
+      insights: [
+        { label: "Melhor canal", value: vsp.bestSource ? vsp.bestSource.label : "Sem dados VSP", detail: vsp.bestSource ? `${fmtNumber(vsp.bestSource.leads)} leads · ${fmtPercent(vsp.bestSource.completion)} scorecard` : "A aguardar dados", tone: "good" },
+        { label: "Campanhas a rever", value: vsp.weakCampaigns.length ? vsp.weakCampaigns.map((c) => c.label).join(" / ") : "Sem alerta", detail: vsp.weakCampaigns.length ? "Volume alto com qualidade abaixo do ideal" : "Sem campanhas críticas no periodo", tone: vsp.weakCampaigns.length ? "warn" : "good" },
+        { label: "Landing com potencial", value: vsp.bestLanding ? vsp.bestLanding.label : "Sem dados VSP", detail: vsp.bestLanding ? `${fmtCurrency(vsp.bestLanding.potential)} potencial medio · ${fmtNumber(vsp.bestLanding.leads)} leads` : "A aguardar dados", tone: "neutral" },
+        { label: "Maior urgencia", value: vsp.urgentSymptom ? vsp.urgentSymptom.label : "Sem sintomas", detail: vsp.urgentSymptom ? `${diagnosisSmallNumber(vsp.urgentSymptom.avgUrgency)} urgencia · ${fmtNumber(vsp.urgentSymptom.leads)} leads` : "Sem scorecards no periodo", tone: vsp.urgentSymptom ? "warn" : "neutral" }
+      ],
+      actions: actions.slice(0, 3)
+    };
+  }
+  function DiagnosisTile({ item }) {
+    const toneClasses = {
+      good: "text-emerald-700 bg-emerald-50",
+      warn: "text-amber-700 bg-amber-50",
+      bad: "text-red-700 bg-red-50",
+      neutral: "text-blue-900 bg-blue-50"
+    }[item.tone || "neutral"] || "text-blue-900 bg-blue-50";
+    return h("div", { className: "bg-slate-50 rounded-lg border border-slate-200 p-3 min-w-0" },
+      h("div", { className: "text-xs font-semibold text-slate-500 mb-1" }, item.label),
+      h("div", { className: `inline-flex max-w-full px-2 py-0.5 rounded-lg text-sm font-bold ${toneClasses}` }, h("span", { className: "truncate" }, item.value)),
+      h("div", { className: "text-xs text-slate-400 mt-2" }, item.detail)
+    );
+  }
+  function ExecutiveDiagnosisPanel({ diagnosis }) {
+    if (!diagnosis) return null;
+    return h("section", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-4" },
+      h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
+        h("div", null,
+          h("div", { className: "text-xs text-slate-500 font-semibold" }, "DIAGNOSTICO EXECUTIVO"),
+          h("h3", { className: "text-lg font-bold text-slate-900 tracking-tight mt-1" }, "Estado atual e proximas acoes")
+        ),
+        h(MetricBadge, { tone: diagnosis.tone }, diagnosis.status)
+      ),
+      h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, diagnosis.metrics.map((item) => h(DiagnosisTile, { key: item.label, item }))),
+      h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, diagnosis.insights.map((item) => h(DiagnosisTile, { key: item.label, item }))),
+      h("div", { className: "bg-slate-50 rounded-lg border border-slate-200 p-3" },
+        h("h4", { className: "text-xs font-bold text-blue-900 mb-2" }, "Proximas 3 acoes recomendadas"),
+        h("ul", { className: "executive-list space-y-1 text-blue-900" }, diagnosis.actions.map((action, index) => h("li", { key: index }, action)))
+      )
+    );
+  }
   function ResultadosVSPView({ selectedMonths }) {
     const fetchOpts = useMemo(() => {
       return { spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true };
@@ -3895,6 +4005,8 @@ input::placeholder { color: #7f93b3; }
       () => jmTable ? buildMonthlyWithFallback(jmTable, 0, FJM_ALL_VALUE_COLS, /* @__PURE__ */ new Date()) : null,
       [jmTable]
     );
+    const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const { table: vspTable } = useSheetData("Resultados VSP", vspFetchOpts);
     if (loading && !table) return /* @__PURE__ */ React.createElement(LoadingState, null);
     if (error) return /* @__PURE__ */ React.createElement(ErrorState, { message: error, onRetry: reload, sheetName: "Dashboard MKT" });
     if (!model) return /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para mostrar." });
@@ -4009,6 +4121,7 @@ input::placeholder { color: #7f93b3; }
       }
     ];
     const activeTab = tabs.find((t) => t.key === tab) || tabs[0];
+    const diagnosis = buildExecutiveDiagnosis({ model, selectedMonths, pctAtingido, alertThreshold, vspTable });
     return /* @__PURE__ */ React.createElement("div", { className: "space-y-8" }, /* @__PURE__ */ React.createElement(SheetTopBar, { updatedAt, loading, onRefresh: reload }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-px border-b border-slate-200" }, DASHBOARD_SECTIONS.map((s) => /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -4017,7 +4130,7 @@ input::placeholder { color: #7f93b3; }
         className: `px-4 py-2 text-sm font-semibold rounded-t-lg whitespace-nowrap border ${section === s.key ? "bg-white border-slate-200 border-b-white text-blue-900" : "border-transparent text-slate-500 hover:text-slate-800"}`
       },
       s.label
-    ))), section === "geral" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, /* @__PURE__ */ React.createElement(
+    ))), section === "geral" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(ExecutiveDiagnosisPanel, { diagnosis }), /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, /* @__PURE__ */ React.createElement(
       KpiCard,
       {
         label: `Objetivo (${periodFilterLabel(selectedMonths)})`,
