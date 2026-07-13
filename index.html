@@ -404,6 +404,26 @@ table { border-collapse: collapse; }
   background: #1c3157;
   border-color: #3b82f6;
 }
+.deep-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.deep-tab {
+  border-radius: 9999px;
+  border: 1px solid #2d4566;
+  background: #16243f;
+  color: #bfdbfe;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.78rem;
+  line-height: 1rem;
+  font-weight: 800;
+}
+.deep-tab-active {
+  background: #f5f8fc;
+  border-color: #f5f8fc;
+  color: #0b1f3f;
+}
 @media (max-width: 900px) {
   .insight-strip { grid-template-columns: 1fr; }
   .funnel-steps { grid-template-columns: 1fr; }
@@ -1282,15 +1302,17 @@ input::placeholder { color: #7f93b3; }
   const DASHBOARD_GID = "1179921659";
   const SPREADSHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
   const SHEETS = [
-    { name: "Resumo Executivo", label: "Resumo Executivo" },
     { name: "Dashboard MKT", label: "Dashboard MKT" },
+    { name: "Resultados Totais", label: "Resultados Totais" },
+    { name: "Aprofundar Dados", label: "Aprofundar Dados" },
     { name: "UTM Creator", label: "UTM Creator" },
-    { name: "Ficheiro JM", label: "Ficheiro JM" },
-    { name: "Leads Di\xE1rios", label: "Leads Di\xE1rios" },
-    { name: "Log Tarefas", label: "Log Tarefas" },
+    { name: "Log Tarefas", label: "Log Tarefas" }
+  ];
+  const DEEP_DIVE_PANELS = [
     { name: "Resultados VSP", label: "Resultados VSP" },
     { name: "Resultados BO", label: "Resultados BO" },
-    { name: "Resultados Totais", label: "Resultados Totais" }
+    { name: "Ficheiro JM", label: "Ficheiro JM" },
+    { name: "Leads Di\xE1rios", label: "Leads Di\xE1rios" }
   ];
   const SHEET_GIDS = {
     "Ficheiro JM": "785129550",
@@ -4331,7 +4353,7 @@ input::placeholder { color: #7f93b3; }
       reloadBoOrders();
     };
     if (dashboardLoading && !dashboardTable) return h(LoadingState, null);
-    if (dashboardError && !dashboardTable) return h(ErrorState, { message: dashboardError, onRetry: reload, sheetName: "Resumo Executivo" });
+    if (dashboardError && !dashboardTable) return h(ErrorState, { message: dashboardError, onRetry: reload, sheetName: "Dashboard MKT" });
     if (!model) return h(EmptyState, { text: "Sem dados para mostrar." });
     const revObjTotal = sumByMonths(model.revenue.objetivo && model.revenue.objetivo.monthly, selectedMonths);
     const revRealTotal = sumByMonths(model.revenue.real && model.revenue.real.monthly, selectedMonths);
@@ -5130,6 +5152,42 @@ input::placeholder { color: #7f93b3; }
       }
     )));
   }
+  function DashboardMKTCockpitView({ selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage, onNavigate }) {
+    return h("div", { className: "space-y-8" },
+      h(ResumoExecutivoView, { selectedMonths, alertThreshold, onNavigate }),
+      h("section", { className: "section-shell space-y-3" },
+        h("div", null,
+          h("div", { className: "section-kicker" }, "DASHBOARD MKT"),
+          h("h3", { className: "section-heading" }, "Detalhe de faturacao, objetivos e funil"),
+          h("p", { className: "section-subtitle" }, "A leitura executiva fica no topo. Aqui continua a analise completa do antigo Dashboard MKT.")
+        )
+      ),
+      h(DashboardMKTView, { selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage })
+    );
+  }
+  function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
+    const current = DEEP_DIVE_PANELS.some((panel) => panel.name === activePanel) ? activePanel : DEEP_DIVE_PANELS[0].name;
+    return h("div", { className: "space-y-6" },
+      h("section", { className: "section-shell section-shell-hero space-y-4" },
+        h("div", null,
+          h("div", { className: "section-kicker" }, "APROFUNDAR DADOS"),
+          h("h2", { className: "section-heading" }, "Escolhe a fonte que queres analisar"),
+          h("p", { className: "section-subtitle" }, "Aqui ficam os painéis de detalhe: VSP, BO, Ficheiro JM e Leads Di\xE1rios.")
+        ),
+        h("div", { className: "deep-tabs" }, DEEP_DIVE_PANELS.map((panel) => h("button", {
+          key: panel.name,
+          type: "button",
+          className: `deep-tab ${current === panel.name ? "deep-tab-active" : ""}`,
+          onClick: () => setActivePanel(panel.name)
+        }, panel.label)))
+      ),
+      current === "Resultados VSP" ? h(ResultadosVSPView, { selectedMonths }) :
+      current === "Resultados BO" ? h(ResultadosBOView, { selectedMonths }) :
+      current === "Ficheiro JM" ? h(FicheiroJMView, { selectedMonths }) :
+      current === "Leads Di\xE1rios" ? h(LeadsDiariosView, { selectedMonths }) :
+      h(ResultadosVSPView, { selectedMonths })
+    );
+  }
   const UTM_DEFAULT_OPTIONS = {
     source: ["mailerlite", "google", "meta", "facebook", "instagram"],
     medium: ["email", "cpc", "paid_social", "organic_social", "referral"],
@@ -5335,7 +5393,8 @@ input::placeholder { color: #7f93b3; }
   }
   function App() {
     const [authenticated, setAuthenticated] = useState(false);
-    const [selected, setSelected] = useState("Resumo Executivo");
+    const [selected, setSelected] = useState("Dashboard MKT");
+    const [activeDeepPanel, setActiveDeepPanel] = useState("Resultados VSP");
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [selectedMonths, setSelectedMonths] = useState(new Set(ALL_MONTHS));
     const [alertThreshold, setAlertThreshold] = useState(80);
@@ -5492,6 +5551,16 @@ input::placeholder { color: #7f93b3; }
       setTaskTemplateEntry(null);
       setTaskPromptOpen(true);
     };
+    const navigateDashboard = (target) => {
+      if (DEEP_DIVE_PANELS.some((panel) => panel.name === target)) {
+        setActiveDeepPanel(target);
+        setSelected("Aprofundar Dados");
+        setMobileNavOpen(false);
+        return;
+      }
+      setSelected(target);
+      setMobileNavOpen(false);
+    };
     const activeSheet = SHEETS.find((s) => s.name === selected) || SHEETS[0];
     if (!authenticated) {
       return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true) });
@@ -5524,8 +5593,7 @@ input::placeholder { color: #7f93b3; }
         {
           key: s.name,
           onClick: () => {
-            setSelected(s.name);
-            setMobileNavOpen(false);
+            navigateDashboard(s.name);
           },
           className: `w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${selected === s.name ? "bg-white text-blue-950 font-semibold" : "text-blue-100 hover:bg-white hover:bg-opacity-10"}`
         },
@@ -5548,7 +5616,7 @@ input::placeholder { color: #7f93b3; }
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, (selected === "Dashboard MKT" || selected === "Resumo Executivo") && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "UTM Creator" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "UTM Creator" && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "UTM Creator" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "UTM Creator" && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
@@ -5558,17 +5626,18 @@ input::placeholder { color: #7f93b3; }
       },
       "Abrir na Google Sheets ",
       /* @__PURE__ */ React.createElement(ExternalLink, { className: "w-3 h-3" })
-    ))), /* @__PURE__ */ React.createElement("main", { className: "p-4 md:p-8 max-w-6xl mx-auto" }, selected === "Resumo Executivo" ? /* @__PURE__ */ React.createElement(ResumoExecutivoView, { selectedMonths, alertThreshold, onNavigate: setSelected }) : selected === "Dashboard MKT" ? /* @__PURE__ */ React.createElement(
-      DashboardMKTView,
+    ))), /* @__PURE__ */ React.createElement("main", { className: "p-4 md:p-8 max-w-6xl mx-auto" }, selected === "Dashboard MKT" ? /* @__PURE__ */ React.createElement(
+      DashboardMKTCockpitView,
       {
         selectedMonths,
         alertThreshold,
         fromStage,
         setFromStage,
         toStage,
-        setToStage
+        setToStage,
+        onNavigate: navigateDashboard
       }
-    ) : selected === "UTM Creator" ? /* @__PURE__ */ React.createElement(UtmCreatorView, null) : selected === "Ficheiro JM" ? /* @__PURE__ */ React.createElement(FicheiroJMView, { selectedMonths }) : selected === "Resultados VSP" ? /* @__PURE__ */ React.createElement(ResultadosVSPView, { selectedMonths }) : selected === "Resultados BO" ? /* @__PURE__ */ React.createElement(ResultadosBOView, { selectedMonths }) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : selected === "Leads Di\xE1rios" ? /* @__PURE__ */ React.createElement(LeadsDiariosView, { selectedMonths }) : selected === "Log Tarefas" ? /* @__PURE__ */ React.createElement(TaskLogView, { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "UTM Creator" ? /* @__PURE__ */ React.createElement(UtmCreatorView, null) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : selected === "Log Tarefas" ? /* @__PURE__ */ React.createElement(TaskLogView, { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
