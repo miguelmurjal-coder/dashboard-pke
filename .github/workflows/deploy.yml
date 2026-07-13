@@ -1,0 +1,27 @@
+name: Deploy Dashboard PKE
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter ficheiros
+        uses: actions/checkout@v4
+
+      - name: Preparar publicacao
+        run: |
+          mkdir -p public
+          cp index.html public/index.html
+
+      - name: Publicar no Neocities
+        uses: bcomnes/deploy-to-neocities@v3
+        with:
+          api_key: ${{ secrets.NEOCITIES_API_KEY }}
+          cleanup: false
+          dist_dir: public
