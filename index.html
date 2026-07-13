@@ -4128,6 +4128,51 @@ input::placeholder { color: #7f93b3; }
       byBrand: group((item) => item.brand)
     };
   }
+  function groupOrdersByValue(orders, getLabel, limit = 8) {
+    const map = new Map();
+    orders.forEach((order) => {
+      const label = compactLabel(getLabel(order), "Sem valor");
+      if (!map.has(label)) map.set(label, { label, orders: 0, value: 0, avgValue: 0 });
+      const item = map.get(label);
+      item.orders += 1;
+      item.value += order.value || 0;
+    });
+    return Array.from(map.values()).map((item) => ({
+      ...item,
+      avgValue: item.orders ? item.value / item.orders : 0
+    })).sort((a, b) => b.value - a.value || b.orders - a.orders).slice(0, limit);
+  }
+  function buildGlobalValueFunnel({ boRecords, vspRecords, ordersTable, selectedMonths, vspConversion }) {
+    const orders = boOrderRecords(ordersTable).filter((order) => selectedMonths.has(order.date.getMonth()));
+    const activeOrders = orders.filter((order) => !/cancel/i.test(order.status || ""));
+    const entries = boRecords.length + vspRecords.length;
+    const proposedValue = boRecords.reduce((sum, record) => sum + (record.value || 0), 0);
+    const orderedValue = activeOrders.reduce((sum, order) => sum + (order.value || 0), 0);
+    const openProposalValue = boRecords.filter((record) => !record.hasOrder).reduce((sum, record) => sum + (record.value || 0), 0);
+    const coreUtmMissing = [...boRecords, ...vspRecords].filter((record) => !record.hasCoreUtm).length;
+    const topChannels = groupOrdersByValue(activeOrders, (order) => order.channel || "Sem origem", 8);
+    const topCampaigns = groupOrdersByValue(activeOrders, (order) => order.campaign || "Sem campanha", 8);
+    const actions = [];
+    if (openProposalValue > 0) actions.push(`Recuperar propostas BO sem encomenda: ${fmtCurrency(openProposalValue)} ainda sem conversao no periodo.`);
+    if (vspConversion.leads && vspConversion.converted < vspConversion.leads) actions.push(`Trabalhar follow-up VSP: ${fmtNumber(vspConversion.leads - vspConversion.converted)} leads VSP ainda nao aparecem como encomenda.`);
+    if (coreUtmMissing > 0) actions.push(`Corrigir tracking: ${fmtNumber(coreUtmMissing)} registos sem UTMs principais completos limitam a leitura por campanha.`);
+    if (topChannels[0]) actions.push(`Proteger o canal ${topChannels[0].label}: lidera valor encomendado com ${fmtCurrency(topChannels[0].value)}.`);
+    return {
+      entries,
+      proposals: boRecords.length,
+      orders: activeOrders.length,
+      vspLeads: vspRecords.length,
+      proposedValue,
+      orderedValue,
+      openProposalValue,
+      leadToProposalRate: entries ? boRecords.length / entries : 0,
+      proposalToOrderRate: boRecords.length ? activeOrders.length / boRecords.length : 0,
+      valueCaptureRate: proposedValue ? orderedValue / proposedValue : 0,
+      topChannels,
+      topCampaigns,
+      actions: actions.slice(0, 3)
+    };
+  }
   function ResultadosTotaisView({ selectedMonths }) {
     const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
     const boFetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID, firstSheet: true }), []);
@@ -4164,6 +4209,7 @@ input::placeholder { color: #7f93b3; }
     const modelRows = totalGroupStats(records, (record) => record.model || "Sem modelo", 10, 1);
     const serviceRows = totalServiceStats(records, 10);
     const vspConversion = buildVspToOrderConversion(vspTable, boOrdersTable, selectedMonths);
+    const globalFunnel = buildGlobalValueFunnel({ boRecords, vspRecords, ordersTable: boOrdersTable, selectedMonths, vspConversion });
     const sourceChartRows = sourceRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
     const campaignChartRows = campaignRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
     const Card = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
@@ -4182,6 +4228,12 @@ input::placeholder { color: #7f93b3; }
       { key: "rate", label: "Taxa", align: "right", className: "font-semibold", render: (r) => fmtPercent(r.rate) },
       { key: "value", label: "Valor encom.", align: "right", render: (r) => fmtCurrency(r.value) }
     ];
+    const orderValueColumns = [
+      { key: "label", label: "Dimens\xE3o", className: "font-semibold text-slate-800 max-w-xs truncate" },
+      { key: "orders", label: "Encom.", align: "right", render: (r) => fmtNumber(r.orders) },
+      { key: "value", label: "Valor", align: "right", className: "font-semibold", render: (r) => fmtCurrency(r.value) },
+      { key: "avgValue", label: "M\xE9dia", align: "right", render: (r) => fmtCurrency(r.avgValue) }
+    ];
     return h("div", { className: "space-y-6" },
       h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Uma das fontes n\xE3o carregou totalmente: ", error),
@@ -4198,6 +4250,45 @@ input::placeholder { color: #7f93b3; }
           h(KpiCard, { label: "Convers\xE3o BO", numeric: boOrderRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: boOrderRate >= 0.06 ? "good" : boOrderRate >= 0.035 ? "warn" : "bad" }),
           h(KpiCard, { label: "Scorecard VSP", numeric: vspScorecardRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspScorecardRate >= 0.75 ? "good" : vspScorecardRate >= 0.45 ? "warn" : "bad" }),
           h(KpiCard, { label: "Registos com UTM", numeric: utmRate, format: "percent", gauge: true, icon: Target, kind: "ratio", tone: coreUtmRate >= 0.7 ? "good" : utmRate >= 0.4 ? "warn" : "bad" })
+        ),
+        h("section", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-4" },
+          h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
+            h("div", null,
+              h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, "Funil Global de Valor"),
+              h("p", { className: "text-xs text-slate-400" }, "Junta entradas VSP/BO, propostas BO e encomendas BO para ler volume, valor proposto e valor realmente encomendado.")
+            ),
+            h(MetricBadge, { tone: globalFunnel.valueCaptureRate >= 0.2 ? "good" : globalFunnel.valueCaptureRate >= 0.08 ? "warn" : "bad" }, fmtPercent(globalFunnel.valueCaptureRate), " valor capturado")
+          ),
+          h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+            h(DiagnosisTile, { item: { label: "Entradas totais", value: fmtNumber(globalFunnel.entries), detail: `${fmtNumber(globalFunnel.vspLeads)} VSP + ${fmtNumber(globalFunnel.proposals)} BO`, tone: "neutral" } }),
+            h(DiagnosisTile, { item: { label: "Taxa entrada \u2192 proposta", value: fmtPercent(globalFunnel.leadToProposalRate), detail: `${fmtNumber(globalFunnel.proposals)} propostas BO`, tone: globalFunnel.leadToProposalRate >= 0.75 ? "good" : "warn" } }),
+            h(DiagnosisTile, { item: { label: "Taxa proposta \u2192 encomenda", value: fmtPercent(globalFunnel.proposalToOrderRate), detail: `${fmtNumber(globalFunnel.orders)} encomendas nao canceladas`, tone: globalFunnel.proposalToOrderRate >= 0.06 ? "good" : globalFunnel.proposalToOrderRate >= 0.035 ? "warn" : "bad" } }),
+            h(DiagnosisTile, { item: { label: "Taxa VSP \u2192 encomenda", value: fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0), detail: `${fmtNumber(vspConversion.converted)} leads VSP convertidas`, tone: vspConversion.converted ? "warn" : "neutral" } })
+          ),
+          h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+            h(DiagnosisTile, { item: { label: "Valor proposto BO", value: fmtCurrency(globalFunnel.proposedValue), detail: "Soma das propostas BO", tone: "neutral" } }),
+            h(DiagnosisTile, { item: { label: "Valor encomendado BO", value: fmtCurrency(globalFunnel.orderedValue), detail: "Encomendas nao canceladas", tone: "good" } }),
+            h(DiagnosisTile, { item: { label: "Valor em aberto", value: fmtCurrency(globalFunnel.openProposalValue), detail: "Propostas BO sem encomenda", tone: globalFunnel.openProposalValue ? "warn" : "good" } }),
+            h(DiagnosisTile, { item: { label: "Valor VSP convertido", value: fmtCurrency(vspConversion.value), detail: "Encomendas cruzadas com VSP", tone: vspConversion.value ? "good" : "neutral" } })
+          ),
+          h("div", { className: "grid lg:grid-cols-2 gap-4" },
+            h("div", { className: "bg-slate-50 rounded-lg border border-slate-200 p-3" },
+              h("h4", { className: "text-xs font-bold text-blue-900 mb-2" }, "Principais perdas/oportunidades"),
+              h("ul", { className: "executive-list space-y-1 text-blue-900" }, globalFunnel.actions.map((action, index) => h("li", { key: index }, action)))
+            ),
+            h("div", { className: "bg-slate-50 rounded-lg border border-slate-200 p-3" },
+              h("h4", { className: "text-xs font-bold text-blue-900 mb-2" }, "Leitura"),
+              h("ul", { className: "executive-list space-y-1 text-blue-900" },
+                h("li", null, "Valor proposto vem das propostas BO."),
+                h("li", null, "Valor encomendado vem da tab Encomendas."),
+                h("li", null, "VSP entra como lead/potencial e tambem como conversao quando aparece em Encomendas.")
+              )
+            )
+          )
+        ),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          h(Card, { title: "Top canais por valor encomendado", subtitle: "Apenas encomendas BO nao canceladas." }, h(VspDataTable, { rows: globalFunnel.topChannels, rowKey: (row) => row.label, columns: orderValueColumns.map((col) => col.key === "label" ? { ...col, label: "Canal" } : col) })),
+          h(Card, { title: "Top campanhas por valor encomendado", subtitle: "Apenas encomendas BO nao canceladas." }, h(VspDataTable, { rows: globalFunnel.topCampaigns, rowKey: (row) => row.label, columns: orderValueColumns.map((col) => col.key === "label" ? { ...col, label: "Campanha" } : col) }))
         ),
         h("section", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-4" },
           h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
