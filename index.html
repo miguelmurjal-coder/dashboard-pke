@@ -1145,6 +1145,7 @@ input::placeholder { color: #7f93b3; }
   const SPREADSHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
   const SHEETS = [
     { name: "Dashboard MKT", label: "Dashboard MKT" },
+    { name: "UTM Creator", label: "UTM Creator" },
     { name: "Ficheiro JM", label: "Ficheiro JM" },
     { name: "Leads Di\xE1rios", label: "Leads Di\xE1rios" },
     { name: "Log Tarefas", label: "Log Tarefas" },
@@ -1165,6 +1166,7 @@ input::placeholder { color: #7f93b3; }
   const TASK_LOG_STORAGE_KEY = "pke.taskLog.entries.v1";
   const TASK_LOG_REMINDER_KEY = "pke.taskLog.nextReminderAt.v1";
   const TASK_LOG_LAST_REMINDER_KEY = "pke.taskLog.lastReminderKey.v1";
+  const UTM_CREATOR_STORAGE_KEY = "pke.utmCreator.options.v1";
   const DASHBOARD_PASSWORD = "2860";
   const TASK_LOG_SHEET_NAME = "Log Tarefas";
   const TASK_LOG_WRITE_ENDPOINT = "https://script.google.com/macros/s/AKfycbz03yvvNyozEZjKOD0NBcv5RDz0YeSqaRnr8Ye67CC-MRFB-BACmHGaZYMcxcvrUZQH/exec";
@@ -4209,6 +4211,179 @@ input::placeholder { color: #7f93b3; }
       }
     )));
   }
+  const UTM_DEFAULT_OPTIONS = {
+    source: ["mailerlite", "google", "meta", "facebook", "instagram"],
+    medium: ["email", "cpc", "paid_social", "organic_social", "referral"],
+    campaign: [],
+    content: ["botao_principal", "link_texto", "banner_topo", "footer"]
+  };
+  function loadUtmOptions() {
+    if (typeof localStorage === "undefined") return UTM_DEFAULT_OPTIONS;
+    try {
+      const stored = JSON.parse(localStorage.getItem(UTM_CREATOR_STORAGE_KEY) || "{}");
+      return Object.fromEntries(Object.entries(UTM_DEFAULT_OPTIONS).map(([key, defaults]) => {
+        const values = Array.isArray(stored[key]) ? stored[key] : [];
+        return [key, uniqueUtmOptions([...defaults, ...values])];
+      }));
+    } catch {
+      return UTM_DEFAULT_OPTIONS;
+    }
+  }
+  function uniqueUtmOptions(values) {
+    const seen = /* @__PURE__ */ new Set();
+    return values.map((v) => String(v || "").trim()).filter((v) => {
+      if (!v) return false;
+      const key = v.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).sort((a, b) => a.localeCompare(b, "pt-PT"));
+  }
+  function saveUtmOptions(options) {
+    if (typeof localStorage === "undefined") return;
+    try {
+      localStorage.setItem(UTM_CREATOR_STORAGE_KEY, JSON.stringify(options));
+    } catch {
+    }
+  }
+  function appendUtmOptions(options, values) {
+    const next = { ...options };
+    Object.entries(values).forEach(([key, value]) => {
+      const clean = String(value || "").trim();
+      if (!clean) return;
+      next[key] = uniqueUtmOptions([...(next[key] || []), clean]);
+    });
+    saveUtmOptions(next);
+    return next;
+  }
+  function UtmField({ label, value, customValue, options, onSelect, onCustomChange }) {
+    const isOther = value === "__other";
+    return h("div", { className: "space-y-2" },
+      h("label", { className: "task-field" },
+        h("span", null, label),
+        h("select", { value, onChange: (e) => onSelect(e.target.value) },
+          h("option", { value: "" }, "Selecionar..."),
+          options.map((option) => h("option", { key: option, value: option }, option)),
+          h("option", { value: "__other" }, "Outro")
+        )
+      ),
+      isOther && h("label", { className: "task-field" },
+        h("span", null, "Novo valor"),
+        h("input", { value: customValue, onChange: (e) => onCustomChange(e.target.value), placeholder: "Escreve uma nova op\xE7\xE3o" })
+      )
+    );
+  }
+  function normalizeUtmValue(selectedValue, customValue) {
+    return selectedValue === "__other" ? String(customValue || "").trim() : String(selectedValue || "").trim();
+  }
+  function buildUtmUrl(baseLink, fields) {
+    const raw = String(baseLink || "").trim();
+    if (!raw) throw new Error("Cola primeiro o link base.");
+    let url;
+    try {
+      url = new URL(raw);
+    } catch {
+      url = new URL(raw.startsWith("/") ? raw : `https://${raw}`);
+    }
+    Object.entries(fields).forEach(([key, value]) => {
+      const clean = String(value || "").trim();
+      if (clean) url.searchParams.set(`utm_${key}`, clean);
+    });
+    return url.toString();
+  }
+  function UtmCreatorView() {
+    const [options, setOptions] = useState(loadUtmOptions);
+    const [baseLink, setBaseLink] = useState("");
+    const [fields, setFields] = useState({ source: "mailerlite", medium: "email", campaign: "", content: "" });
+    const [custom, setCustom] = useState({ source: "", medium: "", campaign: "", content: "" });
+    const [generated, setGenerated] = useState("");
+    const [error, setError] = useState("");
+    const [copied, setCopied] = useState(false);
+    const setField = (key, value) => {
+      setFields((prev) => ({ ...prev, [key]: value }));
+      setCopied(false);
+    };
+    const setCustomField = (key, value) => {
+      setCustom((prev) => ({ ...prev, [key]: value }));
+      setCopied(false);
+    };
+    const resolved = {
+      source: normalizeUtmValue(fields.source, custom.source),
+      medium: normalizeUtmValue(fields.medium, custom.medium),
+      campaign: normalizeUtmValue(fields.campaign, custom.campaign),
+      content: normalizeUtmValue(fields.content, custom.content)
+    };
+    const canGenerate = baseLink.trim() && resolved.source && resolved.medium && resolved.campaign && resolved.content;
+    const generate = () => {
+      setError("");
+      setCopied(false);
+      try {
+        if (!resolved.source || !resolved.medium || !resolved.campaign || !resolved.content) {
+          throw new Error("Preenche todos os campos UTM antes de gerar o link.");
+        }
+        const url = buildUtmUrl(baseLink, resolved);
+        setGenerated(url);
+        setOptions((prev) => appendUtmOptions(prev, resolved));
+        setFields(resolved);
+        setCustom({ source: "", medium: "", campaign: "", content: "" });
+      } catch (err) {
+        setGenerated("");
+        setError(err && err.message ? err.message : "N\xE3o foi poss\xEDvel gerar o link.");
+      }
+    };
+    const copyGenerated = async () => {
+      if (!generated) return;
+      try {
+        await navigator.clipboard.writeText(generated);
+        setCopied(true);
+      } catch {
+        setError("N\xE3o consegui copiar automaticamente. Seleciona o link e copia manualmente.");
+      }
+    };
+    return h("div", { className: "space-y-6" },
+      h("section", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-4" },
+        h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
+          h("div", null,
+            h("div", { className: "text-xs text-slate-500 font-semibold" }, "UTM CREATOR"),
+            h("h2", { className: "text-lg font-bold text-slate-900 tracking-tight mt-1" }, "Criar link com UTM pronto a colar")
+          ),
+          h(MetricBadge, { tone: generated ? "good" : "neutral" }, generated ? "Gerado" : "Pronto")
+        ),
+        h("label", { className: "task-field" },
+          h("span", null, "Link base"),
+          h("input", { value: baseLink, onChange: (e) => { setBaseLink(e.target.value); setCopied(false); }, placeholder: "https://pke.pt/fap" })
+        ),
+        h("div", { className: "grid sm:grid-cols-2 gap-4" },
+          h(UtmField, { label: "utm_source", value: fields.source, customValue: custom.source, options: options.source, onSelect: (v) => setField("source", v), onCustomChange: (v) => setCustomField("source", v) }),
+          h(UtmField, { label: "utm_medium", value: fields.medium, customValue: custom.medium, options: options.medium, onSelect: (v) => setField("medium", v), onCustomChange: (v) => setCustomField("medium", v) }),
+          h(UtmField, { label: "utm_campaign", value: fields.campaign, customValue: custom.campaign, options: options.campaign, onSelect: (v) => setField("campaign", v), onCustomChange: (v) => setCustomField("campaign", v) }),
+          h(UtmField, { label: "utm_content", value: fields.content, customValue: custom.content, options: options.content, onSelect: (v) => setField("content", v), onCustomChange: (v) => setCustomField("content", v) })
+        ),
+        error && h("div", { className: "rounded-xl p-3 bg-red-50 text-red-700 text-xs font-semibold" }, error),
+        h("div", { className: "flex items-center gap-3 flex-wrap" },
+          h("button", { className: "task-primary-btn", onClick: generate, disabled: !canGenerate }, "Generate"),
+          h("button", { className: "task-secondary-btn", onClick: copyGenerated, disabled: !generated }, copied ? "Copiado" : "Copiar link")
+        )
+      ),
+      generated && h("section", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-3" },
+        h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
+          h("h3", { className: "text-sm font-semibold text-slate-700" }, "Link gerado"),
+          h(MetricBadge, { tone: "good" }, "Pronto a colar")
+        ),
+        h("label", { className: "task-field" },
+          h("span", null, "URL final"),
+          h("textarea", { value: generated, readOnly: true, rows: 4, onFocus: (e) => e.target.select() })
+        )
+      ),
+      h("section", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-4" },
+        h("h3", { className: "text-sm font-semibold text-slate-700" }, "Op\xE7\xF5es guardadas neste browser"),
+        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, ["source", "medium", "campaign", "content"].map((key) => h("div", { key, className: "bg-slate-50 rounded-lg border border-slate-200 p-3 min-w-0" },
+          h("div", { className: "text-xs font-bold text-blue-900 mb-2" }, `utm_${key}`),
+          (options[key] || []).length ? h("div", { className: "flex flex-wrap gap-1.5" }, options[key].map((item) => h("span", { key: item, className: "metric-badge metric-badge-neutral" }, item))) : h("p", { className: "text-xs text-slate-400" }, "Ainda sem valores guardados.")
+        )))
+      )
+    );
+  }
   function SidebarSummary({ selectedMonths, alertThreshold, fromStage, toStage }) {
     const { table } = useSheetData("Dashboard MKT", { gid: DASHBOARD_GID, headers: 0 });
     const { table: leadsTable } = useSheetData("Leads Di\xE1rios", { gid: SHEET_GIDS["Leads Di\xE1rios"] });
@@ -4454,7 +4629,7 @@ input::placeholder { color: #7f93b3; }
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "UTM Creator" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "UTM Creator" && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
@@ -4474,7 +4649,7 @@ input::placeholder { color: #7f93b3; }
         toStage,
         setToStage
       }
-    ) : selected === "Ficheiro JM" ? /* @__PURE__ */ React.createElement(FicheiroJMView, { selectedMonths }) : selected === "Resultados VSP" ? /* @__PURE__ */ React.createElement(ResultadosVSPView, { selectedMonths }) : selected === "Leads Di\xE1rios" ? /* @__PURE__ */ React.createElement(LeadsDiariosView, { selectedMonths }) : selected === "Log Tarefas" ? /* @__PURE__ */ React.createElement(TaskLogView, { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "UTM Creator" ? /* @__PURE__ */ React.createElement(UtmCreatorView, null) : selected === "Ficheiro JM" ? /* @__PURE__ */ React.createElement(FicheiroJMView, { selectedMonths }) : selected === "Resultados VSP" ? /* @__PURE__ */ React.createElement(ResultadosVSPView, { selectedMonths }) : selected === "Leads Di\xE1rios" ? /* @__PURE__ */ React.createElement(LeadsDiariosView, { selectedMonths }) : selected === "Log Tarefas" ? /* @__PURE__ */ React.createElement(TaskLogView, { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
