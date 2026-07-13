@@ -3673,6 +3673,80 @@ input::placeholder { color: #7f93b3; }
   function scorecardCompletionRows(rows) {
     return rows.filter((r) => textValue(r, VSP_ORIGIN_COL).toLowerCase().includes("scorecard") || numericValue(r, VSP_SEVERITY_COL) > 0 || numericValue(r, VSP_URGENCY_COL) > 0);
   }
+  function sumValue(rows, col) {
+    return rows.reduce((s, r) => s + numericValue(r, col), 0);
+  }
+  function avgFromValues(values) {
+    const clean = values.filter((v) => typeof v === "number" && isFinite(v) && v > 0);
+    return clean.length ? clean.reduce((s, v) => s + v, 0) / clean.length : 0;
+  }
+  function symptomList(row) {
+    return textValue(row, 23).split("|").map((s) => s.trim()).filter(Boolean);
+  }
+  function isReplacementIntent(row) {
+    const trend = textValue(row, VSP_TREND_COL).toLowerCase();
+    return trend.includes("substit") || trend.includes("mista");
+  }
+  function leadPriorityScore(row) {
+    const severity = numericValue(row, VSP_SEVERITY_COL);
+    const urgency = numericValue(row, VSP_URGENCY_COL);
+    const trend = textValue(row, VSP_TREND_COL).toLowerCase();
+    const symptoms = symptomList(row).join(" ").toLowerCase();
+    let score = severity + urgency;
+    if (trend.includes("substit")) score += 1.5;
+    if (trend.includes("mista")) score += 0.75;
+    if (symptoms.includes("perda de pot")) score += 0.8;
+    if (symptoms.includes("modo de emerg")) score += 0.8;
+    if (symptoms.includes("oleo") || symptoms.includes("\xF3leo")) score += 0.6;
+    if (symptoms.includes("ventoinha")) score += 0.5;
+    return score;
+  }
+  function vehicleLabel(row) {
+    return [textValue(row, 5), textValue(row, 6), textValue(row, 8)].filter(Boolean).join(" \xB7 ") || "Sem viatura";
+  }
+  function groupedLeadStats(rows, getLabel, limit = 8) {
+    const map = new Map();
+    rows.forEach((r) => {
+      const label = compactLabel(getLabel(r));
+      if (!map.has(label)) {
+        map.set(label, { label, rows: [], leads: 0, scorecards: 0, replacement: 0 });
+      }
+      const item = map.get(label);
+      item.rows.push(r);
+      item.leads += 1;
+      if (scorecardCompletionRows([r]).length) item.scorecards += 1;
+      if (isReplacementIntent(r)) item.replacement += 1;
+    });
+    return Array.from(map.values()).map((item) => ({
+      ...item,
+      completion: item.leads ? item.scorecards / item.leads : 0,
+      avgSeverity: avgValue(item.rows, VSP_SEVERITY_COL),
+      avgUrgency: avgValue(item.rows, VSP_URGENCY_COL),
+      avgClean: avgValue(item.rows, VSP_CLEAN_PRICE_COL),
+      avgReplace: avgValue(item.rows, VSP_REPLACE_PRICE_COL),
+      replacementRate: item.leads ? item.replacement / item.leads : 0
+    })).sort((a, b) => b.leads - a.leads).slice(0, limit);
+  }
+  function symptomStats(rows, limit = 8) {
+    const map = new Map();
+    rows.forEach((r) => {
+      symptomList(r).forEach((label) => {
+        if (!map.has(label)) map.set(label, { label, rows: [], leads: 0 });
+        const item = map.get(label);
+        item.rows.push(r);
+        item.leads += 1;
+      });
+    });
+    return Array.from(map.values()).map((item) => ({
+      ...item,
+      avgSeverity: avgValue(item.rows, VSP_SEVERITY_COL),
+      avgUrgency: avgValue(item.rows, VSP_URGENCY_COL),
+      avgReplace: avgValue(item.rows, VSP_REPLACE_PRICE_COL)
+    })).sort((a, b) => b.leads - a.leads).slice(0, limit);
+  }
+  function VspDataTable({ columns, rows, rowKey }) {
+    return h("div", { className: "overflow-auto" }, h("table", { className: "min-w-full text-sm" }, h("thead", null, h("tr", { className: "text-left text-slate-400" }, columns.map((c) => h("th", { key: c.key, className: `px-3 py-1.5 text-xs ${c.align === "right" ? "text-right" : ""}` }, c.label)))), h("tbody", null, rows.map((row, i) => h("tr", { key: rowKey ? rowKey(row, i) : i, className: "border-t border-slate-200" }, columns.map((c) => h("td", { key: c.key, className: `px-3 py-1.5 ${c.align === "right" ? "text-right tabular-nums" : ""} ${c.className || ""}` }, c.render ? c.render(row, i) : row[c.key])))))));
+  }
   function ResultadosVSPView({ selectedMonths }) {
     const fetchOpts = useMemo(() => {
       return { spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true };
@@ -3698,8 +3772,113 @@ input::placeholder { color: #7f93b3; }
     const campaignRows = groupCount(filteredRows, (r) => textValue(r, VSP_UTM_CAMPAIGN_COL), 6);
     const trendRows = groupCount(scorecardRows, (r) => textValue(r, VSP_TREND_COL), 5);
     const rankedLanding = landingRows.map((p, i) => ({ ...p, pct: totalLeads ? p.value / totalLeads : 0, rank: i + 1 }));
+    const totalCleanPotential = sumValue(filteredRows, VSP_CLEAN_PRICE_COL);
+    const totalReplacePotential = sumValue(filteredRows, VSP_REPLACE_PRICE_COL);
+    const avgLeadPotential = avgFromValues(filteredRows.map((r) => Math.max(numericValue(r, VSP_CLEAN_PRICE_COL), numericValue(r, VSP_REPLACE_PRICE_COL))));
+    const replacementIntentRows = filteredRows.filter(isReplacementIntent);
+    const noSymptomsRows = scorecardRows.filter((r) => symptomList(r).some((s) => s.toLowerCase().includes("n\xE3o noto nada")));
+    const trackedRows = filteredRows.filter((r) => textValue(r, 16) || textValue(r, 17) || textValue(r, VSP_UTM_SOURCE_COL) || textValue(r, VSP_UTM_CAMPAIGN_COL));
+    const brandRows = groupedLeadStats(filteredRows, (r) => textValue(r, 5) || "Sem marca", 8);
+    const campaignQualityRows = groupedLeadStats(filteredRows, (r) => textValue(r, VSP_UTM_CAMPAIGN_COL) || "Sem campanha", 8);
+    const sourceQualityRows = groupedLeadStats(filteredRows, trafficSourceLabel, 6);
+    const symptomRows = symptomStats(scorecardRows, 8);
+    const criticalRows = filteredRows.map((r) => ({ row: r, score: leadPriorityScore(r), date: parseRowDate(r, VSP_DATE_COL) })).filter((x) => x.score > 0).sort((a, b) => b.score - a.score || b.date - a.date).slice(0, 8);
     const filteredTable = { cols: table.cols, rows: filteredRows };
-    return h("div", { className: "space-y-6" }, h(SheetTopBar, { updatedAt, loading, onRefresh: reload }), h("p", { className: "text-xs text-slate-400" }, "VSP/FAP \xB7 leads individuais \xB7 ", periodFilterLabel(selectedMonths), " \xB7 ", totalLeads, " ", totalLeads === 1 ? "lead" : "leads"), h(DateParseWarning, { count: unparsedCount }), !filteredRows.length ? h(EmptyState, { text: "Sem dados para o per\xEDodo selecionado." }) : h(React.Fragment, null, h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, h(KpiCard, { label: "Leads VSP/FAP", numeric: totalLeads, format: "number", icon: Target, kind: "volume" }), h(KpiCard, { label: "Scorecard completo", numeric: completionRate, format: "percent", tone: completionRate >= 0.75 ? "good" : completionRate >= 0.45 ? "warn" : "bad", gauge: true, icon: TrendingUp, kind: "ratio" }), h(KpiCard, { label: "Pre\xE7o m\xE9dio limpeza", numeric: avgCleanPrice, format: "currency", icon: Euro, kind: "money" }), h(KpiCard, { label: "Pre\xE7o m\xE9dio substitui\xE7\xE3o", numeric: avgReplacePrice, format: "currency", icon: Euro, kind: "money" })), h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, "Landing pages com mais leads"), h("p", { className: "text-xs text-slate-400 mb-3" }, "Ranking por volume de leads registados no ficheiro VSP. A percentagem mostra o peso de cada landing page no per\xEDodo filtrado."), h("div", { className: "overflow-auto" }, h("table", { className: "min-w-full text-sm" }, h("thead", null, h("tr", { className: "text-left text-slate-400" }, h("th", { className: "px-3 py-1.5 text-xs" }, "Landing page"), h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Leads"), h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Peso"))), h("tbody", null, rankedLanding.map((p) => h("tr", { key: p.label, className: "border-t border-slate-200" }, h("td", { className: "px-3 py-1.5 font-semibold text-slate-800" }, h("span", { className: "flex items-center gap-2" }, h("span", { className: "rank-chip" }, p.rank), p.label, p.rank === 1 && h(MetricBadge, { tone: "good" }, "Top"))), h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtNumber(p.value)), h("td", { className: "px-3 py-1.5 text-right tabular-nums font-semibold" }, fmtPercent(p.pct)))))))), h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, h(KpiCard, { label: "Gravidade m\xE9dia", numeric: avgSeverity, format: "number", tone: avgSeverity >= 3 ? "bad" : avgSeverity >= 2 ? "warn" : "neutral", icon: TrendingUp, kind: "risk" }), h(KpiCard, { label: "Urg\xEAncia m\xE9dia", numeric: avgUrgency, format: "number", tone: avgUrgency >= 3 ? "bad" : avgUrgency >= 2 ? "warn" : "neutral", icon: TrendingUp, kind: "risk" })), h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h3", { className: "text-sm font-semibold text-slate-700 mb-2" }, "Leads por dia"), h(TimeSeriesChart, { points: adaptiveSeries.points, unit: "number", xAxisLabel: adaptiveSeries.xAxisLabel, yAxisLabel: "Leads" })), h("div", { className: "grid sm:grid-cols-2 gap-4" }, h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Origem dos leads"), h(CategoryBarChart, { data: sourceRows, unit: "number" })), h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Campanhas"), h(CategoryBarChart, { data: campaignRows, unit: "number" }))), h("div", { className: "grid sm:grid-cols-2 gap-4" }, h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Landing pages"), h(CategoryBarChart, { data: landingRows, unit: "number" })), h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Tend\xEAncia indicada no scorecard"), trendRows.length ? h(CategoryBarChart, { data: trendRows, unit: "number" }) : h(EmptyState, { text: "Sem respostas de scorecard neste per\xEDodo." }))), h(RawDataAccordion, { table: filteredTable, defaultOpen: false })));
+    const Card = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
+    const fmtSmallNumber = (v) => v ? fmtNumber(v) : "\u2014";
+    return h("div", { className: "space-y-6" },
+      h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
+      h("p", { className: "text-xs text-slate-400" }, "VSP/FAP \xB7 leads individuais \xB7 ", periodFilterLabel(selectedMonths), " \xB7 ", totalLeads, " ", totalLeads === 1 ? "lead" : "leads"),
+      h(DateParseWarning, { count: unparsedCount }),
+      !filteredRows.length ? h(EmptyState, { text: "Sem dados para o per\xEDodo selecionado." }) : h(React.Fragment, null,
+      h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+        h(KpiCard, { label: "Leads VSP/FAP", numeric: totalLeads, format: "number", icon: Target, kind: "volume" }),
+        h(KpiCard, { label: "Scorecard completo", numeric: completionRate, format: "percent", tone: completionRate >= 0.75 ? "good" : completionRate >= 0.45 ? "warn" : "bad", gauge: true, icon: TrendingUp, kind: "ratio" }),
+        h(KpiCard, { label: "Potencial limpeza", numeric: totalCleanPotential, format: "currency", icon: Euro, kind: "money" }),
+        h(KpiCard, { label: "Potencial substitui\xE7\xE3o", numeric: totalReplacePotential, format: "currency", icon: Euro, kind: "money" })
+      ),
+      h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+        h(KpiCard, { label: "Valor m\xE9dio por lead", numeric: avgLeadPotential, format: "currency", icon: Euro, kind: "money" }),
+        h(KpiCard, { label: "Tend\xEAncia mista/substitui\xE7\xE3o", numeric: totalLeads ? replacementIntentRows.length / totalLeads : 0, format: "percent", tone: replacementIntentRows.length ? "warn" : "neutral", gauge: true, icon: Target, kind: "ratio" }),
+        h(KpiCard, { label: "Sem sintomas especiais", numeric: scorecardRows.length ? noSymptomsRows.length / scorecardRows.length : 0, format: "percent", icon: Target, kind: "ratio" }),
+        h(KpiCard, { label: "Leads com tracking", numeric: totalLeads ? trackedRows.length / totalLeads : 0, format: "percent", tone: trackedRows.length === totalLeads ? "good" : "warn", gauge: true, icon: TrendingUp, kind: "ratio" })
+      ),
+      h(Card, { title: "Landing pages com mais leads", subtitle: "Ranking por volume de leads registados no ficheiro VSP. A percentagem mostra o peso de cada landing page no per\xEDodo filtrado." },
+        h(VspDataTable, {
+          rows: rankedLanding,
+          rowKey: (p) => p.label,
+          columns: [
+            { key: "label", label: "Landing page", className: "font-semibold text-slate-800", render: (p) => h("span", { className: "flex items-center gap-2" }, h("span", { className: "rank-chip" }, p.rank), p.label, p.rank === 1 && h(MetricBadge, { tone: "good" }, "Top")) },
+            { key: "value", label: "Leads", align: "right", render: (p) => fmtNumber(p.value) },
+            { key: "pct", label: "Peso", align: "right", className: "font-semibold", render: (p) => fmtPercent(p.pct) }
+          ]
+        })
+      ),
+      h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+        h(KpiCard, { label: "Gravidade m\xE9dia", numeric: avgSeverity, format: "number", tone: avgSeverity >= 3 ? "bad" : avgSeverity >= 2 ? "warn" : "neutral", icon: TrendingUp, kind: "risk" }),
+        h(KpiCard, { label: "Urg\xEAncia m\xE9dia", numeric: avgUrgency, format: "number", tone: avgUrgency >= 3 ? "bad" : avgUrgency >= 2 ? "warn" : "neutral", icon: TrendingUp, kind: "risk" }),
+        h(KpiCard, { label: "Pre\xE7o m\xE9dio limpeza", numeric: avgCleanPrice, format: "currency", icon: Euro, kind: "money" }),
+        h(KpiCard, { label: "Pre\xE7o m\xE9dio substitui\xE7\xE3o", numeric: avgReplacePrice, format: "currency", icon: Euro, kind: "money" })
+      ),
+      h(Card, { title: "Leads priorit\xE1rios", subtitle: "Sem dados pessoais: ordenado por gravidade, urg\xEAncia, tend\xEAncia e sintomas de risco." },
+        h(VspDataTable, {
+          rows: criticalRows,
+          rowKey: ({ row, score }) => `${dateKey(parseRowDate(row, VSP_DATE_COL))}-${vehicleLabel(row)}-${score}`,
+          columns: [
+            { key: "date", label: "Data", render: ({ row }) => dateLabel(parseRowDate(row, VSP_DATE_COL)) },
+            { key: "vehicle", label: "Viatura", className: "font-semibold text-slate-800", render: ({ row }) => vehicleLabel(row) },
+            { key: "landing", label: "Landing", render: ({ row }) => landingPageLabel(textValue(row, VSP_LANDING_COL)) },
+            { key: "trend", label: "Tend\xEAncia", render: ({ row }) => textValue(row, VSP_TREND_COL) || "\u2014" },
+            { key: "sev", label: "Grav.", align: "right", render: ({ row }) => fmtNumber(numericValue(row, VSP_SEVERITY_COL)) },
+            { key: "urg", label: "Urg.", align: "right", render: ({ row }) => fmtNumber(numericValue(row, VSP_URGENCY_COL)) },
+            { key: "replace", label: "Subst.", align: "right", className: "font-semibold", render: ({ row }) => numericValue(row, VSP_REPLACE_PRICE_COL) ? fmtCurrency(numericValue(row, VSP_REPLACE_PRICE_COL)) : "\u2014" }
+          ]
+        })
+      ),
+      h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h3", { className: "text-sm font-semibold text-slate-700 mb-2" }, "Leads por dia"), h(TimeSeriesChart, { points: adaptiveSeries.points, unit: "number", xAxisLabel: adaptiveSeries.xAxisLabel, yAxisLabel: "Leads" })),
+      h("div", { className: "grid sm:grid-cols-2 gap-4" },
+        h(Card, { title: "Origem dos leads" }, h(CategoryBarChart, { data: sourceRows, unit: "number" })),
+        h(Card, { title: "Campanhas" }, h(CategoryBarChart, { data: campaignRows, unit: "number" }))
+      ),
+      h("div", { className: "grid sm:grid-cols-2 gap-4" },
+        h(Card, { title: "Landing pages" }, h(CategoryBarChart, { data: landingRows, unit: "number" })),
+        h(Card, { title: "Tend\xEAncia indicada no scorecard" }, trendRows.length ? h(CategoryBarChart, { data: trendRows, unit: "number" }) : h(EmptyState, { text: "Sem respostas de scorecard neste per\xEDodo." }))
+      ),
+      h("div", { className: "grid lg:grid-cols-2 gap-4" },
+        h(Card, { title: "Top marcas", subtitle: "Volume, valor m\xE9dio e severidade por marca." }, h(VspDataTable, { rows: brandRows, rowKey: (b) => b.label, columns: [
+          { key: "label", label: "Marca", className: "font-semibold text-slate-800" },
+          { key: "leads", label: "Leads", align: "right", render: (b) => fmtNumber(b.leads) },
+          { key: "avgClean", label: "Limpeza", align: "right", render: (b) => b.avgClean ? fmtCurrency(b.avgClean) : "\u2014" },
+          { key: "avgReplace", label: "Subst.", align: "right", render: (b) => b.avgReplace ? fmtCurrency(b.avgReplace) : "\u2014" },
+          { key: "avgSeverity", label: "Grav.", align: "right", render: (b) => fmtSmallNumber(b.avgSeverity) }
+        ] })),
+        h(Card, { title: "Sintomas mais comuns", subtitle: "Ajuda a perceber que dor o lead traz antes do contacto comercial." }, h(VspDataTable, { rows: symptomRows, rowKey: (s) => s.label, columns: [
+          { key: "label", label: "Sintoma", className: "font-semibold text-slate-800" },
+          { key: "leads", label: "Leads", align: "right", render: (s) => fmtNumber(s.leads) },
+          { key: "avgSeverity", label: "Grav.", align: "right", render: (s) => fmtSmallNumber(s.avgSeverity) },
+          { key: "avgUrgency", label: "Urg.", align: "right", render: (s) => fmtSmallNumber(s.avgUrgency) },
+          { key: "avgReplace", label: "Subst.", align: "right", render: (s) => s.avgReplace ? fmtCurrency(s.avgReplace) : "\u2014" }
+        ] }))
+      ),
+      h("div", { className: "grid lg:grid-cols-2 gap-4" },
+        h(Card, { title: "Qualidade por canal", subtitle: "Compara volume, scorecard completo e intensidade dos leads por origem." }, h(VspDataTable, { rows: sourceQualityRows, rowKey: (s) => s.label, columns: [
+          { key: "label", label: "Canal", className: "font-semibold text-slate-800" },
+          { key: "leads", label: "Leads", align: "right", render: (s) => fmtNumber(s.leads) },
+          { key: "completion", label: "Scorecard", align: "right", render: (s) => fmtPercent(s.completion) },
+          { key: "avgSeverity", label: "Grav.", align: "right", render: (s) => fmtSmallNumber(s.avgSeverity) },
+          { key: "replacementRate", label: "Mista/Subst.", align: "right", render: (s) => fmtPercent(s.replacementRate) }
+        ] })),
+        h(Card, { title: "Qualidade por campanha", subtitle: "Campanhas ordenadas por volume, com sinais de qualidade para otimiza\xE7\xE3o." }, h(VspDataTable, { rows: campaignQualityRows, rowKey: (c) => c.label, columns: [
+          { key: "label", label: "Campanha", className: "font-semibold text-slate-800 max-w-xs truncate" },
+          { key: "leads", label: "Leads", align: "right", render: (c) => fmtNumber(c.leads) },
+          { key: "completion", label: "Scorecard", align: "right", render: (c) => fmtPercent(c.completion) },
+          { key: "avgSeverity", label: "Grav.", align: "right", render: (c) => fmtSmallNumber(c.avgSeverity) },
+          { key: "avgReplace", label: "Subst.", align: "right", render: (c) => c.avgReplace ? fmtCurrency(c.avgReplace) : "\u2014" }
+        ] }))
+      ),
+      h(RawDataAccordion, { table: filteredTable, defaultOpen: false })
+      )
+    );
   }
   function DashboardMKTView({ selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage }) {
     const { table, loading, error, updatedAt, reload } = useSheetData("Dashboard MKT", {
