@@ -3755,15 +3755,18 @@ input::placeholder { color: #7f93b3; }
   const BO_DATE_COL = 2;
   const BO_ORDER_COL = 1;
   const BO_AUTHOR_COL = 3;
+  const BO_EMAIL_COL = 4;
   const BO_URL_COL = 5;
   const BO_UTM_SOURCE_COL = 6;
   const BO_UTM_MEDIUM_COL = 7;
   const BO_UTM_CAMPAIGN_COL = 8;
   const BO_UTM_CONTENT_COL = 10;
   const BO_VALUE_COL = 11;
+  const BO_PHONE_COL = 13;
   const BO_BRAND_COL = 14;
   const BO_MODEL_COL = 15;
   const BO_SERVICES_COL = 18;
+  const BO_ORDER_STATUS_COL = 19;
   function boSourceLabel(row) {
     const source = textValue(row, BO_UTM_SOURCE_COL).toLowerCase();
     const url = textValue(row, BO_URL_COL).toLowerCase();
@@ -4019,17 +4022,126 @@ input::placeholder { color: #7f93b3; }
     });
     return totalGroupStats(expanded, (record) => record.service, limit, 1);
   }
+  function normalizeEmailValue(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+  function normalizePhoneValue(value) {
+    return String(value || "").replace(/\D/g, "").replace(/^351/, "");
+  }
+  function normalizeMatchText(value) {
+    return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+  }
+  function boOrderRecords(table) {
+    return (table && table.rows || []).map((row, index) => {
+      const date = parseRowDate(row, BO_DATE_COL);
+      const email = normalizeEmailValue(textValue(row, BO_EMAIL_COL));
+      const phone = normalizePhoneValue(textValue(row, BO_PHONE_COL));
+      if (!date || (!email && !phone)) return null;
+      return {
+        key: textValue(row, 0) || `order-${index}`,
+        date,
+        email,
+        phone,
+        value: numericValue(row, BO_VALUE_COL),
+        status: textValue(row, BO_ORDER_STATUS_COL),
+        channel: boSourceLabel(row),
+        campaign: textValue(row, BO_UTM_CAMPAIGN_COL) || "Sem campanha",
+        brand: normalizeMatchText(textValue(row, BO_BRAND_COL)),
+        model: normalizeMatchText(textValue(row, BO_MODEL_COL))
+      };
+    }).filter(Boolean);
+  }
+  function findVspConvertedOrder(row, orders) {
+    const leadDate = parseRowDate(row, VSP_DATE_COL);
+    if (!leadDate) return null;
+    const email = normalizeEmailValue(textValue(row, 2));
+    const phone = normalizePhoneValue(textValue(row, 3));
+    if (!email && !phone) return null;
+    const brand = normalizeMatchText(textValue(row, 5));
+    const model = normalizeMatchText(textValue(row, 6));
+    const candidates = orders.filter((order) => order.date >= leadDate && ((email && order.email === email) || (phone && order.phone === phone)));
+    if (!candidates.length) return null;
+    const sorted = candidates.map((order) => ({
+      order,
+      strongMatch: !!((brand && order.brand === brand) || (model && order.model === model)),
+      daysToOrder: Math.max(0, Math.round((order.date - leadDate) / 864e5))
+    })).sort((a, b) => Number(b.strongMatch) - Number(a.strongMatch) || a.daysToOrder - b.daysToOrder);
+    return sorted[0];
+  }
+  function buildVspToOrderConversion(vspTable, ordersTable, selectedMonths) {
+    const orders = boOrderRecords(ordersTable);
+    const leads = (vspTable && vspTable.rows || []).filter((row) => {
+      const date = parseRowDate(row, VSP_DATE_COL);
+      return date && selectedMonths.has(date.getMonth());
+    });
+    const matches = [];
+    leads.forEach((row) => {
+      const match = findVspConvertedOrder(row, orders);
+      if (!match) return;
+      const order = match.order;
+      matches.push({
+        source: trafficSourceLabel(row),
+        campaign: textValue(row, VSP_UTM_CAMPAIGN_COL) || "Sem campanha",
+        brand: textValue(row, 5) || "Sem marca",
+        model: textValue(row, 6) || "Sem modelo",
+        value: order.value || 0,
+        status: order.status,
+        strongMatch: match.strongMatch,
+        finalized: !/cancel/i.test(order.status || ""),
+        daysToOrder: match.daysToOrder
+      });
+    });
+    const group = (getLabel, limit = 8) => {
+      const map = new Map();
+      leads.forEach((row) => {
+        const label = compactLabel(getLabel({
+          source: trafficSourceLabel(row),
+          campaign: textValue(row, VSP_UTM_CAMPAIGN_COL) || "Sem campanha",
+          brand: textValue(row, 5) || "Sem marca"
+        }), "Sem valor");
+        if (!map.has(label)) map.set(label, { label, leads: 0, converted: 0, value: 0, strong: 0 });
+        map.get(label).leads += 1;
+      });
+      matches.forEach((match) => {
+        const label = compactLabel(getLabel(match), "Sem valor");
+        if (!map.has(label)) map.set(label, { label, leads: 0, converted: 0, value: 0, strong: 0 });
+        const item = map.get(label);
+        item.converted += 1;
+        item.value += match.value || 0;
+        if (match.strongMatch) item.strong += 1;
+      });
+      return Array.from(map.values()).map((item) => ({
+        ...item,
+        rate: item.leads ? item.converted / item.leads : 0,
+        strongRate: item.converted ? item.strong / item.converted : 0
+      })).sort((a, b) => b.converted - a.converted || b.rate - a.rate || b.leads - a.leads).slice(0, limit);
+    };
+    return {
+      leads: leads.length,
+      converted: matches.length,
+      finalized: matches.filter((match) => match.finalized).length,
+      strong: matches.filter((match) => match.strongMatch).length,
+      value: matches.reduce((sum, match) => sum + (match.value || 0), 0),
+      avgDays: matches.length ? matches.reduce((sum, match) => sum + match.daysToOrder, 0) / matches.length : 0,
+      bySource: group((item) => item.source),
+      byCampaign: group((item) => item.campaign),
+      byBrand: group((item) => item.brand)
+    };
+  }
   function ResultadosTotaisView({ selectedMonths }) {
     const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
     const boFetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const boOrdersFetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID }), []);
     const { table: vspTable, loading: vspLoading, error: vspError, updatedAt: vspUpdatedAt, reload: reloadVsp } = useSheetData("Resultados VSP", vspFetchOpts);
     const { table: boTable, loading: boLoading, error: boError, updatedAt: boUpdatedAt, reload: reloadBo } = useSheetData("Resultados BO", boFetchOpts);
-    const loading = vspLoading || boLoading;
-    const error = vspError || boError;
-    const updatedAt = [vspUpdatedAt, boUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
+    const { table: boOrdersTable, loading: boOrdersLoading, error: boOrdersError, updatedAt: boOrdersUpdatedAt, reload: reloadBoOrders } = useSheetData("Encomendas", boOrdersFetchOpts);
+    const loading = vspLoading || boLoading || boOrdersLoading;
+    const error = vspError || boError || boOrdersError;
+    const updatedAt = [vspUpdatedAt, boUpdatedAt, boOrdersUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
     const reload = () => {
       reloadVsp();
       reloadBo();
+      reloadBoOrders();
     };
     if (loading && !vspTable && !boTable) return h(LoadingState, null);
     if (error && !vspTable && !boTable) return h(ErrorState, { message: error, onRetry: reload, sheetName: "Resultados Totais" });
@@ -4051,6 +4163,7 @@ input::placeholder { color: #7f93b3; }
     const brandRows = totalGroupStats(records, (record) => record.brand || "Sem marca", 10, 1);
     const modelRows = totalGroupStats(records, (record) => record.model || "Sem modelo", 10, 1);
     const serviceRows = totalServiceStats(records, 10);
+    const vspConversion = buildVspToOrderConversion(vspTable, boOrdersTable, selectedMonths);
     const sourceChartRows = sourceRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
     const campaignChartRows = campaignRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
     const Card = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
@@ -4061,6 +4174,13 @@ input::placeholder { color: #7f93b3; }
       { key: "vsp", label: "VSP", align: "right", render: (r) => fmtNumber(r.vsp) },
       { key: "value", label: "Valor/Pot.", align: "right", render: (r) => fmtCurrency(r.value) },
       { key: "avgValue", label: "M\xE9dia", align: "right", render: (r) => fmtCurrency(r.avgValue) }
+    ];
+    const conversionColumns = [
+      { key: "label", label: "Dimens\xE3o", className: "font-semibold text-slate-800 max-w-xs truncate" },
+      { key: "leads", label: "Leads", align: "right", render: (r) => fmtNumber(r.leads) },
+      { key: "converted", label: "Conv.", align: "right", render: (r) => fmtNumber(r.converted) },
+      { key: "rate", label: "Taxa", align: "right", className: "font-semibold", render: (r) => fmtPercent(r.rate) },
+      { key: "value", label: "Valor encom.", align: "right", render: (r) => fmtCurrency(r.value) }
     ];
     return h("div", { className: "space-y-6" },
       h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
@@ -4078,6 +4198,31 @@ input::placeholder { color: #7f93b3; }
           h(KpiCard, { label: "Convers\xE3o BO", numeric: boOrderRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: boOrderRate >= 0.06 ? "good" : boOrderRate >= 0.035 ? "warn" : "bad" }),
           h(KpiCard, { label: "Scorecard VSP", numeric: vspScorecardRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspScorecardRate >= 0.75 ? "good" : vspScorecardRate >= 0.45 ? "warn" : "bad" }),
           h(KpiCard, { label: "Registos com UTM", numeric: utmRate, format: "percent", gauge: true, icon: Target, kind: "ratio", tone: coreUtmRate >= 0.7 ? "good" : utmRate >= 0.4 ? "warn" : "bad" })
+        ),
+        h("section", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-4" },
+          h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
+            h("div", null,
+              h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, "Convers\xE3o VSP \u2192 Encomendas BO"),
+              h("p", { className: "text-xs text-slate-400" }, "Cruza leads VSP/FAP com a tab Encomendas por email/telefone, exigindo encomenda posterior \xE0 data da lead. Marca/modelo refor\xE7am o match.")
+            ),
+            h(MetricBadge, { tone: vspConversion.converted ? "good" : "neutral" }, vspConversion.converted, " convers\xF5es")
+          ),
+          h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+            h(DiagnosisTile, { item: { label: "Leads VSP analisadas", value: fmtNumber(vspConversion.leads), detail: periodFilterLabel(selectedMonths), tone: "neutral" } }),
+            h(DiagnosisTile, { item: { label: "Taxa VSP \u2192 encomenda", value: fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0), detail: `${fmtNumber(vspConversion.converted)} leads convertidas`, tone: vspConversion.converted / Math.max(1, vspConversion.leads) >= 0.04 ? "good" : vspConversion.converted ? "warn" : "neutral" } }),
+            h(DiagnosisTile, { item: { label: "Valor encomendas VSP", value: fmtCurrency(vspConversion.value), detail: `${fmtCurrency(vspConversion.converted ? vspConversion.value / vspConversion.converted : 0)} media`, tone: "good" } }),
+            h(DiagnosisTile, { item: { label: "Dias medios ate encomenda", value: fmtNumber(vspConversion.avgDays), detail: "Desde a data da lead VSP", tone: "neutral" } })
+          ),
+          h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+            h(DiagnosisTile, { item: { label: "Matches fortes", value: fmtPercent(vspConversion.converted ? vspConversion.strong / vspConversion.converted : 0), detail: "Contacto + marca/modelo", tone: vspConversion.strong === vspConversion.converted && vspConversion.converted ? "good" : "warn" } }),
+            h(DiagnosisTile, { item: { label: "Nao canceladas", value: fmtPercent(vspConversion.converted ? vspConversion.finalized / vspConversion.converted : 0), detail: `${fmtNumber(vspConversion.finalized)} encomendas`, tone: vspConversion.finalized === vspConversion.converted && vspConversion.converted ? "good" : "warn" } }),
+            h(DiagnosisTile, { item: { label: "Leads sem conversao", value: fmtNumber(Math.max(0, vspConversion.leads - vspConversion.converted)), detail: "Nao encontradas na tab Encomendas", tone: "warn" } }),
+            h(DiagnosisTile, { item: { label: "Fonte do cruzamento", value: "VSP + BO", detail: "Sem expor dados pessoais", tone: "neutral" } })
+          )
+        ),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          h(Card, { title: "Convers\xE3o VSP por origem", subtitle: "Quais os canais VSP que chegaram a encomenda no BackOffice." }, h(VspDataTable, { rows: vspConversion.bySource, rowKey: (row) => row.label, columns: conversionColumns })),
+          h(Card, { title: "Convers\xE3o VSP por campanha", subtitle: "Campanhas VSP/FAP com leads que aparecem depois como encomendas." }, h(VspDataTable, { rows: vspConversion.byCampaign, rowKey: (row) => row.label, columns: conversionColumns.map((col) => col.key === "label" ? { ...col, label: "Campanha" } : col) }))
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
           h(Card, { title: "Volume mensal BO vs VSP", subtitle: "Compara propostas BO e leads VSP no mesmo per\xEDodo." }, h(VspDataTable, { rows: monthRows, rowKey: (row) => row.month, columns: [
