@@ -1151,7 +1151,8 @@ input::placeholder { color: #7f93b3; }
     { name: "Leads Di\xE1rios", label: "Leads Di\xE1rios" },
     { name: "Log Tarefas", label: "Log Tarefas" },
     { name: "Resultados VSP", label: "Resultados VSP" },
-    { name: "Resultados BO", label: "Resultados BO" }
+    { name: "Resultados BO", label: "Resultados BO" },
+    { name: "Resultados Totais", label: "Resultados Totais" }
   ];
   const SHEET_GIDS = {
     "Ficheiro JM": "785129550",
@@ -3921,6 +3922,192 @@ input::placeholder { color: #7f93b3; }
       )
     );
   }
+  function totalRecordSourceLabel(record) {
+    return record.channel || "Sem origem";
+  }
+  function totalGroupStats(records, getLabel, limit = 10, minCount = 1) {
+    const map = new Map();
+    records.forEach((record) => {
+      const label = compactLabel(getLabel(record), "Sem valor");
+      if (!map.has(label)) map.set(label, { label, total: 0, bo: 0, vsp: 0, value: 0, orders: 0, scorecards: 0 });
+      const item = map.get(label);
+      item.total += 1;
+      item.value += record.value || 0;
+      if (record.source === "BO") {
+        item.bo += 1;
+        if (record.hasOrder) item.orders += 1;
+      } else {
+        item.vsp += 1;
+        if (record.hasScorecard) item.scorecards += 1;
+      }
+    });
+    return Array.from(map.values()).filter((item) => item.total >= minCount).map((item) => ({
+      ...item,
+      avgValue: item.total ? item.value / item.total : 0,
+      boOrderRate: item.bo ? item.orders / item.bo : null,
+      vspScorecardRate: item.vsp ? item.scorecards / item.vsp : null
+    })).sort((a, b) => b.total - a.total).slice(0, limit);
+  }
+  function totalMonthStats(records) {
+    const map = new Map();
+    records.forEach((record) => {
+      const month = record.date ? MONTH_NAMES[record.date.getMonth()] : "Sem data";
+      if (!map.has(month)) map.set(month, { month, monthIdx: record.date ? record.date.getMonth() : 99, total: 0, bo: 0, vsp: 0, value: 0 });
+      const item = map.get(month);
+      item.total += 1;
+      item.value += record.value || 0;
+      if (record.source === "BO") item.bo += 1;
+      else item.vsp += 1;
+    });
+    return Array.from(map.values()).sort((a, b) => a.monthIdx - b.monthIdx);
+  }
+  function boTotalRecords(table, selectedMonths) {
+    return (table && table.rows || []).map((row) => {
+      const date = parseRowDate(row, BO_DATE_COL);
+      if (!date || !selectedMonths.has(date.getMonth())) return null;
+      return {
+        source: "BO",
+        date,
+        value: numericValue(row, BO_VALUE_COL),
+        hasOrder: !!textValue(row, BO_ORDER_COL),
+        hasScorecard: false,
+        channel: boSourceLabel(row),
+        campaign: textValue(row, BO_UTM_CAMPAIGN_COL) || "Sem campanha",
+        content: textValue(row, BO_UTM_CONTENT_COL) || "Sem content",
+        brand: textValue(row, BO_BRAND_COL) || "Sem marca",
+        model: textValue(row, BO_MODEL_COL) || "Sem modelo",
+        services: boServiceCategories(row),
+        hasUtm: boHasAnyUtm(row),
+        hasCoreUtm: boHasCoreUtm(row)
+      };
+    }).filter(Boolean);
+  }
+  function vspTotalRecords(table, selectedMonths) {
+    return (table && table.rows || []).map((row) => {
+      const date = parseRowDate(row, VSP_DATE_COL);
+      if (!date || !selectedMonths.has(date.getMonth())) return null;
+      const clean = numericValue(row, VSP_CLEAN_PRICE_COL);
+      const replace = numericValue(row, VSP_REPLACE_PRICE_COL);
+      const brand = textValue(row, 5) || "Sem marca";
+      const model = textValue(row, 6) || "Sem modelo";
+      const services = [];
+      if (clean) services.push("Limpeza");
+      if (replace) services.push("Substitui\xE7\xE3o");
+      if (isReplacementIntent(row)) services.push("Mista/Substitui\xE7\xE3o");
+      if (!services.length) services.push("VSP");
+      return {
+        source: "VSP",
+        date,
+        value: Math.max(clean, replace),
+        hasOrder: false,
+        hasScorecard: scorecardCompletionRows([row]).length > 0,
+        channel: trafficSourceLabel(row),
+        campaign: textValue(row, VSP_UTM_CAMPAIGN_COL) || "Sem campanha",
+        content: textValue(row, 17) || textValue(row, 16) || "Sem content",
+        brand,
+        model,
+        services,
+        hasUtm: !!(textValue(row, VSP_UTM_SOURCE_COL) || textValue(row, VSP_UTM_CAMPAIGN_COL) || textValue(row, 16) || textValue(row, 17)),
+        hasCoreUtm: !!(textValue(row, VSP_UTM_SOURCE_COL) && textValue(row, VSP_UTM_CAMPAIGN_COL))
+      };
+    }).filter(Boolean);
+  }
+  function totalServiceStats(records, limit = 10) {
+    const expanded = [];
+    records.forEach((record) => {
+      (record.services || ["Sem servi\xE7o"]).forEach((service) => expanded.push({ ...record, service }));
+    });
+    return totalGroupStats(expanded, (record) => record.service, limit, 1);
+  }
+  function ResultadosTotaisView({ selectedMonths }) {
+    const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const boFetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const { table: vspTable, loading: vspLoading, error: vspError, updatedAt: vspUpdatedAt, reload: reloadVsp } = useSheetData("Resultados VSP", vspFetchOpts);
+    const { table: boTable, loading: boLoading, error: boError, updatedAt: boUpdatedAt, reload: reloadBo } = useSheetData("Resultados BO", boFetchOpts);
+    const loading = vspLoading || boLoading;
+    const error = vspError || boError;
+    const updatedAt = [vspUpdatedAt, boUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
+    const reload = () => {
+      reloadVsp();
+      reloadBo();
+    };
+    if (loading && !vspTable && !boTable) return h(LoadingState, null);
+    if (error && !vspTable && !boTable) return h(ErrorState, { message: error, onRetry: reload, sheetName: "Resultados Totais" });
+    const boRecords = boTotalRecords(boTable, selectedMonths);
+    const vspRecords = vspTotalRecords(vspTable, selectedMonths);
+    const records = [...boRecords, ...vspRecords];
+    const totalRecords = records.length;
+    const totalValue = records.reduce((sum, record) => sum + (record.value || 0), 0);
+    const boOrders = boRecords.filter((record) => record.hasOrder).length;
+    const boOrderRate = boRecords.length ? boOrders / boRecords.length : 0;
+    const vspScorecardRate = vspRecords.length ? vspRecords.filter((record) => record.hasScorecard).length / vspRecords.length : 0;
+    const utmRate = totalRecords ? records.filter((record) => record.hasUtm).length / totalRecords : 0;
+    const coreUtmRate = totalRecords ? records.filter((record) => record.hasCoreUtm).length / totalRecords : 0;
+    const avgValue = totalRecords ? totalValue / totalRecords : 0;
+    const monthRows = totalMonthStats(records);
+    const sourceRows = totalGroupStats(records, totalRecordSourceLabel, 10, 1);
+    const campaignRows = totalGroupStats(records, (record) => record.campaign || "Sem campanha", 10, 1);
+    const weakCampaignRows = totalGroupStats(records.filter((record) => record.source === "BO"), (record) => record.campaign || "Sem campanha", 12, 10).filter((row) => row.label !== "Sem campanha").sort((a, b) => (a.boOrderRate || 0) - (b.boOrderRate || 0) || b.total - a.total).slice(0, 8);
+    const brandRows = totalGroupStats(records, (record) => record.brand || "Sem marca", 10, 1);
+    const modelRows = totalGroupStats(records, (record) => record.model || "Sem modelo", 10, 1);
+    const serviceRows = totalServiceStats(records, 10);
+    const sourceChartRows = sourceRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
+    const campaignChartRows = campaignRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
+    const Card = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
+    const totalColumns = [
+      { key: "label", label: "Dimens\xE3o", className: "font-semibold text-slate-800 max-w-xs truncate" },
+      { key: "total", label: "Total", align: "right", render: (r) => fmtNumber(r.total) },
+      { key: "bo", label: "BO", align: "right", render: (r) => fmtNumber(r.bo) },
+      { key: "vsp", label: "VSP", align: "right", render: (r) => fmtNumber(r.vsp) },
+      { key: "value", label: "Valor/Pot.", align: "right", render: (r) => fmtCurrency(r.value) },
+      { key: "avgValue", label: "M\xE9dia", align: "right", render: (r) => fmtCurrency(r.avgValue) }
+    ];
+    return h("div", { className: "space-y-6" },
+      h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
+      error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Uma das fontes n\xE3o carregou totalmente: ", error),
+      h("p", { className: "text-xs text-slate-400" }, "Resultados VSP + Resultados BO \xB7 ", periodFilterLabel(selectedMonths), " \xB7 ", totalRecords, " registos agregados"),
+      !records.length ? h(EmptyState, { text: "Sem dados para o per\xEDodo selecionado." }) : h(React.Fragment, null,
+        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+          h(KpiCard, { label: "Total registos", numeric: totalRecords, format: "number", icon: Target, kind: "volume" }),
+          h(KpiCard, { label: "BO propostas", numeric: boRecords.length, format: "number", icon: Target, kind: "volume" }),
+          h(KpiCard, { label: "VSP leads", numeric: vspRecords.length, format: "number", icon: Target, kind: "volume" }),
+          h(KpiCard, { label: "Valor/Potencial total", numeric: totalValue, format: "currency", icon: Euro, kind: "money" })
+        ),
+        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+          h(KpiCard, { label: "Valor m\xE9dio", numeric: avgValue, format: "currency", icon: Euro, kind: "money" }),
+          h(KpiCard, { label: "Convers\xE3o BO", numeric: boOrderRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: boOrderRate >= 0.06 ? "good" : boOrderRate >= 0.035 ? "warn" : "bad" }),
+          h(KpiCard, { label: "Scorecard VSP", numeric: vspScorecardRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspScorecardRate >= 0.75 ? "good" : vspScorecardRate >= 0.45 ? "warn" : "bad" }),
+          h(KpiCard, { label: "Registos com UTM", numeric: utmRate, format: "percent", gauge: true, icon: Target, kind: "ratio", tone: coreUtmRate >= 0.7 ? "good" : utmRate >= 0.4 ? "warn" : "bad" })
+        ),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          h(Card, { title: "Volume mensal BO vs VSP", subtitle: "Compara propostas BO e leads VSP no mesmo per\xEDodo." }, h(VspDataTable, { rows: monthRows, rowKey: (row) => row.month, columns: [
+            { key: "month", label: "M\xEAs", className: "font-semibold text-slate-800" },
+            { key: "total", label: "Total", align: "right", render: (r) => fmtNumber(r.total) },
+            { key: "bo", label: "BO", align: "right", render: (r) => fmtNumber(r.bo) },
+            { key: "vsp", label: "VSP", align: "right", render: (r) => fmtNumber(r.vsp) },
+            { key: "value", label: "Valor/Pot.", align: "right", render: (r) => fmtCurrency(r.value) }
+          ] })),
+          h(Card, { title: "Origens combinadas", subtitle: "Volume total por origem/canal normalizado." }, h(CategoryBarChart, { data: sourceChartRows, unit: "number" }))
+        ),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          h(Card, { title: "Qualidade por origem", subtitle: "Total combinado, separado por BO e VSP." }, h(VspDataTable, { rows: sourceRows, rowKey: (row) => row.label, columns: totalColumns })),
+          h(Card, { title: "Campanhas combinadas", subtitle: "Campanhas com maior volume em BO + VSP." }, h(CategoryBarChart, { data: campaignChartRows, unit: "number" }))
+        ),
+        h(Card, { title: "Campanhas BO a rever", subtitle: "Dentro do BO, campanhas com volume e menor passagem para encomenda." }, h(VspDataTable, { rows: weakCampaignRows, rowKey: (row) => row.label, columns: [
+          { key: "label", label: "Campanha", className: "font-semibold text-slate-800 max-w-xs truncate" },
+          { key: "bo", label: "BO", align: "right", render: (r) => fmtNumber(r.bo) },
+          { key: "orders", label: "Encom.", align: "right", render: (r) => fmtNumber(r.orders) },
+          { key: "boOrderRate", label: "Conv.", align: "right", className: "font-semibold", render: (r) => r.boOrderRate === null ? "\u2014" : fmtPercent(r.boOrderRate) },
+          { key: "value", label: "Valor", align: "right", render: (r) => fmtCurrency(r.value) }
+        ] })),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          h(Card, { title: "Servi\xE7os agregados", subtitle: "Categorias BO + inten\xE7\xF5es/potencial VSP." }, h(VspDataTable, { rows: serviceRows, rowKey: (row) => row.label, columns: totalColumns.map((col) => col.key === "label" ? { ...col, label: "Servi\xE7o" } : col) })),
+          h(Card, { title: "Top marcas agregadas", subtitle: "Marcas mais frequentes em BO + VSP." }, h(VspDataTable, { rows: brandRows, rowKey: (row) => row.label, columns: totalColumns.map((col) => col.key === "label" ? { ...col, label: "Marca" } : col) }))
+        ),
+        h(Card, { title: "Top modelos agregados", subtitle: "Modelos mais frequentes nas duas fontes." }, h(VspDataTable, { rows: modelRows, rowKey: (row) => row.label, columns: totalColumns.map((col) => col.key === "label" ? { ...col, label: "Modelo" } : col) }))
+      )
+    );
+  }
   function currentMonthPace(model) {
     const now = /* @__PURE__ */ new Date();
     const month = now.getMonth();
@@ -4821,7 +5008,7 @@ input::placeholder { color: #7f93b3; }
         toStage,
         setToStage
       }
-    ) : selected === "UTM Creator" ? /* @__PURE__ */ React.createElement(UtmCreatorView, null) : selected === "Ficheiro JM" ? /* @__PURE__ */ React.createElement(FicheiroJMView, { selectedMonths }) : selected === "Resultados VSP" ? /* @__PURE__ */ React.createElement(ResultadosVSPView, { selectedMonths }) : selected === "Resultados BO" ? /* @__PURE__ */ React.createElement(ResultadosBOView, { selectedMonths }) : selected === "Leads Di\xE1rios" ? /* @__PURE__ */ React.createElement(LeadsDiariosView, { selectedMonths }) : selected === "Log Tarefas" ? /* @__PURE__ */ React.createElement(TaskLogView, { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "UTM Creator" ? /* @__PURE__ */ React.createElement(UtmCreatorView, null) : selected === "Ficheiro JM" ? /* @__PURE__ */ React.createElement(FicheiroJMView, { selectedMonths }) : selected === "Resultados VSP" ? /* @__PURE__ */ React.createElement(ResultadosVSPView, { selectedMonths }) : selected === "Resultados BO" ? /* @__PURE__ */ React.createElement(ResultadosBOView, { selectedMonths }) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : selected === "Leads Di\xE1rios" ? /* @__PURE__ */ React.createElement(LeadsDiariosView, { selectedMonths }) : selected === "Log Tarefas" ? /* @__PURE__ */ React.createElement(TaskLogView, { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
