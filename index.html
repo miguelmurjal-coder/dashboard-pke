@@ -14,7 +14,8 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   color: #e2e8f0;
-  background-color: #0a0e1a;
+  background:
+    linear-gradient(180deg, #08111f 0%, #0a0e1a 38%, #070b14 100%);
 }
 button { font: inherit; cursor: pointer; background: none; border: none; padding: 0; color: inherit; }
 a { color: inherit; text-decoration: none; }
@@ -222,6 +223,74 @@ table { border-collapse: collapse; }
 /* ------------------------------------------------------------------ */
 /* App-specific helpers (no Tailwind equivalent needed)                */
 /* ------------------------------------------------------------------ */
+.app-shell {
+  background:
+    linear-gradient(180deg, rgba(18, 32, 55, 0.35) 0%, rgba(10, 14, 26, 0) 22%),
+    #0a0e1a;
+}
+.app-sidebar {
+  border-right: 1px solid rgba(125, 211, 252, 0.12);
+  box-shadow: 16px 0 42px rgba(0,0,0,0.22);
+}
+.brand-panel {
+  background: rgba(15, 23, 38, 0.55);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 0.9rem;
+  padding: 0.85rem;
+}
+.brand-title {
+  color: #f8fafc;
+  font-size: 1.1rem;
+  line-height: 1.35rem;
+  font-weight: 900;
+}
+.brand-subtitle {
+  color: #9fc8ef;
+  font-size: 0.7rem;
+  line-height: 1rem;
+  margin-top: 0.15rem;
+}
+.nav-item {
+  position: relative;
+  min-height: 2.6rem;
+  border: 1px solid transparent;
+}
+.nav-item-active {
+  background: rgba(255,255,255,0.94);
+  color: #09213f;
+  border-color: rgba(242,169,59,0.3);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+}
+.nav-item-idle {
+  color: #dbeafe;
+}
+.nav-item-idle:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.08);
+}
+.nav-active-bar {
+  box-shadow: 0 0 0 3px rgba(242,169,59,0.12);
+}
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  background: rgba(248, 250, 252, 0.92);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(15,23,42,0.08);
+}
+.page-title-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.35rem;
+  border-radius: 9999px;
+  background: #eef6ff;
+  border: 1px solid #dbeafe;
+  padding: 0 0.85rem;
+}
+.page-title-pill .text-slate-900 { color: #09213f; }
+.app-header .text-slate-700 { color: #334155; }
+.app-header .text-slate-500 { color: #64748b; }
 .chart-scroll { width: 100%; overflow-x: auto; }
 .chart-svg { width: 100%; height: auto; min-width: 480px; display: block; }
 .chart-svg-sm { width: 100%; height: auto; display: block; }
@@ -254,12 +323,17 @@ table { border-collapse: collapse; }
 .kpi-card {
   position: relative;
   overflow: hidden;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.16);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0)),
+    #131c30;
+  border-color: #263654;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.20);
   transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
 }
 .kpi-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 16px 34px rgba(0,0,0,0.22);
+  transform: translateY(-2px);
+  border-color: #355174;
+  box-shadow: 0 20px 44px rgba(0,0,0,0.28);
 }
 .kpi-card::before {
   content: "";
@@ -279,15 +353,20 @@ table { border-collapse: collapse; }
 .kpi-card-bad { border-color: #7a313f; }
 
 .section-shell {
-  background: #131c30;
-  border: 1px solid #233048;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0)),
+    #131c30;
+  border: 1px solid #263654;
+  border-radius: 0.95rem;
+  padding: 1.05rem;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.18);
 }
 .section-shell-hero {
-  border-color: #2d4566;
-  background: linear-gradient(180deg, #16243f 0%, #131c30 100%);
+  border-color: #345b83;
+  background:
+    linear-gradient(135deg, rgba(14,165,233,0.2) 0%, rgba(242,169,59,0.08) 46%, rgba(19,28,48,0) 100%),
+    linear-gradient(180deg, #16243f 0%, #131c30 100%);
+  box-shadow: 0 18px 48px rgba(0,0,0,0.26);
 }
 .section-kicker {
   font-size: 0.68rem;
@@ -311,9 +390,11 @@ table { border-collapse: collapse; }
   margin-top: 0.15rem;
 }
 .diagnosis-tile {
-  background: #0f1726;
-  border: 1px solid #233048;
-  border-radius: 0.5rem;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0)),
+    #0f1726;
+  border: 1px solid #263654;
+  border-radius: 0.65rem;
   padding: 0.75rem;
   min-width: 0;
 }
@@ -351,12 +432,16 @@ table { border-collapse: collapse; }
 }
 .funnel-step {
   position: relative;
-  background: #0f1726;
-  border: 1px solid #233048;
-  border-radius: 0.5rem;
+  background:
+    linear-gradient(180deg, rgba(14,165,233,0.08), rgba(255,255,255,0)),
+    #0f1726;
+  border: 1px solid #29405f;
+  border-radius: 0.7rem;
   padding: 0.85rem;
   min-width: 0;
+  transition: transform .15s ease, border-color .15s ease;
 }
+.funnel-step:hover { transform: translateY(-1px); border-color: #3f6790; }
 .funnel-step::after {
   content: "";
   position: absolute;
@@ -425,11 +510,13 @@ table { border-collapse: collapse; }
   color: #0b1f3f;
 }
 .detail-disclosure {
-  background: #131c30;
-  border: 1px solid #233048;
-  border-radius: 0.75rem;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0)),
+    #131c30;
+  border: 1px solid #263654;
+  border-radius: 0.95rem;
   overflow: hidden;
-  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 14px 34px rgba(0,0,0,0.18);
 }
 .detail-disclosure-btn {
   width: 100%;
@@ -439,7 +526,9 @@ table { border-collapse: collapse; }
   gap: 1rem;
   padding: 0.95rem 1rem;
   text-align: left;
+  transition: background .15s ease;
 }
+.detail-disclosure-btn:hover { background: rgba(255,255,255,0.035); }
 .detail-disclosure-title {
   color: #f5f8fc;
   font-size: 0.95rem;
@@ -685,9 +774,9 @@ input::placeholder { color: #7f93b3; }
 }
 .global-search-input {
   width: 100%;
-  border: 1px solid #d7deea;
+  border: 1px solid #cbd8ea;
   border-radius: 9999px;
-  background: #f8fafc;
+  background: #ffffff;
   color: #0f172a;
   font-size: 0.82rem;
   line-height: 1.25rem;
@@ -712,7 +801,8 @@ input::placeholder { color: #7f93b3; }
   top: calc(100% + 0.45rem);
   left: 0;
   right: 0;
-  background: #ffffff;
+  background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(12px);
   border: 1px solid #d7deea;
   border-radius: 0.75rem;
   box-shadow: 0 20px 42px rgba(15,23,42,0.18);
@@ -3302,6 +3392,7 @@ input::placeholder { color: #7f93b3; }
     const total = data.reduce((s, d) => s + d.value, 0) || 1;
     const { ref, tip, show, move, hide } = useChartTooltip();
     const [hoverIdx, setHoverIdx] = useState(null);
+    const palette = ["#0EA5E9", "#F2A93B", "#34D399", "#A78BFA", "#F472B6", "#FB923C", "#60A5FA", "#22C55E"];
     return /* @__PURE__ */ React.createElement("div", { className: "space-y-2 relative", ref }, data.map((d, i) => /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -3321,7 +3412,7 @@ input::placeholder { color: #7f93b3; }
         }
       },
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs text-slate-700 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "truncate" }, d.label), /* @__PURE__ */ React.createElement("span", { className: "tabular-nums flex-shrink-0 ml-2" }, fmtByUnit(d.value, unit))),
-      /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-100 rounded-full overflow-hidden", style: { cursor: "pointer" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full bg-blue-900", style: { width: `${Math.max(2, d.value / max * 100)}%` } }))
+      /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-100 rounded-full overflow-hidden", style: { cursor: "pointer" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full", style: { width: `${Math.max(2, d.value / max * 100)}%`, background: `linear-gradient(90deg, ${palette[i % palette.length]}, ${palette[(i + 1) % palette.length]})`, boxShadow: `0 0 16px ${palette[i % palette.length]}33` } }))
     )), /* @__PURE__ */ React.createElement(ChartTooltip, { tip }));
   }
   function DonutChart({ data, unit, colors }) {
@@ -5708,10 +5799,10 @@ input::placeholder { color: #7f93b3; }
     if (!authenticated) {
       return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true) });
     }
-    return /* @__PURE__ */ React.createElement("div", { className: "min-h-screen bg-slate-100 flex", style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "min-h-screen bg-slate-100 flex app-shell", style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
       "aside",
       {
-        className: `fixed md:static z-30 inset-y-0 left-0 w-64 flex flex-col h-screen transform ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform`,
+        className: `app-sidebar fixed md:static z-30 inset-y-0 left-0 w-64 flex flex-col h-screen transform ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform`,
         style: { background: "linear-gradient(160deg,#0B1F3F 0%, #142E54 100%)" }
       },
       /* @__PURE__ */ React.createElement(
@@ -5729,7 +5820,7 @@ input::placeholder { color: #7f93b3; }
             }
           }
         ),
-        /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement("div", { className: "text-white font-bold text-lg tracking-tight" }, "PKE"), /* @__PURE__ */ React.createElement("div", { className: "text-blue-200 text-xs" }, "Dashboard MKT 2026 · Log V2"))
+        /* @__PURE__ */ React.createElement("div", { className: "relative brand-panel" }, /* @__PURE__ */ React.createElement("div", { className: "brand-title tracking-tight" }, "PKE"), /* @__PURE__ */ React.createElement("div", { className: "brand-subtitle" }, "Dashboard MKT 2026 · Log V2"))
       ),
       /* @__PURE__ */ React.createElement("nav", { className: "px-3 py-4 space-y-1 flex-shrink-0" }, SHEETS.map((s) => /* @__PURE__ */ React.createElement(
         "button",
@@ -5738,9 +5829,9 @@ input::placeholder { color: #7f93b3; }
           onClick: () => {
             navigateDashboard(s.name);
           },
-          className: `w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${selected === s.name ? "bg-white text-blue-950 font-semibold" : "text-blue-100 hover:bg-white hover:bg-opacity-10"}`
+          className: `nav-item w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${selected === s.name ? "nav-item-active font-semibold" : "nav-item-idle"}`
         },
-        selected === s.name && /* @__PURE__ */ React.createElement("span", { className: "w-1 h-4 rounded-full flex-shrink-0", style: { background: "#F2A93B" } }),
+        selected === s.name && /* @__PURE__ */ React.createElement("span", { className: "nav-active-bar w-1 h-4 rounded-full flex-shrink-0", style: { background: "#F2A93B" } }),
         /* @__PURE__ */ React.createElement("span", { className: "truncate" }, s.label)
       ))),
       /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto px-3 pb-4" }, /* @__PURE__ */ React.createElement(
@@ -5759,7 +5850,7 @@ input::placeholder { color: #7f93b3; }
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "page-title-pill min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
