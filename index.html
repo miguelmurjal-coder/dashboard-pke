@@ -1305,14 +1305,17 @@ input::placeholder { color: #7f93b3; }
     { name: "Dashboard MKT", label: "Dashboard MKT" },
     { name: "Resultados Totais", label: "Resultados Totais" },
     { name: "Aprofundar Dados", label: "Aprofundar Dados" },
-    { name: "UTM Creator", label: "UTM Creator" },
-    { name: "Log Tarefas", label: "Log Tarefas" }
+    { name: "Ferramentas", label: "Ferramentas" }
   ];
   const DEEP_DIVE_PANELS = [
     { name: "Resultados VSP", label: "Resultados VSP" },
     { name: "Resultados BO", label: "Resultados BO" },
     { name: "Ficheiro JM", label: "Ficheiro JM" },
     { name: "Leads Di\xE1rios", label: "Leads Di\xE1rios" }
+  ];
+  const TOOL_PANELS = [
+    { name: "UTM Creator", label: "UTM Creator" },
+    { name: "Log Tarefas", label: "Log Tarefas" }
   ];
   const SHEET_GIDS = {
     "Ficheiro JM": "785129550",
@@ -5188,6 +5191,27 @@ input::placeholder { color: #7f93b3; }
       h(ResultadosVSPView, { selectedMonths })
     );
   }
+  function FerramentasView({ activePanel, setActivePanel, taskProps }) {
+    const current = TOOL_PANELS.some((panel) => panel.name === activePanel) ? activePanel : TOOL_PANELS[0].name;
+    return h("div", { className: "space-y-6" },
+      h("section", { className: "section-shell section-shell-hero space-y-4" },
+        h("div", null,
+          h("div", { className: "section-kicker" }, "FERRAMENTAS"),
+          h("h2", { className: "section-heading" }, "Escolhe a ferramenta que queres usar"),
+          h("p", { className: "section-subtitle" }, "Aqui ficam as ferramentas operacionais: criador de UTMs e registo de tarefas.")
+        ),
+        h("div", { className: "deep-tabs" }, TOOL_PANELS.map((panel) => h("button", {
+          key: panel.name,
+          type: "button",
+          className: `deep-tab ${current === panel.name ? "deep-tab-active" : ""}`,
+          onClick: () => setActivePanel(panel.name)
+        }, panel.label)))
+      ),
+      current === "UTM Creator" ? h(UtmCreatorView, null) :
+      current === "Log Tarefas" ? h(TaskLogView, taskProps) :
+      h(UtmCreatorView, null)
+    );
+  }
   const UTM_DEFAULT_OPTIONS = {
     source: ["mailerlite", "google", "meta", "facebook", "instagram"],
     medium: ["email", "cpc", "paid_social", "organic_social", "referral"],
@@ -5395,6 +5419,7 @@ input::placeholder { color: #7f93b3; }
     const [authenticated, setAuthenticated] = useState(false);
     const [selected, setSelected] = useState("Dashboard MKT");
     const [activeDeepPanel, setActiveDeepPanel] = useState("Resultados VSP");
+    const [activeToolPanel, setActiveToolPanel] = useState("UTM Creator");
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [selectedMonths, setSelectedMonths] = useState(new Set(ALL_MONTHS));
     const [alertThreshold, setAlertThreshold] = useState(80);
@@ -5558,6 +5583,12 @@ input::placeholder { color: #7f93b3; }
         setMobileNavOpen(false);
         return;
       }
+      if (TOOL_PANELS.some((panel) => panel.name === target)) {
+        setActiveToolPanel(target);
+        setSelected("Ferramentas");
+        setMobileNavOpen(false);
+        return;
+      }
       setSelected(target);
       setMobileNavOpen(false);
     };
@@ -5616,7 +5647,7 @@ input::placeholder { color: #7f93b3; }
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "UTM Creator" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "UTM Creator" && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
@@ -5637,7 +5668,7 @@ input::placeholder { color: #7f93b3; }
         setToStage,
         onNavigate: navigateDashboard
       }
-    ) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "UTM Creator" ? /* @__PURE__ */ React.createElement(UtmCreatorView, null) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : selected === "Log Tarefas" ? /* @__PURE__ */ React.createElement(TaskLogView, { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
