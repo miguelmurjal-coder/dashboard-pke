@@ -4087,14 +4087,12 @@ input::placeholder { color: #7f93b3; }
     const unparsedCount = countUnparsedDateRows(table, BO_DATE_COL, [0, BO_VALUE_COL, BO_URL_COL]);
     const sourceChartRows = sourceRows.slice(0, 8).map((row) => ({ label: row.label, value: row.proposals }));
     const campaignChartRows = campaignRows.slice(0, 8).map((row) => ({ label: row.label, value: row.proposals }));
+    const weakCampaignChartRows = weakCampaignRows.map((row) => ({ label: row.label, value: row.proposals }));
+    const serviceChartRows = serviceRows.map((row) => ({ label: row.label, value: row.proposals }));
+    const brandChartRows = brandRows.slice(0, 8).map((row) => ({ label: row.label, value: row.proposals }));
+    const modelChartRows = modelRows.slice(0, 8).map((row) => ({ label: row.label, value: row.proposals }));
+    const authorChartRows = authorRows.map((row) => ({ label: row.label, value: row.proposals }));
     const Card = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
-    const statColumns = [
-      { key: "label", label: "Origem", className: "font-semibold text-slate-800 max-w-xs truncate" },
-      { key: "proposals", label: "Propostas", align: "right", render: (r) => fmtNumber(r.proposals) },
-      { key: "orders", label: "Encom.", align: "right", render: (r) => fmtNumber(r.orders) },
-      { key: "orderRate", label: "Conv.", align: "right", className: "font-semibold", render: (r) => fmtPercent(r.orderRate) },
-      { key: "avgValue", label: "M\xE9dia", align: "right", render: (r) => fmtCurrency(r.avgValue) }
-    ];
     return h("div", { className: "space-y-6" },
       h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
       h("p", { className: "text-xs text-slate-400" }, "BackOffice \xB7 propostas e encomendas \xB7 ", periodFilterLabel(selectedMonths), " \xB7 ", totalProposals, " ", totalProposals === 1 ? "proposta" : "propostas"),
@@ -4117,23 +4115,17 @@ input::placeholder { color: #7f93b3; }
           h(Card, { title: "Origem dos leads/propostas", subtitle: "Volume de propostas por origem normalizada." }, h(CategoryBarChart, { data: sourceChartRows, unit: "number" }))
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Qualidade por origem", subtitle: "Ordenado por volume, com taxa de passagem para encomenda." }, h(VspDataTable, { rows: sourceRows, rowKey: (row) => row.label, columns: statColumns })),
+          h(Card, { title: "Qualidade por origem", subtitle: "Volume de propostas por origem. A convers\xE3o fica refletida nos KPIs e no detalhe." }, h(CategoryBarChart, { data: sourceChartRows, unit: "number" })),
           h(Card, { title: "Campanhas com mais propostas", subtitle: "Campanhas UTM principais por volume." }, h(CategoryBarChart, { data: campaignChartRows, unit: "number" }))
         ),
-        h(Card, { title: "Campanhas a rever", subtitle: "Campanhas com pelo menos 10 propostas, ordenadas por menor convers\xE3o para encomenda." }, h(VspDataTable, { rows: weakCampaignRows, rowKey: (row) => row.label, columns: [
-          { key: "label", label: "Campanha", className: "font-semibold text-slate-800 max-w-xs truncate" },
-          { key: "proposals", label: "Propostas", align: "right", render: (r) => fmtNumber(r.proposals) },
-          { key: "orders", label: "Encom.", align: "right", render: (r) => fmtNumber(r.orders) },
-          { key: "orderRate", label: "Conv.", align: "right", className: "font-semibold", render: (r) => fmtPercent(r.orderRate) },
-          { key: "value", label: "Valor", align: "right", render: (r) => fmtCurrency(r.value) }
-        ] })),
+        h(Card, { title: "Campanhas a rever", subtitle: "Campanhas com pelo menos 10 propostas e menor passagem para encomenda." }, h(CategoryBarChart, { data: weakCampaignChartRows, unit: "number" })),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Servi\xE7os mais pedidos", subtitle: "Categorias inferidas a partir do texto dos servi\xE7os." }, h(VspDataTable, { rows: serviceRows, rowKey: (row) => row.label, columns: statColumns.map((col) => col.key === "label" ? { ...col, label: "Servi\xE7o" } : col) })),
-          h(Card, { title: "Top marcas", subtitle: "Volume, valor m\xE9dio e convers\xE3o por marca." }, h(VspDataTable, { rows: brandRows, rowKey: (row) => row.label, columns: statColumns.map((col) => col.key === "label" ? { ...col, label: "Marca" } : col) }))
+          h(Card, { title: "Servi\xE7os mais pedidos", subtitle: "Categorias inferidas a partir do texto dos servi\xE7os." }, h(CategoryBarChart, { data: serviceChartRows, unit: "number" })),
+          h(Card, { title: "Top marcas", subtitle: "Volume de propostas por marca." }, h(CategoryBarChart, { data: brandChartRows, unit: "number" }))
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Top modelos", subtitle: "Modelos mais frequentes nas propostas BO." }, h(VspDataTable, { rows: modelRows, rowKey: (row) => row.label, columns: statColumns.map((col) => col.key === "label" ? { ...col, label: "Modelo" } : col) })),
-          h(Card, { title: "Autores da proposta", subtitle: "Separar Website e equipa ajuda a preparar o futuro painel global." }, h(VspDataTable, { rows: authorRows, rowKey: (row) => row.label, columns: statColumns.map((col) => col.key === "label" ? { ...col, label: "Autor" } : col) }))
+          h(Card, { title: "Top modelos", subtitle: "Modelos mais frequentes nas propostas BO." }, h(CategoryBarChart, { data: modelChartRows, unit: "number" })),
+          h(Card, { title: "Autores da proposta", subtitle: "Separar Website e equipa ajuda a preparar o futuro painel global." }, h(CategoryBarChart, { data: authorChartRows, unit: "number" }))
         )
       )
     );
@@ -4432,6 +4424,12 @@ input::placeholder { color: #7f93b3; }
       { label: "VSP com scorecard", value: fmtPercent(vspScorecardRate), detail: "Leads com leitura de sintomas", tone: vspScorecardRate >= 0.7 ? "good" : vspScorecardRate >= 0.45 ? "warn" : "bad" },
       { label: "Fontes carregadas", value: error ? "Parcial" : "Completo", detail: "Dashboard, VSP, BO e Encomendas", tone: error ? "warn" : "good" }
     ];
+    const dataConfidenceChart = [
+      { label: "UTMs completos", value: coreUtmComplete * 100 },
+      { label: "BO com encomenda", value: boOrderCoverage * 100 },
+      { label: "VSP com scorecard", value: vspScorecardRate * 100 },
+      { label: "Fontes carregadas", value: error ? 75 : 100 }
+    ];
     const alerts = [
       { text: pctAtingido >= alertThreshold / 100 ? "Faturacao dentro do limiar definido" : `Faturacao abaixo do limiar de ${alertThreshold}%`, tone: pctAtingido >= alertThreshold / 100 ? "good" : "bad" },
       { text: globalFunnel.openProposalValue > 0 ? `${fmtCurrency(globalFunnel.openProposalValue)} em propostas BO sem encomenda` : "Sem valor BO em aberto no periodo", tone: globalFunnel.openProposalValue > 0 ? "warn" : "good" },
@@ -4512,7 +4510,7 @@ input::placeholder { color: #7f93b3; }
         )))
       ),
       h(DetailDisclosure, { title: "Confianca dos dados", subtitle: "UTMs, encomendas ligadas, scorecards e estado das fontes.", defaultOpen: false },
-        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, dataConfidence.map((item) => h(DiagnosisTile, { key: item.label, item })))
+        h(CategoryBarChart, { data: dataConfidenceChart, unit: "percent" })
       ),
       h(DetailDisclosure, { title: "Canais e campanhas", subtitle: "Rankings para perceber onde ha valor e onde rever qualidade.", defaultOpen: false },
       h("div", { className: "summary-grid-tight" },
@@ -4521,24 +4519,14 @@ input::placeholder { color: #7f93b3; }
             h("div", { className: "section-kicker" }, "CANAIS"),
             h("h3", { className: "section-heading" }, "Quem esta a puxar valor")
           ),
-          h(VspDataTable, { rows: topSources, rowKey: (row) => row.label, columns: [
-            { key: "label", label: "Origem", className: "font-semibold text-slate-800 max-w-xs truncate" },
-            { key: "total", label: "Reg.", align: "right", render: (r) => fmtNumber(r.total) },
-            { key: "value", label: "Valor/Pot.", align: "right", render: (r) => fmtCurrency(r.value) },
-            { key: "boOrderRate", label: "Conv. BO", align: "right", render: (r) => r.boOrderRate === null ? "-" : fmtPercent(r.boOrderRate) }
-          ] })
+          h(CategoryBarChart, { data: topSources.map((row) => ({ label: row.label, value: row.value || row.total || 0 })), unit: topSources.some((row) => row.value) ? "currency" : "number" })
         ),
         h("section", { className: "section-shell space-y-3" },
           h("div", null,
             h("div", { className: "section-kicker" }, "CAMPANHAS"),
             h("h3", { className: "section-heading" }, "Onde rever qualidade")
           ),
-          weakCampaignRows.length ? h(VspDataTable, { rows: weakCampaignRows, rowKey: (row) => row.label, columns: [
-            { key: "label", label: "Campanha", className: "font-semibold text-slate-800 max-w-xs truncate" },
-            { key: "bo", label: "BO", align: "right", render: (r) => fmtNumber(r.bo) },
-            { key: "orders", label: "Encom.", align: "right", render: (r) => fmtNumber(r.orders) },
-            { key: "boOrderRate", label: "Conv.", align: "right", render: (r) => r.boOrderRate === null ? "-" : fmtPercent(r.boOrderRate) }
-          ] }) : h("p", { className: "text-xs text-slate-400" }, "Sem campanhas BO com volume suficiente para alerta no periodo.")
+          weakCampaignRows.length ? h(CategoryBarChart, { data: weakCampaignRows.map((row) => ({ label: row.label, value: row.bo || row.total || 0 })), unit: "number" }) : h("p", { className: "text-xs text-slate-400" }, "Sem campanhas BO com volume suficiente para alerta no periodo.")
         )
       )),
       h(DetailDisclosure, { title: "Qualidade de lead", subtitle: "Sinais VSP, scorecards e leads ainda sem encomenda.", defaultOpen: false },
@@ -4589,28 +4577,15 @@ input::placeholder { color: #7f93b3; }
     const globalFunnel = buildGlobalValueFunnel({ boRecords, vspRecords, ordersTable: boOrdersTable, selectedMonths, vspConversion });
     const sourceChartRows = sourceRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
     const campaignChartRows = campaignRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
+    const topChannelValueRows = globalFunnel.topChannels.map((row) => ({ label: row.label, value: row.value || 0 }));
+    const topCampaignValueRows = globalFunnel.topCampaigns.map((row) => ({ label: row.label, value: row.value || 0 }));
+    const vspConversionSourceRows = vspConversion.bySource.map((row) => ({ label: row.label, value: row.converted || 0 }));
+    const vspConversionCampaignRows = vspConversion.byCampaign.map((row) => ({ label: row.label, value: row.converted || 0 }));
+    const monthComparisonRows = monthRows.map((row) => ({ month: row.month, a: row.bo, b: row.vsp }));
+    const serviceChartRows = serviceRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
+    const brandChartRows = brandRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
+    const modelChartRows = modelRows.slice(0, 8).map((row) => ({ label: row.label, value: row.total }));
     const Card = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
-    const totalColumns = [
-      { key: "label", label: "Dimens\xE3o", className: "font-semibold text-slate-800 max-w-xs truncate" },
-      { key: "total", label: "Total", align: "right", render: (r) => fmtNumber(r.total) },
-      { key: "bo", label: "BO", align: "right", render: (r) => fmtNumber(r.bo) },
-      { key: "vsp", label: "VSP", align: "right", render: (r) => fmtNumber(r.vsp) },
-      { key: "value", label: "Valor/Pot.", align: "right", render: (r) => fmtCurrency(r.value) },
-      { key: "avgValue", label: "M\xE9dia", align: "right", render: (r) => fmtCurrency(r.avgValue) }
-    ];
-    const conversionColumns = [
-      { key: "label", label: "Dimens\xE3o", className: "font-semibold text-slate-800 max-w-xs truncate" },
-      { key: "leads", label: "Leads", align: "right", render: (r) => fmtNumber(r.leads) },
-      { key: "converted", label: "Conv.", align: "right", render: (r) => fmtNumber(r.converted) },
-      { key: "rate", label: "Taxa", align: "right", className: "font-semibold", render: (r) => fmtPercent(r.rate) },
-      { key: "value", label: "Valor encom.", align: "right", render: (r) => fmtCurrency(r.value) }
-    ];
-    const orderValueColumns = [
-      { key: "label", label: "Dimens\xE3o", className: "font-semibold text-slate-800 max-w-xs truncate" },
-      { key: "orders", label: "Encom.", align: "right", render: (r) => fmtNumber(r.orders) },
-      { key: "value", label: "Valor", align: "right", className: "font-semibold", render: (r) => fmtCurrency(r.value) },
-      { key: "avgValue", label: "M\xE9dia", align: "right", render: (r) => fmtCurrency(r.avgValue) }
-    ];
     return h("div", { className: "space-y-6" },
       h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Uma das fontes n\xE3o carregou totalmente: ", error),
@@ -4664,8 +4639,8 @@ input::placeholder { color: #7f93b3; }
           )
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Top canais por valor encomendado", subtitle: "Apenas encomendas BO nao canceladas." }, h(VspDataTable, { rows: globalFunnel.topChannels, rowKey: (row) => row.label, columns: orderValueColumns.map((col) => col.key === "label" ? { ...col, label: "Canal" } : col) })),
-          h(Card, { title: "Top campanhas por valor encomendado", subtitle: "Apenas encomendas BO nao canceladas." }, h(VspDataTable, { rows: globalFunnel.topCampaigns, rowKey: (row) => row.label, columns: orderValueColumns.map((col) => col.key === "label" ? { ...col, label: "Campanha" } : col) }))
+          h(Card, { title: "Top canais por valor encomendado", subtitle: "Apenas encomendas BO nao canceladas." }, h(CategoryBarChart, { data: topChannelValueRows, unit: "currency" })),
+          h(Card, { title: "Top campanhas por valor encomendado", subtitle: "Apenas encomendas BO nao canceladas." }, h(CategoryBarChart, { data: topCampaignValueRows, unit: "currency" }))
         ),
         h("section", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-4" },
           h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
@@ -4689,35 +4664,23 @@ input::placeholder { color: #7f93b3; }
           )
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Convers\xE3o VSP por origem", subtitle: "Quais os canais VSP que chegaram a encomenda no BackOffice." }, h(VspDataTable, { rows: vspConversion.bySource, rowKey: (row) => row.label, columns: conversionColumns })),
-          h(Card, { title: "Convers\xE3o VSP por campanha", subtitle: "Campanhas VSP/FAP com leads que aparecem depois como encomendas." }, h(VspDataTable, { rows: vspConversion.byCampaign, rowKey: (row) => row.label, columns: conversionColumns.map((col) => col.key === "label" ? { ...col, label: "Campanha" } : col) }))
+          h(Card, { title: "Convers\xE3o VSP por origem", subtitle: "N\xFAmero de leads VSP que chegaram a encomenda no BackOffice." }, h(CategoryBarChart, { data: vspConversionSourceRows, unit: "number" })),
+          h(Card, { title: "Convers\xE3o VSP por campanha", subtitle: "Campanhas VSP/FAP com leads que aparecem depois como encomendas." }, h(CategoryBarChart, { data: vspConversionCampaignRows, unit: "number" }))
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Volume mensal BO vs VSP", subtitle: "Compara propostas BO e leads VSP no mesmo per\xEDodo." }, h(VspDataTable, { rows: monthRows, rowKey: (row) => row.month, columns: [
-            { key: "month", label: "M\xEAs", className: "font-semibold text-slate-800" },
-            { key: "total", label: "Total", align: "right", render: (r) => fmtNumber(r.total) },
-            { key: "bo", label: "BO", align: "right", render: (r) => fmtNumber(r.bo) },
-            { key: "vsp", label: "VSP", align: "right", render: (r) => fmtNumber(r.vsp) },
-            { key: "value", label: "Valor/Pot.", align: "right", render: (r) => fmtCurrency(r.value) }
-          ] })),
+          h(Card, { title: "Volume mensal BO vs VSP", subtitle: "Compara propostas BO e leads VSP no mesmo per\xEDodo." }, h(MonthlyComparisonChart, { data: monthComparisonRows, nameA: "BO", nameB: "VSP" })),
           h(Card, { title: "Origens combinadas", subtitle: "Volume total por origem/canal normalizado." }, h(CategoryBarChart, { data: sourceChartRows, unit: "number" }))
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Qualidade por origem", subtitle: "Total combinado, separado por BO e VSP." }, h(VspDataTable, { rows: sourceRows, rowKey: (row) => row.label, columns: totalColumns })),
+          h(Card, { title: "Qualidade por origem", subtitle: "Volume total combinado por origem." }, h(CategoryBarChart, { data: sourceChartRows, unit: "number" })),
           h(Card, { title: "Campanhas combinadas", subtitle: "Campanhas com maior volume em BO + VSP." }, h(CategoryBarChart, { data: campaignChartRows, unit: "number" }))
         ),
-        h(Card, { title: "Campanhas BO a rever", subtitle: "Dentro do BO, campanhas com volume e menor passagem para encomenda." }, h(VspDataTable, { rows: weakCampaignRows, rowKey: (row) => row.label, columns: [
-          { key: "label", label: "Campanha", className: "font-semibold text-slate-800 max-w-xs truncate" },
-          { key: "bo", label: "BO", align: "right", render: (r) => fmtNumber(r.bo) },
-          { key: "orders", label: "Encom.", align: "right", render: (r) => fmtNumber(r.orders) },
-          { key: "boOrderRate", label: "Conv.", align: "right", className: "font-semibold", render: (r) => r.boOrderRate === null ? "\u2014" : fmtPercent(r.boOrderRate) },
-          { key: "value", label: "Valor", align: "right", render: (r) => fmtCurrency(r.value) }
-        ] })),
+        h(Card, { title: "Campanhas BO a rever", subtitle: "Dentro do BO, campanhas com volume e menor passagem para encomenda." }, h(CategoryBarChart, { data: weakCampaignRows.map((row) => ({ label: row.label, value: row.bo || 0 })), unit: "number" })),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Servi\xE7os agregados", subtitle: "Categorias BO + inten\xE7\xF5es/potencial VSP." }, h(VspDataTable, { rows: serviceRows, rowKey: (row) => row.label, columns: totalColumns.map((col) => col.key === "label" ? { ...col, label: "Servi\xE7o" } : col) })),
-          h(Card, { title: "Top marcas agregadas", subtitle: "Marcas mais frequentes em BO + VSP." }, h(VspDataTable, { rows: brandRows, rowKey: (row) => row.label, columns: totalColumns.map((col) => col.key === "label" ? { ...col, label: "Marca" } : col) }))
+          h(Card, { title: "Servi\xE7os agregados", subtitle: "Categorias BO + inten\xE7\xF5es/potencial VSP." }, h(CategoryBarChart, { data: serviceChartRows, unit: "number" })),
+          h(Card, { title: "Top marcas agregadas", subtitle: "Marcas mais frequentes em BO + VSP." }, h(CategoryBarChart, { data: brandChartRows, unit: "number" }))
         ),
-        h(Card, { title: "Top modelos agregados", subtitle: "Modelos mais frequentes nas duas fontes." }, h(VspDataTable, { rows: modelRows, rowKey: (row) => row.label, columns: totalColumns.map((col) => col.key === "label" ? { ...col, label: "Modelo" } : col) }))
+        h(Card, { title: "Top modelos agregados", subtitle: "Modelos mais frequentes nas duas fontes." }, h(CategoryBarChart, { data: modelChartRows, unit: "number" }))
       )
     );
   }
@@ -4867,6 +4830,8 @@ input::placeholder { color: #7f93b3; }
     const sourceQualityRows = groupedLeadStats(filteredRows, trafficSourceLabel, 6);
     const symptomRows = symptomStats(scorecardRows, 8);
     const criticalRows = filteredRows.map((r) => ({ row: r, score: leadPriorityScore(r), date: parseRowDate(r, VSP_DATE_COL) })).filter((x) => x.score > 0).sort((a, b) => b.score - a.score || b.date - a.date).slice(0, 8);
+    const brandChartRows = brandRows.map((row) => ({ label: row.label, value: row.leads }));
+    const symptomChartRows = symptomRows.map((row) => ({ label: row.label, value: row.leads }));
     const filteredTable = { cols: table.cols, rows: filteredRows };
     const Card = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
     const fmtSmallNumber = (v) => v ? fmtNumber(v) : "\u2014";
@@ -4929,20 +4894,8 @@ input::placeholder { color: #7f93b3; }
         h(Card, { title: "Tend\xEAncia indicada no scorecard" }, trendRows.length ? h(CategoryBarChart, { data: trendRows, unit: "number" }) : h(EmptyState, { text: "Sem respostas de scorecard neste per\xEDodo." }))
       ),
       h("div", { className: "grid lg:grid-cols-2 gap-4" },
-        h(Card, { title: "Top marcas", subtitle: "Volume, valor m\xE9dio e severidade por marca." }, h(VspDataTable, { rows: brandRows, rowKey: (b) => b.label, columns: [
-          { key: "label", label: "Marca", className: "font-semibold text-slate-800" },
-          { key: "leads", label: "Leads", align: "right", render: (b) => fmtNumber(b.leads) },
-          { key: "avgClean", label: "Limpeza", align: "right", render: (b) => b.avgClean ? fmtCurrency(b.avgClean) : "\u2014" },
-          { key: "avgReplace", label: "Subst.", align: "right", render: (b) => b.avgReplace ? fmtCurrency(b.avgReplace) : "\u2014" },
-          { key: "avgSeverity", label: "Grav.", align: "right", render: (b) => fmtSmallNumber(b.avgSeverity) }
-        ] })),
-        h(Card, { title: "Sintomas mais comuns", subtitle: "Ajuda a perceber que dor o lead traz antes do contacto comercial." }, h(VspDataTable, { rows: symptomRows, rowKey: (s) => s.label, columns: [
-          { key: "label", label: "Sintoma", className: "font-semibold text-slate-800" },
-          { key: "leads", label: "Leads", align: "right", render: (s) => fmtNumber(s.leads) },
-          { key: "avgSeverity", label: "Grav.", align: "right", render: (s) => fmtSmallNumber(s.avgSeverity) },
-          { key: "avgUrgency", label: "Urg.", align: "right", render: (s) => fmtSmallNumber(s.avgUrgency) },
-          { key: "avgReplace", label: "Subst.", align: "right", render: (s) => s.avgReplace ? fmtCurrency(s.avgReplace) : "\u2014" }
-        ] }))
+        h(Card, { title: "Top marcas", subtitle: "Volume de leads por marca." }, h(CategoryBarChart, { data: brandChartRows, unit: "number" })),
+        h(Card, { title: "Sintomas mais comuns", subtitle: "Ajuda a perceber que dor o lead traz antes do contacto comercial." }, h(CategoryBarChart, { data: symptomChartRows, unit: "number" }))
       ),
       h("div", { className: "grid lg:grid-cols-2 gap-4" },
         h(Card, { title: "Qualidade por canal", subtitle: "Compara volume, scorecard completo e intensidade dos leads por origem." }, h(VspDataTable, { rows: sourceQualityRows, rowKey: (s) => s.label, columns: [
