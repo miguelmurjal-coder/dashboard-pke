@@ -677,6 +677,81 @@ input::placeholder { color: #7f93b3; }
   padding: 0.4rem 0.7rem;
 }
 .task-header-btn:hover { background: #f7bf5d; }
+.global-search {
+  position: relative;
+  flex: 1 1 22rem;
+  max-width: 34rem;
+  min-width: 13rem;
+}
+.global-search-input {
+  width: 100%;
+  border: 1px solid #d7deea;
+  border-radius: 9999px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 0.82rem;
+  line-height: 1.25rem;
+  padding: 0.52rem 0.85rem 0.52rem 2.2rem;
+}
+.global-search-input:focus {
+  outline: none;
+  border-color: #0EA5E9;
+  box-shadow: 0 0 0 3px rgba(14,165,233,0.16);
+}
+.global-search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  pointer-events: none;
+}
+.global-search-results {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #d7deea;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 42px rgba(15,23,42,0.18);
+  overflow: hidden;
+}
+.global-search-result {
+  width: 100%;
+  display: block;
+  text-align: left;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid #edf2f7;
+}
+.global-search-result:last-child { border-bottom: 0; }
+.global-search-result:hover,
+.global-search-result-active {
+  background: #eef6ff;
+}
+.global-search-result-title {
+  color: #0f172a;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.global-search-result-meta {
+  color: #2563eb;
+  font-size: 0.68rem;
+  font-weight: 800;
+  margin-top: 0.1rem;
+}
+.global-search-result-desc {
+  color: #64748b;
+  font-size: 0.72rem;
+  line-height: 1rem;
+  margin-top: 0.18rem;
+}
+.global-search-empty {
+  padding: 0.75rem 0.85rem;
+  color: #64748b;
+  font-size: 0.75rem;
+}
 .task-primary-btn {
   font-size: 0.8rem;
   color: #04111f;
@@ -1354,6 +1429,23 @@ input::placeholder { color: #7f93b3; }
   const TOOL_PANELS = [
     { name: "UTM Creator", label: "UTM Creator" },
     { name: "Log Tarefas", label: "Log Tarefas" }
+  ];
+  const SEARCH_INDEX = [
+    { title: "Cockpit principal", location: "Dashboard MKT", target: "Dashboard MKT", description: "Estado geral, alertas, funil global, faturacao e proximas acoes.", keywords: ["dashboard", "cockpit", "resumo", "estado", "alertas", "acoes", "ações", "diagnostico", "diagnóstico"] },
+    { title: "Faturacao e objetivos", location: "Dashboard MKT", target: "Dashboard MKT", description: "Objetivo, faturado, delta, ritmo do mes e linhas PS/FAP/AdBlue.", keywords: ["faturacao", "faturação", "objetivo", "objetivos", "delta", "ritmo", "ps", "fap", "adblue", "receita"] },
+    { title: "Funil global", location: "Dashboard MKT", target: "Dashboard MKT", description: "Entradas, propostas, encomendas, faturacao e valor capturado.", keywords: ["funil", "leads", "propostas", "encomendas", "conversao", "conversão", "valor capturado"] },
+    { title: "Resultados agregados", location: "Resultados Totais", target: "Resultados Totais", description: "Merge de VSP + BO, funil global, canais, campanhas, marcas e modelos.", keywords: ["resultados totais", "totais", "merge", "global", "vsp bo", "agregado", "agregados", "cruzado", "cruzamento"] },
+    { title: "Conversao VSP para encomendas", location: "Resultados Totais", target: "Resultados Totais", description: "Leads VSP encontrados como encomendas no BackOffice.", keywords: ["vsp encomendas", "vsp para encomenda", "conversao vsp", "conversão vsp", "matches", "backoffice", "bo", "telefone", "email"] },
+    { title: "UTMs das leads VSP", location: "Aprofundar Dados > Resultados VSP", target: "Resultados VSP", description: "Origem, campanha e tracking associados aos leads VSP/FAP.", keywords: ["utm vsp", "utms vsp", "utm de vsp", "utm da vsp", "tracking vsp", "source vsp", "campaign vsp", "campanha vsp"] },
+    { title: "UTMs e tracking", location: "Resultados BO / VSP / UTM Creator", target: "UTM Creator", description: "Criar links UTM e encontrar cobertura de UTMs em BO/VSP.", keywords: ["utm", "utms", "tracking", "source", "medium", "campaign", "content", "mailerlite", "link", "url"] },
+    { title: "Resultados VSP", location: "Aprofundar Dados", target: "Resultados VSP", description: "Leads VSP/FAP, scorecards, sintomas, marcas, campanhas e landing pages.", keywords: ["vsp", "scorecard", "sintomas", "landing", "landing page", "leads vsp", "fap", "gravidade", "urgencia", "urgência"] },
+    { title: "Resultados BO", location: "Aprofundar Dados", target: "Resultados BO", description: "Propostas do BackOffice, encomendas, origem, campanhas, serviços, marcas e modelos.", keywords: ["bo", "backoffice", "back office", "propostas bo", "encomendas", "servicos", "serviços", "autores", "website"] },
+    { title: "Ficheiro JM", location: "Aprofundar Dados", target: "Ficheiro JM", description: "Dados JM, faturacao, sinais, VMT e informacao operacional por linha.", keywords: ["jm", "ficheiro jm", "vmt", "sinal", "sinais", "ft", "faturacao jm", "adb", "fo"] },
+    { title: "Leads Diarios", location: "Aprofundar Dados", target: "Leads Di\xE1rios", description: "Leads por dia, origem e apoio ao funil de conversao.", keywords: ["leads diarios", "leads diários", "leads", "diario", "diário", "origem leads"] },
+    { title: "UTM Creator", location: "Ferramentas", target: "UTM Creator", description: "Gerar links com utm_source, utm_medium, utm_campaign e utm_content.", keywords: ["utm creator", "criador utm", "gerar utm", "link utm", "source", "medium", "campaign", "content"] },
+    { title: "Log Tarefas", location: "Ferramentas", target: "Log Tarefas", description: "Registar horas, tarefas, categorias, estados e notas de trabalho.", keywords: ["log", "tarefas", "horas", "tempo", "registo", "categoria", "estado", "notas"] },
+    { title: "Campanhas", location: "Dashboard / Resultados", target: "Resultados Totais", description: "Campanhas com volume, valor, conversao e campanhas a rever.", keywords: ["campanha", "campanhas", "meta", "google", "ads", "qualidade campanha", "campanhas a rever"] },
+    { title: "Canais e origens", location: "Dashboard / Resultados", target: "Resultados Totais", description: "Canais que puxam valor, origens combinadas e origem dos leads/propostas.", keywords: ["canal", "canais", "origem", "origens", "source", "meta", "google", "organico", "orgânico"] }
   ];
   const SHEET_GIDS = {
     "Ficheiro JM": "785129550",
@@ -2816,6 +2908,50 @@ input::placeholder { color: #7f93b3; }
       /* @__PURE__ */ React.createElement(RefreshCw, { className: `w-3.5 h-3.5 ${loading ? "animate-spin" : ""}` }),
       " Atualizar"
     ));
+  }
+  function normalizeSearchText(value) {
+    return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  }
+  function GlobalSearch({ onNavigate }) {
+    const [query, setQuery] = useState("");
+    const [focused, setFocused] = useState(false);
+    const cleanQuery = normalizeSearchText(query);
+    const terms = cleanQuery.split(/\s+/).filter(Boolean);
+    const results = !terms.length ? [] : SEARCH_INDEX.map((item) => {
+      const haystack = normalizeSearchText([item.title, item.location, item.description, ...(item.keywords || [])].join(" "));
+      const score = terms.reduce((sum, term) => sum + (haystack.includes(term) ? 1 : 0), 0);
+      return { item, score };
+    }).filter((result) => result.score > 0).sort((a, b) => b.score - a.score || a.item.title.localeCompare(b.item.title, "pt-PT")).slice(0, 6);
+    const open = focused && query.trim().length > 0;
+    const go = (target) => {
+      onNavigate(target);
+      setQuery("");
+      setFocused(false);
+    };
+    return h("div", { className: "global-search" },
+      h(Search, { className: "global-search-icon w-4 h-4" }),
+      h("input", {
+        className: "global-search-input",
+        value: query,
+        onChange: (event) => setQuery(event.target.value),
+        onFocus: () => setFocused(true),
+        onBlur: () => window.setTimeout(() => setFocused(false), 140),
+        placeholder: "Pesquisar: UTM, VSP, campanha, BO, faturacao..."
+      }),
+      open && h("div", { className: "global-search-results" },
+        results.length ? results.map(({ item }, index) => h("button", {
+          key: `${item.title}-${index}`,
+          type: "button",
+          className: "global-search-result",
+          onMouseDown: (event) => event.preventDefault(),
+          onClick: () => go(item.target)
+        },
+          h("div", { className: "global-search-result-title" }, item.title),
+          h("div", { className: "global-search-result-meta" }, item.location),
+          h("div", { className: "global-search-result-desc" }, item.description)
+        )) : h("div", { className: "global-search-empty" }, "Sem resultados. Experimenta procurar por UTM, VSP, BO, campanhas ou faturacao.")
+      )
+    );
   }
   function PeriodFilterControl({ selectedMonths, setSelectedMonths }) {
     const [open, setOpen] = useState(false);
@@ -5623,7 +5759,7 @@ input::placeholder { color: #7f93b3; }
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "bg-white border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
