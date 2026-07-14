@@ -419,7 +419,7 @@ table { border-collapse: collapse; }
 }
 .help-mode-on .help-target:hover::after,
 .help-mode-on .help-target:focus-within::after {
-  display: block;
+  display: none;
 }
 .help-mode-on .help-target::before {
   z-index: 1;
@@ -438,6 +438,29 @@ table { border-collapse: collapse; }
   font-size: 0.76rem;
   line-height: 1.15rem;
   box-shadow: 0 16px 36px rgba(0,0,0,0.34);
+}
+.universal-help-tooltip {
+  position: fixed;
+  z-index: 100;
+  width: min(26rem, calc(100vw - 2rem));
+  max-height: min(20rem, calc(100vh - 2rem));
+  overflow: auto;
+  pointer-events: none;
+  color: #e7ecf3;
+  background: #0a0e1a;
+  border: 1px solid #7dd3fc;
+  border-radius: 0.95rem;
+  box-shadow: 0 24px 58px rgba(0,0,0,0.58);
+  padding: 0.9rem 1rem;
+  font-size: 0.8rem;
+  line-height: 1.3rem;
+  font-weight: 600;
+}
+.universal-help-tooltip strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 0.82rem;
+  margin-bottom: 0.25rem;
 }
 
 .section-shell {
@@ -2608,6 +2631,89 @@ input::placeholder { color: #7f93b3; }
       "data-help": helpTextForLabel(label, help)
     };
   }
+  function cleanHelpText(value, max = 120) {
+    return String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
+  }
+  function elementText(el) {
+    if (!el) return "";
+    if (el.getAttribute && el.getAttribute("aria-label")) return el.getAttribute("aria-label");
+    if (el.placeholder) return el.placeholder;
+    if (el.value && ["INPUT", "SELECT", "TEXTAREA"].includes(el.tagName)) return el.value;
+    return cleanHelpText(el.innerText || el.textContent || "");
+  }
+  function phraseHelp(text) {
+    const raw = cleanHelpText(text, 160);
+    const lower = normalizeSearchText(raw);
+    if (!raw) return "";
+    const known = helpTextForLabel(raw, null);
+    if (HELP_TEXT_BY_LABEL[normalizeHelpKey(raw)] || Object.keys(HELP_TEXT_BY_LABEL).some((item) => normalizeHelpKey(raw).startsWith(item))) return known;
+    if (lower.includes("utm")) return `${raw}: UTM e a etiqueta que diz ao dashboard de onde veio uma lead ou proposta. Normalmente divide-se em source/origem, medium/meio, campaign/campanha e content/conteudo. Serve para perceber que campanha, email, anuncio ou landing page trouxe resultado.`;
+    if (lower.includes("vsp") || lower.includes("fap")) return `${raw}: VSP/FAP refere-se aos leads vindos do ficheiro PKE Leads FAP. Pensa nisto como contactos ou pedidos que entraram antes de sabermos se viraram proposta, encomenda ou faturacao.`;
+    if (lower.includes("bo") || lower.includes("backoffice")) return `${raw}: BO significa BackOffice PKE. Sao dados que vêm do sistema interno/site, sobretudo propostas e encomendas. E a parte mais proxima do resultado comercial real.`;
+    if (lower.includes("fatur")) return `${raw}: fala de faturacao, ou seja, dinheiro efetivamente faturado/realizado. Quando aparece em percentagem, normalmente compara o realizado com o objetivo. Quando aparece em euros, e valor monetario.`;
+    if (lower.includes("objetivo") || lower.includes("meta")) return `${raw}: objetivo/meta e o valor esperado para o periodo. O dashboard compara o resultado real contra esta referencia para dizer se estamos saudaveis, em atencao ou em risco.`;
+    if (lower.includes("encomenda")) return `${raw}: encomenda e uma oportunidade que avançou para pedido/compra no BackOffice. E mais forte do que uma lead ou proposta, porque ja indica conversao comercial.`;
+    if (lower.includes("proposta")) return `${raw}: proposta e uma oportunidade comercial registada no BackOffice. Ainda nao quer dizer venda fechada; quer dizer que existe valor proposto e possibilidade de virar encomenda.`;
+    if (lower.includes("lead")) return `${raw}: lead e um contacto/pedido de potencial cliente. O dashboard acompanha se esse contacto evolui para proposta, encomenda e valor real.`;
+    if (lower.includes("campanha")) return `${raw}: campanha identifica a acao de marketing que trouxe o contacto, como um email, anuncio, landing page ou iniciativa especifica. Serve para saber onde investir mais ou cortar.`;
+    if (lower.includes("landing")) return `${raw}: landing page e a pagina onde a pessoa entrou ou converteu. Ajuda a perceber que paginas geram leads com mais potencial ou mais urgencia.`;
+    if (lower.includes("canal") || lower.includes("origem") || lower.includes("source")) return `${raw}: canal/origem mostra de onde veio o contacto, por exemplo email, Google, Meta, direto ou website. Serve para comparar qualidade e valor por fonte.`;
+    if (lower.includes("convers")) return `${raw}: conversao e a passagem de uma fase para outra. Exemplo: lead para proposta, proposta para encomenda, ou VSP para encomenda. Uma percentagem baixa mostra perda no funil; uma percentagem alta mostra eficiencia.`;
+    if (lower.includes("valor")) return `${raw}: quando o dashboard fala em valor, esta normalmente a falar de euros associados a propostas, encomendas, faturacao ou potencial estimado. Confirma sempre se o bloco diz proposto, encomendado, faturado ou potencial.`;
+    if (lower.includes("%")) return `${raw}: este numero e uma percentagem. Le-se como "parte de um total". Exemplo: 12,8% significa 12,8 em cada 100 dentro daquele universo de dados.`;
+    if (/[€]/.test(raw)) return `${raw}: este dado esta em euros. Pode representar faturacao, proposta, encomenda, potencial ou valor em aberto, dependendo do titulo do bloco onde aparece.`;
+    return "";
+  }
+  function contextualHelpForElement(el) {
+    const target = el && el.closest && el.closest("[data-help], button, a, input, select, textarea, th, td, h1, h2, h3, h4, p, li, .section-shell, .detail-disclosure, .funnel-step, .metric-badge, .alert-chip, .global-search-result, .period-filter-panel, .chart-scroll, svg");
+    if (!target) return "";
+    if (target.closest && target.closest(".universal-help-tooltip")) return "";
+    if (target.dataset && target.dataset.help) return target.dataset.help;
+    const text = elementText(target);
+    const phrase = phraseHelp(text);
+    if (phrase) return phrase;
+    if (target.matches && target.matches("button")) return `${text || "Botao"}: isto e uma acao clicavel. Serve para mudar a vista, abrir detalhe, atualizar dados, aplicar filtros ou executar uma tarefa. Se nao tiveres a certeza, le o texto do botao: ele diz o que vai acontecer.`;
+    if (target.matches && target.matches("a")) return `${text || "Ligacao"}: isto abre uma pagina externa ou um ficheiro de origem. Normalmente e usado para consultar os dados diretamente na Google Sheets.`;
+    if (target.matches && target.matches("input, select, textarea")) return `${text || "Campo"}: isto e um campo de controlo. O que escreveres ou selecionares aqui altera a leitura, o periodo, o alerta ou a informacao gerada.`;
+    if (target.matches && target.matches("th")) return `${text || "Cabecalho da tabela"}: isto e o nome de uma coluna. Todos os valores por baixo pertencem a esta categoria.`;
+    if (target.matches && target.matches("td")) return `${text || "Celula da tabela"}: isto e um valor bruto vindo de uma das folhas. Deve ser lido em conjunto com o cabecalho da coluna e a linha onde aparece.`;
+    if (target.matches && target.matches("svg, .chart-scroll")) return "Grafico visual: transforma uma tabela de numeros numa leitura rapida. Barras maiores, fatias maiores ou linhas mais altas indicam maior peso relativo. Passa o cursor pelos elementos do grafico para ver valores especificos quando disponivel.";
+    if (target.matches && target.matches(".section-shell, .detail-disclosure")) return `${text || "Secao"}: este bloco agrupa informacao relacionada. Primeiro le o titulo, depois os indicadores principais, e so depois entra no detalhe se precisares de explicar a causa.`;
+    return "Este elemento faz parte da leitura do Dashboard MKT. O dashboard junta dados de faturacao, objetivos, leads VSP/FAP, propostas BO, encomendas BO e UTMs para mostrar onde estamos bem, onde ha risco e que acao faz sentido a seguir.";
+  }
+  function UniversalHelpLens({ active }) {
+    const [tip, setTip] = useState(null);
+    useEffect(() => {
+      if (!active) {
+        setTip(null);
+        return void 0;
+      }
+      const onMove = (event) => {
+        const text = contextualHelpForElement(event.target);
+        if (!text) {
+          setTip(null);
+          return;
+        }
+        const width = 420;
+        const height = 220;
+        const left = Math.max(12, Math.min(event.clientX + 18, window.innerWidth - width - 12));
+        const top = Math.max(12, Math.min(event.clientY + 18, window.innerHeight - height - 12));
+        setTip({ text, left, top });
+      };
+      const onLeave = () => setTip(null);
+      document.addEventListener("mousemove", onMove, true);
+      document.addEventListener("mouseleave", onLeave, true);
+      return () => {
+        document.removeEventListener("mousemove", onMove, true);
+        document.removeEventListener("mouseleave", onLeave, true);
+      };
+    }, [active]);
+    if (!active || !tip) return null;
+    return h("div", { className: "universal-help-tooltip", style: { left: tip.left, top: tip.top } },
+      h("strong", null, "Explicação simples"),
+      tip.text
+    );
+  }
   function KpiCard({ label, value, numeric, format, tone = "neutral", icon: Icon2, gauge = false, kind = "money", trend, help }) {
     const toneClasses = {
       good: "text-emerald-700 bg-emerald-50",
@@ -3136,7 +3242,7 @@ input::placeholder { color: #7f93b3; }
     return /* @__PURE__ */ React.createElement("div", { className: "py-10 text-center text-slate-400 text-sm" }, text);
   }
   function SheetTopBar({ updatedAt, loading, onRefresh }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500" }, updatedAt ? `Atualizado \xE0s ${updatedAt.toLocaleTimeString("pt-PT")}` : "A carregar..."), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4", "data-help": "Estado da fonte de dados: mostra se a folha ja carregou e a hora da ultima atualizacao nesta sessao. O botao Atualizar volta a pedir os dados as Google Sheets para garantir que estas a ver a informacao mais recente disponivel." }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500" }, updatedAt ? `Atualizado \xE0s ${updatedAt.toLocaleTimeString("pt-PT")}` : "A carregar..."), /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: onRefresh,
@@ -3166,7 +3272,7 @@ input::placeholder { color: #7f93b3; }
       setQuery("");
       setFocused(false);
     };
-    return h("div", { className: "global-search" },
+    return h("div", { className: "global-search", "data-help": "Pesquisa global: serve para encontrares rapidamente qualquer tema do dashboard sem andar a abrir menus. Podes procurar por UTM, VSP, BO, campanha, faturacao, encomendas, landing page ou outro assunto. Ao escolher um resultado, o dashboard leva-te para a zona mais provavel dessa informacao." },
       h(Search, { className: "global-search-icon w-4 h-4" }),
       h("input", {
         className: "global-search-input",
@@ -3205,7 +3311,7 @@ input::placeholder { color: #7f93b3; }
     const applyPreset = (months) => {
       setSelectedMonths(new Set(months));
     };
-    return /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "relative", "data-help": "Filtro de periodo: controla que meses entram nas contas. Se escolheres ano completo, vês tudo. Se escolheres mes atual ou meses especificos, os KPIs, graficos e tabelas passam a considerar so esse periodo." }, /* @__PURE__ */ React.createElement(
       "button",
       {
         onClick: () => setOpen((o) => !o),
@@ -3224,7 +3330,7 @@ input::placeholder { color: #7f93b3; }
     ))))));
   }
   function AlertThresholdControl({ threshold, setThreshold }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "alert-threshold flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 whitespace-nowrap" }, "Alertar abaixo de"), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "alert-threshold flex items-center gap-1.5", "data-help": "Limiar de alerta: define a partir de que percentagem do objetivo o dashboard deve considerar que estamos em risco. Exemplo: se estiver em 80%, tudo abaixo de 80% do objetivo fica sinalizado como atencao/risco." }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 whitespace-nowrap" }, "Alertar abaixo de"), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "number",
@@ -3541,7 +3647,7 @@ input::placeholder { color: #7f93b3; }
     const { ref, tip, show, move, hide } = useChartTooltip();
     const [hoverIdx, setHoverIdx] = useState(null);
     const palette = ["#0EA5E9", "#F2A93B", "#34D399", "#A78BFA", "#F472B6", "#FB923C", "#60A5FA", "#22C55E"];
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-2 relative", ref }, data.map((d, i) => /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-2 relative", ref, "data-help": `Grafico de barras: cada linha representa uma categoria e o tamanho da barra mostra o peso dessa categoria no total. O valor a direita mostra o numero ou euros. Quanto maior a barra, mais importante e essa categoria neste bloco.` }, data.map((d, i) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: i,
@@ -3582,7 +3688,7 @@ input::placeholder { color: #7f93b3; }
       cumulative += dash;
       return seg;
     });
-    return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "relative flex-shrink-0", ref }, /* @__PURE__ */ React.createElement("svg", { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, /* @__PURE__ */ React.createElement("g", { transform: `rotate(-90 ${cx} ${cy})` }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r, fill: "none", stroke: "#1f2c44", strokeWidth: "24" }), segments.map((s) => /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-6", "data-help": "Grafico donut: mostra como um total se divide por varias categorias. Cada cor e uma fatia. Uma fatia maior significa que essa categoria representa mais peso no total. Passa o cursor nas fatias para ver valor e percentagem." }, /* @__PURE__ */ React.createElement("div", { className: "relative flex-shrink-0", ref }, /* @__PURE__ */ React.createElement("svg", { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, /* @__PURE__ */ React.createElement("g", { transform: `rotate(-90 ${cx} ${cy})` }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r, fill: "none", stroke: "#1f2c44", strokeWidth: "24" }), segments.map((s) => /* @__PURE__ */ React.createElement(
       "circle",
       {
         key: s.i,
@@ -3854,7 +3960,7 @@ input::placeholder { color: #7f93b3; }
         );
       }
     });
-    return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4 relative", ref }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2" }, LINE_COLORS[title] && /* @__PURE__ */ React.createElement(LineDot, { line: title }), title), /* @__PURE__ */ React.createElement("div", { className: "flex items-stretch gap-2" }, nodes), /* @__PURE__ */ React.createElement(ChartTooltip, { tip }));
+    return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4 relative", ref, "data-help": `Funil de conversao ${title}: mostra quantas oportunidades passam de uma fase para a seguinte. A primeira fase e a base. Cada fase seguinte mostra o que sobrou, a percentagem de conversao e a perda. Serve para descobrir em que ponto se perde mais volume ou valor.` }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2" }, LINE_COLORS[title] && /* @__PURE__ */ React.createElement(LineDot, { line: title }), title), /* @__PURE__ */ React.createElement("div", { className: "flex items-stretch gap-2" }, nodes), /* @__PURE__ */ React.createElement(ChartTooltip, { tip }));
   }
   const FJM_FATURACAO_EUR_COLS = {
     PS: { ft: 3, sinal: 4, nc: 5 },
@@ -6031,7 +6137,7 @@ input::placeholder { color: #7f93b3; }
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
       scheduleTaskReminder(15 * 60 * 1000);
-    } }), helpMode && /* @__PURE__ */ React.createElement("div", { className: "help-mode-hint" }, "Modo Dúvidas ativo: passa o cursor por cima dos cartões destacados para veres de onde vem cada dado, o que significa e como deve ser lido."), /* @__PURE__ */ React.createElement("button", { type: "button", className: `help-floating-btn ${helpMode ? "help-floating-btn-active" : ""}`, onClick: () => setHelpMode((value) => !value), "aria-pressed": helpMode }, helpMode ? "Fechar dúvidas" : "Dúvidas?"), /* @__PURE__ */ React.createElement(TaskReminderToast, { notice: taskReminderNotice, notificationPermission, onOpen: openTaskReminderPrompt, onSnooze: snoozeTaskReminder, onDismiss: dismissTaskReminder, onEnableNotifications: enableBrowserNotifications }));
+    } }), /* @__PURE__ */ React.createElement(UniversalHelpLens, { active: helpMode }), helpMode && /* @__PURE__ */ React.createElement("div", { className: "help-mode-hint" }, "Modo Dúvidas ativo: passa o cursor por qualquer informação, gráfico, tabela, botão ou filtro. O dashboard explica de forma simples o que é, de onde vem e como ler."), /* @__PURE__ */ React.createElement("button", { type: "button", className: `help-floating-btn ${helpMode ? "help-floating-btn-active" : ""}`, onClick: () => setHelpMode((value) => !value), "aria-pressed": helpMode }, helpMode ? "Fechar dúvidas" : "Dúvidas?"), /* @__PURE__ */ React.createElement(TaskReminderToast, { notice: taskReminderNotice, notificationPermission, onOpen: openTaskReminderPrompt, onSnooze: snoozeTaskReminder, onDismiss: dismissTaskReminder, onEnableNotifications: enableBrowserNotifications }));
   }
   const __root = ReactDOM.createRoot(document.getElementById("root"));
   __root.render(React.createElement(App));
