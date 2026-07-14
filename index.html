@@ -357,6 +357,89 @@ table { border-collapse: collapse; }
 .kpi-card-warn { border-color: #8a6724; }
 .kpi-card-bad { border-color: #7a313f; }
 
+.help-floating-btn {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.7rem;
+  border-radius: 9999px;
+  border: 1px solid #2d4566;
+  background: #101b2e;
+  color: #e7ecf3;
+  padding: 0 0.95rem;
+  font-size: 0.85rem;
+  font-weight: 900;
+  box-shadow: 0 18px 38px rgba(0,0,0,0.38);
+}
+.help-floating-btn:hover {
+  border-color: #7dd3fc;
+  background: #16243f;
+}
+.help-floating-btn-active {
+  color: #04111f;
+  background: #F2A93B;
+  border-color: #F2A93B;
+}
+.help-floating-btn-active:hover {
+  background: #f7bf5d;
+  border-color: #f7bf5d;
+}
+.help-mode-on .help-target {
+  position: relative;
+  outline: 1px dashed rgba(125, 211, 252, 0.75);
+  outline-offset: 4px;
+  overflow: visible;
+  cursor: help;
+}
+.help-mode-on .help-target::after {
+  content: attr(data-help);
+  display: none;
+  position: absolute;
+  left: 0;
+  top: calc(100% + 0.65rem);
+  width: min(24rem, calc(100vw - 2rem));
+  max-width: 24rem;
+  white-space: normal;
+  color: #e7ecf3;
+  background: #0a0e1a;
+  border: 1px solid #7dd3fc;
+  border-radius: 0.85rem;
+  box-shadow: 0 22px 52px rgba(0,0,0,0.55);
+  padding: 0.85rem 0.95rem;
+  font-size: 0.78rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  text-align: left;
+  z-index: 90;
+  pointer-events: none;
+}
+.help-mode-on .help-target:hover::after,
+.help-mode-on .help-target:focus-within::after {
+  display: block;
+}
+.help-mode-on .help-target::before {
+  z-index: 1;
+}
+.help-mode-hint {
+  position: fixed;
+  left: 1rem;
+  bottom: 4.1rem;
+  z-index: 69;
+  width: min(22rem, calc(100vw - 2rem));
+  border: 1px solid #2d4566;
+  border-radius: 0.85rem;
+  background: rgba(15, 23, 38, 0.96);
+  color: #c7d7ee;
+  padding: 0.75rem 0.85rem;
+  font-size: 0.76rem;
+  line-height: 1.15rem;
+  box-shadow: 0 16px 36px rgba(0,0,0,0.34);
+}
+
 .section-shell {
   background:
     linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0)),
@@ -2469,7 +2552,63 @@ input::placeholder { color: #7f93b3; }
       }
     )), label && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-900 tabular-nums" }, label)));
   }
-  function KpiCard({ label, value, numeric, format, tone = "neutral", icon: Icon2, gauge = false, kind = "money", trend }) {
+  const HELP_TEXT_BY_LABEL = {
+    "Faturacao vs objetivo": "Faturacao vs objetivo: mostra que percentagem do objetivo de faturacao ja foi atingida no periodo escolhido. Vem da comparacao entre faturacao real e objetivo definidos no ficheiro principal do Dashboard MKT. Exemplo: 41,6% quer dizer que, para o periodo selecionado, ainda falta chegar aos 100% da meta.",
+    "Falta para objetivo": "Falta para objetivo: e o valor em euros que ainda falta faturar para chegar ao objetivo do periodo selecionado. Vem da diferenca entre objetivo de faturacao e faturacao real.",
+    "Acima do objetivo": "Acima do objetivo: e o valor em euros que ja ficou acima da meta. Vem da diferenca positiva entre faturacao real e objetivo.",
+    "Valor capturado": "Valor capturado: percentagem do valor proposto no BackOffice que ja se transformou em encomenda. Em termos simples: de todo o dinheiro que apareceu como proposta, quanto ja foi realmente capturado como encomenda. Formula: valor encomendado BO / valor proposto BO. Os dados vêm das propostas do BackOffice PKE e da tab Encomendas.",
+    "VSP para encomenda": "VSP para encomenda: percentagem de leads vindas das VSP/FAP que foram encontradas depois como encomendas no BackOffice PKE. VSP aqui significa lead/registo vindo do ficheiro PKE Leads FAP. Para cruzar, o dashboard compara contactos como email/telefone e confirma se existe uma encomenda posterior na tab Encomendas. Exemplo: 1,9% quer dizer que 1,9% das leads VSP analisadas apareceram como encomenda.",
+    "Total registos": "Total registos: soma dos registos usados no painel, juntando propostas do BackOffice e leads VSP/FAP, conforme o periodo selecionado.",
+    "BO propostas": "BO propostas: numero de propostas vindas do BackOffice PKE. BO significa BackOffice, ou seja, dados registados internamente no site/sistema.",
+    "VSP leads": "VSP leads: numero de leads vindas do ficheiro PKE Leads FAP. Sao contactos ou pedidos que entraram antes de sabermos se viraram proposta ou encomenda.",
+    "Valor/Potencial total": "Valor/Potencial total: soma do valor conhecido ou estimado nos registos agregados. Nas propostas BO usa valor real/proposto; nas VSP pode representar potencial calculado a partir dos dados disponiveis.",
+    "Valor medio": "Valor medio: valor total dividido pelo numero de registos. Ajuda a perceber se os leads/propostas estao a trazer oportunidades mais altas ou mais baixas.",
+    "Conversao BO": "Conversao BO: percentagem de propostas do BackOffice que aparecem como encomendas. Formula: encomendas BO / propostas BO.",
+    "Scorecard VSP": "Scorecard VSP: percentagem de leads VSP que têm informacao suficiente de scorecard, como sintomas, urgencia ou dados tecnicos. Quanto maior, melhor conseguimos avaliar a qualidade do lead.",
+    "Registos com UTM": "Registos com UTM: percentagem de registos que têm informacao UTM associada. UTM serve para saber de onde veio o lead: campanha, origem, meio e conteudo.",
+    "Leads VSP/FAP": "Leads VSP/FAP: total de leads presentes no ficheiro PKE Leads FAP para o periodo selecionado.",
+    "Scorecard completo": "Scorecard completo: percentagem de leads VSP/FAP com os campos principais preenchidos para avaliar qualidade, sintomas, urgencia e potencial.",
+    "Potencial limpeza": "Potencial limpeza: estimativa de valor associada a servicos de limpeza, calculada a partir dos dados das leads VSP/FAP.",
+    "Potencial substituicao": "Potencial substituicao: estimativa de valor associada a substituicao, calculada a partir dos dados das leads VSP/FAP.",
+    "Leads com tracking": "Leads com tracking: percentagem de leads VSP/FAP com dados de origem/campanha suficientes para perceber que acao de marketing trouxe o contacto.",
+    "Entradas totais": "Entradas totais: soma das leads VSP/FAP com as propostas BO. E o ponto de partida do funil global: tudo o que entrou como oportunidade, antes de separarmos o que virou proposta, encomenda ou faturacao.",
+    "Taxa entrada → proposta": "Taxa entrada para proposta: percentagem das entradas totais que chegaram a proposta no BackOffice. Formula: propostas BO / entradas totais. Ajuda a perceber se o volume que entra esta a transformar-se em oportunidade comercial concreta.",
+    "Taxa proposta → encomenda": "Taxa proposta para encomenda: percentagem das propostas BO que se transformaram em encomenda nao cancelada. Formula: encomendas BO / propostas BO. Mostra a eficacia comercial depois de existir proposta.",
+    "Taxa VSP → encomenda": "Taxa VSP para encomenda: percentagem de leads VSP/FAP que aparecem depois como encomenda no BackOffice. O dashboard cruza contactos como email/telefone e considera a encomenda posterior a lead.",
+    "Valor proposto BO": "Valor proposto BO: soma do valor das propostas registadas no BackOffice PKE. Representa dinheiro em oportunidade, ainda antes de sabermos se foi aceite.",
+    "Valor encomendado BO": "Valor encomendado BO: soma das encomendas nao canceladas no BackOffice. Representa valor que ja passou de proposta/oportunidade para encomenda.",
+    "Valor em aberto": "Valor em aberto: valor de propostas BO que ainda nao aparecem como encomenda. Nao quer dizer perdido automaticamente; quer dizer que ainda existe caminho comercial por fechar ou confirmar.",
+    "Valor VSP convertido": "Valor VSP convertido: valor das encomendas BO que conseguimos ligar a leads vindas das VSP/FAP. Ajuda a perceber quanto dinheiro real nasceu desse canal de leads.",
+    "Leads VSP analisadas": "Leads VSP analisadas: numero de leads do ficheiro PKE Leads FAP consideradas no periodo selecionado para tentar cruzar com encomendas do BackOffice.",
+    "Valor encomendas VSP": "Valor encomendas VSP: valor total das encomendas BO que o dashboard conseguiu associar a leads VSP/FAP.",
+    "Dias medios ate encomenda": "Dias medios ate encomenda: tempo medio entre a data da lead VSP/FAP e a data da encomenda encontrada no BackOffice. Ajuda a perceber quanto tempo o canal demora a converter.",
+    "Matches fortes": "Matches fortes: percentagem de conversoes VSP para BO onde o cruzamento foi mais confiavel, por exemplo contacto igual e reforco por marca/modelo. Quanto maior, mais segura e a ligacao entre lead e encomenda.",
+    "Melhor canal": "Melhor canal: origem com melhor sinal de qualidade ou volume util no periodo. Normalmente vem de UTMs/origens dos ficheiros de leads e propostas.",
+    "Campanhas a rever": "Campanhas a rever: campanhas com volume relevante mas sinais de qualidade abaixo do ideal. Servem para decidir onde ajustar criativo, segmentacao, landing page ou follow-up.",
+    "Landing com potencial": "Landing com potencial: landing page que mostra maior valor potencial medio ou melhor sinal nas leads VSP/FAP.",
+    "Maior urgencia": "Maior urgencia: sintoma/servico com maior urgencia media nos scorecards VSP/FAP. Ajuda a perceber que tipo de contacto deve ser tratado com prioridade.",
+    "Leads VSP sem encomenda": "Leads VSP sem encomenda: leads do ficheiro PKE Leads FAP que ainda nao foram encontradas como encomenda no BackOffice. Sao oportunidades para follow-up ou para melhorar o cruzamento de dados.",
+    "Scorecards VSP": "Scorecards VSP: numero de leads VSP/FAP com informacao de diagnostico suficiente para perceber sintomas, urgencia e potencial comercial."
+  };
+  function normalizeHelpKey(label) {
+    return String(label || "").replace(/\s+/g, " ").trim();
+  }
+  function helpTextForLabel(label, fallback) {
+    const key = normalizeHelpKey(label);
+    if (fallback) return fallback;
+    if (HELP_TEXT_BY_LABEL[key]) return HELP_TEXT_BY_LABEL[key];
+    const dynamicKey = Object.keys(HELP_TEXT_BY_LABEL).find((item) => key.startsWith(item));
+    if (dynamicKey) return HELP_TEXT_BY_LABEL[dynamicKey];
+    return `${key}: indicador calculado a partir dos ficheiros que alimentam o dashboard, sempre respeitando o periodo selecionado. Serve para dar uma leitura rapida antes de entrar no detalhe da folha original.`;
+  }
+  function helpAttrs(label, help) {
+    return {
+      className: "help-target",
+      tabIndex: 0,
+      "data-help": helpTextForLabel(label, help)
+    };
+  }
+  function KpiCard({ label, value, numeric, format, tone = "neutral", icon: Icon2, gauge = false, kind = "money", trend, help }) {
     const toneClasses = {
       good: "text-emerald-700 bg-emerald-50",
       bad: "text-red-700 bg-red-50",
@@ -2479,7 +2618,8 @@ input::placeholder { color: #7f93b3; }
     const gaugeColor = { good: "#34D399", bad: "#F87171", warn: "#FBBF24", neutral: "#0EA5E9" }[tone] || "#0EA5E9";
     const animated = useCountUp(numeric != null ? numeric : 0);
     const displayValue = numeric != null ? formatByType(animated, format) : value;
-    return /* @__PURE__ */ React.createElement("div", { className: `kpi-card kpi-card-${kind} kpi-card-${tone} bg-white rounded-xl border border-slate-200 p-4` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium text-slate-500" }, label), Icon2 && !gauge && /* @__PURE__ */ React.createElement("span", { className: `p-1.5 rounded-lg ${toneClasses}` }, /* @__PURE__ */ React.createElement(Icon2, { className: "w-3.5 h-3.5" }))), gauge ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(RadialGauge, { value: numeric || 0, color: gaugeColor }), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-bold text-slate-900 tabular-nums" }, displayValue)) : /* @__PURE__ */ React.createElement("div", { className: "text-xl font-bold text-slate-900 tabular-nums" }, displayValue), /* @__PURE__ */ React.createElement(MiniSparkline, { values: trend, tone }));
+    const attrs = helpAttrs(label, help);
+    return /* @__PURE__ */ React.createElement("div", { ...attrs, className: `${attrs.className} kpi-card kpi-card-${kind} kpi-card-${tone} bg-white rounded-xl border border-slate-200 p-4` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium text-slate-500" }, label), Icon2 && !gauge && /* @__PURE__ */ React.createElement("span", { className: `p-1.5 rounded-lg ${toneClasses}` }, /* @__PURE__ */ React.createElement(Icon2, { className: "w-3.5 h-3.5" }))), gauge ? /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(RadialGauge, { value: numeric || 0, color: gaugeColor }), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-bold text-slate-900 tabular-nums" }, displayValue)) : /* @__PURE__ */ React.createElement("div", { className: "text-xl font-bold text-slate-900 tabular-nums" }, displayValue), /* @__PURE__ */ React.createElement(MiniSparkline, { values: trend, tone }));
   }
   function TaskLogModal({ open, defaultHour, defaultDate, editingEntry, templateEntry, onSave, onClose, onSnooze }) {
     const defaultRange = taskRangeMinutes({ hour: defaultHour || quarterRangeLabel(new Date()) }) || { start: TASK_WORKDAY_START_HOUR * 60, end: TASK_WORKDAY_START_HOUR * 60 + 15 };
@@ -5005,7 +5145,8 @@ input::placeholder { color: #7f93b3; }
       bad: "text-red-700 bg-red-50",
       neutral: "text-blue-900 bg-blue-50"
     }[item.tone || "neutral"] || "text-blue-900 bg-blue-50";
-    return h("div", { className: "diagnosis-tile" },
+    const attrs = helpAttrs(item.label, item.help);
+    return h("div", { ...attrs, className: `${attrs.className} diagnosis-tile` },
       h("div", { className: "text-xs font-semibold text-slate-400 mb-1" }, item.label),
       h("div", { className: `inline-flex max-w-full px-2 py-0.5 rounded-lg text-sm font-bold ${toneClasses}` }, h("span", { className: "truncate" }, item.value)),
       h("div", { className: "text-xs text-slate-400 mt-2" }, item.detail)
@@ -5636,6 +5777,7 @@ input::placeholder { color: #7f93b3; }
     const [alertThreshold, setAlertThreshold] = useState(80);
     const [fromStage, setFromStage] = useState("encReal");
     const [toStage, setToStage] = useState("fatReal");
+    const [helpMode, setHelpMode] = useState(false);
     const [taskEntries, setTaskEntries] = useState(() => {
       if (typeof localStorage === "undefined") return [];
       try {
@@ -5807,7 +5949,7 @@ input::placeholder { color: #7f93b3; }
     if (!authenticated) {
       return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true) });
     }
-    return /* @__PURE__ */ React.createElement("div", { className: "min-h-screen bg-slate-100 flex app-shell", style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: `min-h-screen bg-slate-100 flex app-shell ${helpMode ? "help-mode-on" : ""}`, style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
       "aside",
       {
         className: `app-sidebar fixed md:static z-30 inset-y-0 left-0 w-64 flex flex-col transform ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform`,
@@ -5889,7 +6031,7 @@ input::placeholder { color: #7f93b3; }
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
       scheduleTaskReminder(15 * 60 * 1000);
-    } }), /* @__PURE__ */ React.createElement(TaskReminderToast, { notice: taskReminderNotice, notificationPermission, onOpen: openTaskReminderPrompt, onSnooze: snoozeTaskReminder, onDismiss: dismissTaskReminder, onEnableNotifications: enableBrowserNotifications }));
+    } }), helpMode && /* @__PURE__ */ React.createElement("div", { className: "help-mode-hint" }, "Modo Dúvidas ativo: passa o cursor por cima dos cartões destacados para veres de onde vem cada dado, o que significa e como deve ser lido."), /* @__PURE__ */ React.createElement("button", { type: "button", className: `help-floating-btn ${helpMode ? "help-floating-btn-active" : ""}`, onClick: () => setHelpMode((value) => !value), "aria-pressed": helpMode }, helpMode ? "Fechar dúvidas" : "Dúvidas?"), /* @__PURE__ */ React.createElement(TaskReminderToast, { notice: taskReminderNotice, notificationPermission, onOpen: openTaskReminderPrompt, onSnooze: snoozeTaskReminder, onDismiss: dismissTaskReminder, onEnableNotifications: enableBrowserNotifications }));
   }
   const __root = ReactDOM.createRoot(document.getElementById("root"));
   __root.render(React.createElement(App));
