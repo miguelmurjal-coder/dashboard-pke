@@ -424,10 +424,48 @@ table { border-collapse: collapse; }
   border-color: #f5f8fc;
   color: #0b1f3f;
 }
+.detail-disclosure {
+  background: #131c30;
+  border: 1px solid #233048;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+}
+.detail-disclosure-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.95rem 1rem;
+  text-align: left;
+}
+.detail-disclosure-title {
+  color: #f5f8fc;
+  font-size: 0.95rem;
+  line-height: 1.25rem;
+  font-weight: 800;
+}
+.detail-disclosure-subtitle {
+  color: #99acc9;
+  font-size: 0.72rem;
+  line-height: 1rem;
+  margin-top: 0.15rem;
+}
+.detail-disclosure-body {
+  border-top: 1px solid #233048;
+  padding: 1rem;
+}
+.summary-grid-tight {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
 @media (max-width: 900px) {
   .insight-strip { grid-template-columns: 1fr; }
   .funnel-steps { grid-template-columns: 1fr; }
   .funnel-step::after { display: none; }
+  .summary-grid-tight { grid-template-columns: 1fr; }
 }
 
 .metric-badge {
@@ -3325,6 +3363,19 @@ input::placeholder { color: #7f93b3; }
       /* @__PURE__ */ React.createElement(ChevronDown, { className: `w-4 h-4 transition-transform ${open ? "rotate-180" : ""}` })
     ), open && /* @__PURE__ */ React.createElement("div", { className: "p-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement(GenericTable, { table })));
   }
+  function DetailDisclosure({ title, subtitle, defaultOpen = false, children }) {
+    const [open, setOpen] = useState(!!defaultOpen);
+    return h("section", { className: "detail-disclosure" },
+      h("button", { type: "button", className: "detail-disclosure-btn", onClick: () => setOpen((value) => !value) },
+        h("div", null,
+          h("div", { className: "detail-disclosure-title" }, title),
+          subtitle && h("div", { className: "detail-disclosure-subtitle" }, subtitle)
+        ),
+        h(ChevronDown, { className: `w-4 h-4 text-blue-200 transition-transform ${open ? "rotate-180" : ""}` })
+      ),
+      open && h("div", { className: "detail-disclosure-body" }, children)
+    );
+  }
   function BusinessLinesPanel({ data, selectedMonths, alertThreshold }) {
     if (!data || !data.objetivadas && !data.reais) {
       return /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para esta sec\xE7\xE3o." });
@@ -4447,15 +4498,7 @@ input::placeholder { color: #7f93b3; }
           h("button", { type: "button", className: "drill-link", onClick: () => onNavigate && onNavigate("Resultados VSP") }, "Ver leads VSP")
         )
       ),
-      h("section", { className: "section-shell space-y-4" },
-        h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
-          h("div", null,
-            h("div", { className: "section-kicker" }, "DIAGNOSTICO EXECUTIVO"),
-            h("h3", { className: "section-heading" }, "O que merece atencao"),
-            h("p", { className: "section-subtitle" }, periodFilterLabel(selectedMonths))
-          ),
-          h(MetricBadge, { tone: primaryTone }, diagnosis.status)
-        ),
+      h(DetailDisclosure, { title: "Diagnostico executivo", subtitle: "Estado, ritmo, linha mais fraca e tracking. Abrir quando quiseres perceber o porquê.", defaultOpen: false },
         h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, diagnosis.metrics.map((item) => h(DiagnosisTile, { key: item.label, item }))),
         h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
           h(DiagnosisTile, { item: { label: "Entradas totais", value: fmtNumber(globalFunnel.entries), detail: `${fmtNumber(globalFunnel.vspLeads)} VSP + ${fmtNumber(globalFunnel.proposals)} BO`, tone: "neutral" } }),
@@ -4475,15 +4518,11 @@ input::placeholder { color: #7f93b3; }
           h("p", { className: "text-sm font-semibold text-slate-100 leading-snug" }, action)
         )))
       ),
-      h("section", { className: "section-shell space-y-4" },
-        h("div", null,
-          h("div", { className: "section-kicker" }, "CONFIANCA DOS DADOS"),
-          h("h3", { className: "section-heading" }, "Antes de decidir investimento"),
-          h("p", { className: "section-subtitle" }, "Mostra se a base esta solida para analisar canais, campanhas e conversao.")
-        ),
+      h(DetailDisclosure, { title: "Confianca dos dados", subtitle: "UTMs, encomendas ligadas, scorecards e estado das fontes.", defaultOpen: false },
         h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, dataConfidence.map((item) => h(DiagnosisTile, { key: item.label, item })))
       ),
-      h("div", { className: "grid lg:grid-cols-2 gap-4" },
+      h(DetailDisclosure, { title: "Canais e campanhas", subtitle: "Rankings para perceber onde ha valor e onde rever qualidade.", defaultOpen: false },
+      h("div", { className: "summary-grid-tight" },
         h("section", { className: "section-shell space-y-3" },
           h("div", null,
             h("div", { className: "section-kicker" }, "CANAIS"),
@@ -4508,12 +4547,8 @@ input::placeholder { color: #7f93b3; }
             { key: "boOrderRate", label: "Conv.", align: "right", render: (r) => r.boOrderRate === null ? "-" : fmtPercent(r.boOrderRate) }
           ] }) : h("p", { className: "text-xs text-slate-400" }, "Sem campanhas BO com volume suficiente para alerta no periodo.")
         )
-      ),
-      h("section", { className: "section-shell space-y-4" },
-        h("div", null,
-          h("div", { className: "section-kicker" }, "QUALIDADE DE LEAD"),
-          h("h3", { className: "section-heading" }, "Sinais VSP mais uteis")
-        ),
+      )),
+      h(DetailDisclosure, { title: "Qualidade de lead", subtitle: "Sinais VSP, scorecards e leads ainda sem encomenda.", defaultOpen: false },
         h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
           diagnosis.insights.map((item) => h(DiagnosisTile, { key: item.label, item })),
           h(DiagnosisTile, { item: { label: "Leads VSP sem encomenda", value: fmtNumber(Math.max(0, vspConversion.leads - vspConversion.converted)), detail: "Nao encontradas no BackOffice", tone: vspConversion.leads > vspConversion.converted ? "warn" : "good" } }),
@@ -5156,16 +5191,11 @@ input::placeholder { color: #7f93b3; }
     )));
   }
   function DashboardMKTCockpitView({ selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage, onNavigate }) {
-    return h("div", { className: "space-y-8" },
+    return h("div", { className: "space-y-6" },
       h(ResumoExecutivoView, { selectedMonths, alertThreshold, onNavigate }),
-      h("section", { className: "section-shell space-y-3" },
-        h("div", null,
-          h("div", { className: "section-kicker" }, "DASHBOARD MKT"),
-          h("h3", { className: "section-heading" }, "Detalhe de faturacao, objetivos e funil"),
-          h("p", { className: "section-subtitle" }, "A leitura executiva fica no topo. Aqui continua a analise completa do antigo Dashboard MKT.")
-        )
-      ),
-      h(DashboardMKTView, { selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage })
+      h(DetailDisclosure, { title: "Analise detalhada do Dashboard MKT", subtitle: "Objetivos, faturacao por linha, funil configuravel, VMT e tabelas completas.", defaultOpen: false },
+        h(DashboardMKTView, { selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage })
+      )
     );
   }
   function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
