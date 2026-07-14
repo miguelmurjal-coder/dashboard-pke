@@ -1460,7 +1460,6 @@ input::placeholder { color: #7f93b3; }
   ];
   const SECTION_HEADER_SET = new Set(SECTION_HEADERS);
   const DASHBOARD_SECTIONS = [
-    { key: "geral", label: "Vis\xE3o Geral" },
     { key: "funil", label: "Funil & Convers\xE3o" },
     { key: "detalhe", label: "Detalhe" }
   ];
@@ -4498,14 +4497,8 @@ input::placeholder { color: #7f93b3; }
           h("button", { type: "button", className: "drill-link", onClick: () => onNavigate && onNavigate("Resultados VSP") }, "Ver leads VSP")
         )
       ),
-      h(DetailDisclosure, { title: "Diagnostico executivo", subtitle: "Estado, ritmo, linha mais fraca e tracking. Abrir quando quiseres perceber o porquê.", defaultOpen: false },
-        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, diagnosis.metrics.map((item) => h(DiagnosisTile, { key: item.label, item }))),
-        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
-          h(DiagnosisTile, { item: { label: "Entradas totais", value: fmtNumber(globalFunnel.entries), detail: `${fmtNumber(globalFunnel.vspLeads)} VSP + ${fmtNumber(globalFunnel.proposals)} BO`, tone: "neutral" } }),
-          h(DiagnosisTile, { item: { label: "Proposta para encomenda", value: fmtPercent(globalFunnel.proposalToOrderRate), detail: `${fmtNumber(globalFunnel.orders)} encomendas nao canceladas`, tone: globalFunnel.proposalToOrderRate >= 0.06 ? "good" : globalFunnel.proposalToOrderRate >= 0.035 ? "warn" : "bad" } }),
-          h(DiagnosisTile, { item: { label: "Valor em aberto", value: fmtCurrency(globalFunnel.openProposalValue), detail: "Propostas BO ainda sem encomenda", tone: globalFunnel.openProposalValue ? "warn" : "good" } }),
-          h(DiagnosisTile, { item: { label: "Tracking incompleto", value: fmtNumber(Math.max(0, globalFunnel.entries - combinedRecords.filter((record) => record.hasCoreUtm).length)), detail: "Registos sem UTMs principais", tone: combinedRecords.some((record) => !record.hasCoreUtm) ? "warn" : "good" } })
-        )
+      h(DetailDisclosure, { title: "Diagnostico executivo", subtitle: "Ritmo, faturacao, linha mais fraca e estado geral. O funil fica no bloco acima.", defaultOpen: false },
+        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, diagnosis.metrics.map((item) => h(DiagnosisTile, { key: item.label, item })))
       ),
       h("section", { className: "section-shell space-y-4" },
         h("div", null,
@@ -4977,7 +4970,7 @@ input::placeholder { color: #7f93b3; }
       headers: 0
     });
     const [tab, setTab] = useState("propostasCIVA");
-    const [section, setSection] = useState("geral");
+    const [section, setSection] = useState("funil");
     const model = useMemo(() => buildDashboardModel(table), [table]);
     const { table: leadsTable } = useSheetData("Leads Di\xE1rios", { gid: SHEET_GIDS["Leads Di\xE1rios"] });
     const leadsData = useMemo(() => buildLeadsStageData(leadsTable), [leadsTable]);
