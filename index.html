@@ -445,7 +445,7 @@ table { border-collapse: collapse; }
   width: min(26rem, calc(100vw - 2rem));
   max-height: min(20rem, calc(100vh - 2rem));
   overflow: auto;
-  pointer-events: none;
+  pointer-events: auto;
   color: #e7ecf3;
   background: #0a0e1a;
   border: 1px solid #7dd3fc;
@@ -461,6 +461,23 @@ table { border-collapse: collapse; }
   color: #f8fafc;
   font-size: 0.82rem;
   margin-bottom: 0.25rem;
+}
+.universal-help-origin {
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #233048;
+  color: #99acc9;
+  font-size: 0.74rem;
+  line-height: 1.15rem;
+}
+.universal-help-origin a {
+  color: #7dd3fc;
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.universal-help-origin a:hover {
+  color: #bae6fd;
 }
 
 .section-shell {
@@ -1618,6 +1635,15 @@ input::placeholder { color: #7f93b3; }
   const BO_RESULTS_SHEET_ID = "1wkshQPJMKs3VuQXXzAm9tZnS_5DCfeAbpsuW79Xwap4";
   const DASHBOARD_GID = "1179921659";
   const SPREADSHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+  const DATA_SOURCE_LINKS = {
+    dashboard: { label: "Dashboard MKT", url: `${SPREADSHEET_URL}#gid=${DASHBOARD_GID}` },
+    vsp: { label: "PKE Leads FAP", url: `https://docs.google.com/spreadsheets/d/${VSP_RESULTS_SHEET_ID}/edit` },
+    bo: { label: "BackOffice PKE", url: `https://docs.google.com/spreadsheets/d/${BO_RESULTS_SHEET_ID}/edit` },
+    encomendas: { label: "BackOffice PKE · Encomendas", url: `https://docs.google.com/spreadsheets/d/${BO_RESULTS_SHEET_ID}/edit` },
+    leads: { label: "Dashboard MKT · Leads Diários", url: `${SPREADSHEET_URL}#gid=1508480304` },
+    jm: { label: "Dashboard MKT · Ficheiro JM", url: `${SPREADSHEET_URL}#gid=785129550` },
+    tarefas: { label: "Dashboard MKT · Log Tarefas", url: SPREADSHEET_URL }
+  };
   const SHEETS = [
     { name: "Dashboard MKT", label: "Dashboard MKT" },
     { name: "Resultados Totais", label: "Resultados Totais" },
@@ -2637,6 +2663,26 @@ input::placeholder { color: #7f93b3; }
       "data-help": helpTextForLabel(label, help)
     };
   }
+  function uniqueSources(sources) {
+    const seen = /* @__PURE__ */ new Set();
+    return sources.filter((source) => {
+      if (!source || seen.has(source.label)) return false;
+      seen.add(source.label);
+      return true;
+    });
+  }
+  function sourceLinksForHelp(text) {
+    const lower = normalizeSearchText(text || "");
+    const sources = [];
+    if (lower.includes("dashboard mkt") || lower.includes("objetivo") || lower.includes("faturacao") || lower.includes("faturação") || lower.includes("meta") || lower.includes("ritmo")) sources.push(DATA_SOURCE_LINKS.dashboard);
+    if (lower.includes("vsp") || lower.includes("fap") || lower.includes("scorecard") || lower.includes("sintoma") || lower.includes("landing")) sources.push(DATA_SOURCE_LINKS.vsp);
+    if (lower.includes("bo") || lower.includes("backoffice") || lower.includes("proposta")) sources.push(DATA_SOURCE_LINKS.bo);
+    if (lower.includes("encomenda")) sources.push(DATA_SOURCE_LINKS.encomendas);
+    if (lower.includes("leads diarios") || lower.includes("leads diários")) sources.push(DATA_SOURCE_LINKS.leads);
+    if (lower.includes("ficheiro jm") || lower.includes("vmt") || lower.includes("sinal")) sources.push(DATA_SOURCE_LINKS.jm);
+    if (lower.includes("log tarefas") || lower.includes("tarefa") || lower.includes("horas")) sources.push(DATA_SOURCE_LINKS.tarefas);
+    return uniqueSources(sources);
+  }
   function cleanHelpText(value, max = 120) {
     return String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
   }
@@ -2695,6 +2741,7 @@ input::placeholder { color: #7f93b3; }
         return void 0;
       }
       const onMove = (event) => {
+        if (event.target && event.target.closest && event.target.closest(".universal-help-tooltip")) return;
         const text = contextualHelpForElement(event.target);
         if (!text) {
           setTip(null);
@@ -2704,7 +2751,7 @@ input::placeholder { color: #7f93b3; }
         const height = 220;
         const left = Math.max(12, Math.min(event.clientX + 18, window.innerWidth - width - 12));
         const top = Math.max(12, Math.min(event.clientY + 18, window.innerHeight - height - 12));
-        setTip({ text, left, top });
+        setTip({ text, sources: sourceLinksForHelp(text), left, top });
       };
       const onLeave = () => setTip(null);
       document.addEventListener("mousemove", onMove, true);
@@ -2717,7 +2764,14 @@ input::placeholder { color: #7f93b3; }
     if (!active || !tip) return null;
     return h("div", { className: "universal-help-tooltip", style: { left: tip.left, top: tip.top } },
       h("strong", null, "Explicação simples"),
-      tip.text
+      h("div", null, tip.text),
+      tip.sources && tip.sources.length ? h("div", { className: "universal-help-origin" },
+        "Origem dos dados: ",
+        tip.sources.map((source, index) => h(React.Fragment, { key: source.label },
+          index > 0 ? " · " : "",
+          h("a", { href: source.url, target: "_blank", rel: "noopener noreferrer" }, source.label)
+        ))
+      ) : null
     );
   }
   function KpiCard({ label, value, numeric, format, tone = "neutral", icon: Icon2, gauge = false, kind = "money", trend, help }) {
