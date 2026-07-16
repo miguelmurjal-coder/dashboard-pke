@@ -462,6 +462,20 @@ table { border-collapse: collapse; }
   font-size: 0.82rem;
   margin-bottom: 0.25rem;
 }
+.universal-help-tooltip-frozen {
+  border-color: #F2A93B;
+  box-shadow: 0 24px 58px rgba(0,0,0,0.58), 0 0 0 3px rgba(242,169,59,0.14);
+}
+.universal-help-pin {
+  display: inline-flex;
+  margin-bottom: 0.45rem;
+  border-radius: 9999px;
+  background: rgba(242,169,59,0.16);
+  color: #f7bf5d;
+  padding: 0.12rem 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
 .universal-help-origin {
   margin-top: 0.75rem;
   padding-top: 0.65rem;
@@ -2735,12 +2749,16 @@ input::placeholder { color: #7f93b3; }
   }
   function UniversalHelpLens({ active }) {
     const [tip, setTip] = useState(null);
+    const [frozen, setFrozen] = useState(false);
+    const tooltipRef = useRef(null);
     useEffect(() => {
       if (!active) {
         setTip(null);
+        setFrozen(false);
         return void 0;
       }
       const onMove = (event) => {
+        if (frozen) return;
         if (event.target && event.target.closest && event.target.closest(".universal-help-tooltip")) return;
         const text = contextualHelpForElement(event.target);
         if (!text) {
@@ -2753,16 +2771,26 @@ input::placeholder { color: #7f93b3; }
         const top = Math.max(12, Math.min(event.clientY + 18, window.innerHeight - height - 12));
         setTip({ text, sources: sourceLinksForHelp(text), left, top });
       };
-      const onLeave = () => setTip(null);
+      const onLeave = () => {
+        if (!frozen) setTip(null);
+      };
+      const onClick = (event) => {
+        if (!tip) return;
+        if (tooltipRef.current && tooltipRef.current.contains(event.target)) return;
+        setFrozen((value) => !value);
+      };
       document.addEventListener("mousemove", onMove, true);
       document.addEventListener("mouseleave", onLeave, true);
+      document.addEventListener("click", onClick);
       return () => {
         document.removeEventListener("mousemove", onMove, true);
         document.removeEventListener("mouseleave", onLeave, true);
+        document.removeEventListener("click", onClick);
       };
-    }, [active]);
+    }, [active, frozen, tip]);
     if (!active || !tip) return null;
-    return h("div", { className: "universal-help-tooltip", style: { left: tip.left, top: tip.top } },
+    return h("div", { ref: tooltipRef, className: `universal-help-tooltip ${frozen ? "universal-help-tooltip-frozen" : ""}`, style: { left: tip.left, top: tip.top } },
+      frozen && h("span", { className: "universal-help-pin" }, "Fixado · clica fora para soltar"),
       h("strong", null, "Explicação simples"),
       h("div", null, tip.text),
       tip.sources && tip.sources.length ? h("div", { className: "universal-help-origin" },
