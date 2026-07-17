@@ -1678,9 +1678,9 @@ input::placeholder { color: #7f93b3; }
   const SEARCH_INDEX = [
     { title: "Cockpit principal", location: "Dashboard MKT", target: "Dashboard MKT", description: "Estado geral, alertas, funil global, faturação e próximas ações.", keywords: ["dashboard", "cockpit", "resumo", "estado", "alertas", "acoes", "ações", "diagnostico", "diagnóstico"] },
     { title: "Faturação e objetivos", location: "Dashboard MKT", target: "Dashboard MKT", description: "Objetivo, faturado, delta, ritmo do mês e linhas PS/FAP/AdBlue.", keywords: ["faturacao", "faturação", "objetivo", "objetivos", "delta", "ritmo", "ps", "fap", "adblue", "receita"] },
-    { title: "Funil global", location: "Dashboard MKT", target: "Dashboard MKT", description: "Entradas, propostas, encomendas, faturação e valor capturado.", keywords: ["funil", "leads", "propostas", "encomendas", "conversao", "conversão", "valor capturado"] },
+    { title: "Funil global", location: "Dashboard MKT", target: "Dashboard MKT", description: "Desconhecido, Proposta/Lead, Venda, Marcação/Faturado e valor capturado.", keywords: ["funil", "leads", "propostas", "vendas", "encomendas", "conversao", "conversão", "valor capturado"] },
     { title: "Resultados agregados", location: "Resultados Totais", target: "Resultados Totais", description: "Merge de VSP + BO, funil global, canais, campanhas, marcas e modelos.", keywords: ["resultados totais", "totais", "merge", "global", "vsp bo", "agregado", "agregados", "cruzado", "cruzamento"] },
-    { title: "Conversão VSP para encomendas", location: "Resultados Totais", target: "Resultados Totais", description: "Leads VSP encontrados como encomendas no BackOffice.", keywords: ["vsp encomendas", "vsp para encomenda", "conversao vsp", "conversão vsp", "matches", "backoffice", "bo", "telefone", "email"] },
+    { title: "Conversão VSP para vendas", location: "Resultados Totais", target: "Resultados Totais", description: "Leads VSP encontrados mais tarde como vendas/marcações no BackOffice.", keywords: ["vsp vendas", "vsp encomendas", "vsp para venda", "vsp para encomenda", "conversao vsp", "conversão vsp", "matches", "backoffice", "bo", "telefone", "email"] },
     { title: "UTMs das leads VSP", location: "Aprofundar Dados > Resultados VSP", target: "Resultados VSP", description: "Origem, campanha e tracking associados aos leads VSP/FAP.", keywords: ["utm vsp", "utms vsp", "utm de vsp", "utm da vsp", "tracking vsp", "source vsp", "campaign vsp", "campanha vsp"] },
     { title: "UTMs e tracking", location: "Resultados BO / VSP / UTM Creator", target: "UTM Creator", description: "Criar links UTM e encontrar cobertura de UTMs em BO/VSP.", keywords: ["utm", "utms", "tracking", "source", "medium", "campaign", "content", "mailerlite", "link", "url"] },
     { title: "Resultados VSP", location: "Aprofundar Dados", target: "Resultados VSP", description: "Leads VSP/FAP, scorecards, sintomas, marcas, campanhas e landing pages.", keywords: ["vsp", "scorecard", "sintomas", "landing", "landing page", "leads vsp", "fap", "gravidade", "urgencia", "urgência"] },
@@ -2622,14 +2622,17 @@ input::placeholder { color: #7f93b3; }
     "Faturacao vs objetivo": "Faturação vs objetivo: mostra que percentagem do objetivo de faturação já foi atingida no período escolhido. Vem da comparação entre faturação real e objetivo definidos no ficheiro principal do Dashboard MKT. Exemplo: 41,6% quer dizer que, para o período selecionado, ainda falta chegar aos 100% da meta.",
     "Falta para objetivo": "Falta para objetivo: é o valor em euros que ainda falta faturar para chegar ao objetivo do período selecionado. Vem da diferença entre objetivo de faturação e faturação real.",
     "Acima do objetivo": "Acima do objetivo: é o valor em euros que já ficou acima da meta. Vem da diferença positiva entre faturação real e objetivo.",
-    "Valor capturado": "Valor capturado: percentagem do valor proposto no BackOffice que já se transformou em encomenda. Em termos simples: de todo o dinheiro que apareceu como proposta, quanto já foi realmente capturado como encomenda. Fórmula: valor encomendado BO / valor proposto BO. Os dados vêm das propostas do BackOffice PKE e da tab Encomendas.",
-    "VSP para encomenda": "VSP para encomenda: percentagem de leads vindas das VSP/FAP que foram encontradas depois como encomendas no BackOffice PKE. VSP aqui significa lead/registo vindo do ficheiro PKE Leads FAP. Para cruzar, o dashboard compara contactos como email/telefone e confirma se existe uma encomenda posterior na tab Encomendas. Exemplo: 1,9% quer dizer que 1,9% das leads VSP analisadas apareceram como encomenda.",
+    "Valor capturado": "Valor capturado: percentagem do valor proposto no BackOffice que já chegou à fase de Venda/Marcação identificada. Em termos simples: de todo o dinheiro que apareceu como Proposta/Lead no BO, quanto já avançou comercialmente. Fórmula: valor de vendas BO / valor proposto BO. O pagamento efetivo entra depois na Faturação.",
+    "VSP para encomenda": "VSP para Venda: percentagem de leads vindas das VSP/FAP que foram encontradas depois no BackOffice já numa fase mais avançada, normalmente quando existe tentativa de marcação por vendedor ou website. As VSP não geram proposta BO no início, por isso este indicador mede passagem de lead VSP para Venda/Marcação, não proposta.",
+    "VSP para Venda": "VSP para Venda: percentagem de leads vindas das VSP/FAP que foram encontradas depois no BackOffice já numa fase mais avançada, normalmente quando existe tentativa de marcação por vendedor ou website. As VSP não geram proposta BO no início, por isso este indicador mede passagem de lead VSP para Venda/Marcação, não proposta.",
     "Total registos": "Total registos: soma dos registos usados no painel, juntando propostas do BackOffice e leads VSP/FAP, conforme o período selecionado.",
-    "BO propostas": "BO propostas: número de propostas vindas do BackOffice PKE. BO significa BackOffice, ou seja, dados registados internamente no site/sistema.",
-    "VSP leads": "VSP leads: número de leads vindas do ficheiro PKE Leads FAP. São contactos ou pedidos que entraram antes de sabermos se viraram proposta ou encomenda.",
+    "BO propostas": "BO propostas: número de propostas vindas do BackOffice PKE. Na linguagem de Marketing da PKE, Proposta = Lead BO, porque a pessoa preencheu dados e gerou uma oportunidade comercial.",
+    "BO Propostas/Leads": "BO Propostas/Leads: número de oportunidades vindas do BackOffice PKE. Na linguagem de Marketing da PKE, Proposta = Lead BO, porque a pessoa preencheu dados e gerou uma oportunidade comercial.",
+    "VSP leads": "VSP leads: número de leads vindas do ficheiro PKE Leads FAP. São contactos gerados por sales pages internas de FAP. Entram fora do BackOffice na fase inicial, mas devem contar para Marketing.",
     "Valor/Potencial total": "Valor/Potencial total: soma do valor conhecido ou estimado nos registos agregados. Nas propostas BO usa valor real/proposto; nas VSP pode representar potencial calculado a partir dos dados disponíveis.",
     "Valor medio": "Valor médio: valor total dividido pelo número de registos. Ajuda a perceber se os leads/propostas estão a trazer oportunidades mais altas ou mais baixas.",
-    "Conversao BO": "Conversão BO: percentagem de propostas do BackOffice que aparecem como encomendas. Fórmula: encomendas BO / propostas BO.",
+    "Conversao BO": "Conversão BO: percentagem de Propostas/Leads do BackOffice que chegaram a Venda/Marcação identificada. Fórmula: vendas BO / propostas BO.",
+    "Conversão BO para Venda": "Conversão BO para Venda: percentagem de Propostas/Leads do BackOffice que chegaram a Venda/Marcação identificada. Fórmula: vendas BO / propostas BO.",
     "Scorecard VSP": "Scorecard VSP: percentagem de leads VSP que têm informação suficiente de scorecard, como sintomas, urgência ou dados técnicos. Quanto maior, melhor conseguimos avaliar a qualidade do lead.",
     "Registos com UTM": "Registos com UTM: percentagem de registos que têm informação UTM associada. UTM serve para saber de onde veio o lead: campanha, origem, meio e conteúdo.",
     "Leads VSP/FAP": "Leads VSP/FAP: total de leads presentes no ficheiro PKE Leads FAP para o período selecionado.",
@@ -2637,29 +2640,34 @@ input::placeholder { color: #7f93b3; }
     "Potencial limpeza": "Potencial limpeza: estimativa de valor associada a serviços de limpeza, calculada a partir dos dados das leads VSP/FAP.",
     "Potencial substituicao": "Potencial substituição: estimativa de valor associada a substituição, calculada a partir dos dados das leads VSP/FAP.",
     "Leads com tracking": "Leads com tracking: percentagem de leads VSP/FAP com dados de origem/campanha suficientes para perceber que ação de marketing trouxe o contacto.",
-    "Entradas totais": "Entradas totais: soma das leads VSP/FAP com as propostas BO. É o ponto de partida do funil global: tudo o que entrou como oportunidade, antes de separarmos o que virou proposta, encomenda ou faturação.",
-    "Taxa entrada → proposta": "Taxa entrada para proposta: percentagem das entradas totais que chegaram a proposta no BackOffice. Fórmula: propostas BO / entradas totais. Ajuda a perceber se o volume que entra está a transformar-se em oportunidade comercial concreta.",
-    "Taxa proposta → encomenda": "Taxa proposta para encomenda: percentagem das propostas BO que se transformaram em encomenda não cancelada. Fórmula: encomendas BO / propostas BO. Mostra a eficácia comercial depois de existir proposta.",
-    "Taxa VSP → encomenda": "Taxa VSP para encomenda: percentagem de leads VSP/FAP que aparecem depois como encomenda no BackOffice. O dashboard cruza contactos como email/telefone e considera a encomenda posterior a lead.",
-    "Valor proposto BO": "Valor proposto BO: soma do valor das propostas registadas no BackOffice PKE. Representa dinheiro em oportunidade, ainda antes de sabermos se foi aceite.",
-    "Valor encomendado BO": "Valor encomendado BO: soma das encomendas não canceladas no BackOffice. Representa valor que já passou de proposta/oportunidade para encomenda.",
-    "Valor em aberto": "Valor em aberto: valor de propostas BO que ainda não aparecem como encomenda. Não quer dizer perdido automaticamente; quer dizer que ainda existe caminho comercial por fechar ou confirmar.",
-    "Valor VSP convertido": "Valor VSP convertido: valor das encomendas BO que conseguimos ligar a leads vindas das VSP/FAP. Ajuda a perceber quanto dinheiro real nasceu desse canal de leads.",
-    "Leads VSP analisadas": "Leads VSP analisadas: número de leads do ficheiro PKE Leads FAP consideradas no período selecionado para tentar cruzar com encomendas do BackOffice.",
-    "Valor encomendas VSP": "Valor encomendas VSP: valor total das encomendas BO que o dashboard conseguiu associar a leads VSP/FAP.",
-    "Dias medios ate encomenda": "Dias médios até encomenda: tempo médio entre a data da lead VSP/FAP e a data da encomenda encontrada no BackOffice. Ajuda a perceber quanto tempo o canal demora a converter.",
+    "Entradas totais": "Entradas totais: soma das leads VSP/FAP com as Propostas/Leads BO. É o ponto de partida do funil global de Marketing: Desconhecido -> Proposta/Lead -> Venda -> Marcação/Faturado.",
+    "Taxa entrada → proposta": "Taxa entrada para Proposta/Lead BO: mostra que parte das entradas agregadas está no BackOffice como proposta. Atenção: VSP entra como lead paralelo e não cria proposta BO no início.",
+    "Taxa entrada → Proposta/Lead": "Taxa entrada para Proposta/Lead BO: mostra que parte das entradas agregadas está no BackOffice como proposta. Atenção: VSP entra como lead paralelo e não cria proposta BO no início.",
+    "Taxa proposta → encomenda": "Taxa Proposta/Lead para Venda: percentagem das propostas BO que avançaram para Venda/Marcação identificada. Mostra a eficácia comercial depois de existir proposta BO.",
+    "Taxa Proposta/Lead → Venda": "Taxa Proposta/Lead para Venda: percentagem das Propostas/Leads BO que avançaram para Venda/Marcação identificada. Mostra a eficácia comercial depois de existir proposta BO.",
+    "Taxa VSP → encomenda": "Taxa VSP para Venda: percentagem de leads VSP/FAP que aparecem depois no BackOffice numa fase avançada. O dashboard cruza contactos como email/telefone e considera registo posterior à lead.",
+    "Valor proposto BO": "Valor proposto BO: soma do valor das Propostas/Leads registadas no BackOffice PKE. Representa dinheiro em oportunidade, antes da venda e antes da faturação.",
+    "Valor encomendado BO": "Valor de vendas BO: soma das vendas/marcações não canceladas no BackOffice. É uma fase comercial avançada; a Faturação só conta quando é efetivamente pago.",
+    "Valor em Venda BO": "Valor em Venda BO: soma das vendas/marcações não canceladas no BackOffice. É uma fase comercial avançada; a Faturação só conta quando é efetivamente pago.",
+    "Valor em aberto": "Valor em aberto: valor de Propostas/Leads BO que ainda não aparecem como Venda/Marcação. Não quer dizer perdido automaticamente; quer dizer que ainda existe caminho comercial por fechar ou confirmar.",
+    "Valor VSP convertido": "Valor VSP convertido: valor das vendas/marcações BO que conseguimos ligar a leads vindas das VSP/FAP. Ajuda a perceber quanto valor nasceu desse canal paralelo.",
+    "Leads VSP analisadas": "Leads VSP analisadas: número de leads do ficheiro PKE Leads FAP consideradas no período selecionado para tentar cruzar com vendas/marcações do BackOffice.",
+    "Valor encomendas VSP": "Valor vendas VSP: valor total das vendas/marcações BO que o dashboard conseguiu associar a leads VSP/FAP.",
+    "Valor vendas VSP": "Valor vendas VSP: valor total das vendas/marcações BO que o dashboard conseguiu associar a leads VSP/FAP.",
+    "Dias medios ate encomenda": "Dias médios até venda: tempo médio entre a data da lead VSP/FAP e a data da venda/marcação encontrada no BackOffice. Ajuda a perceber quanto tempo o canal demora a converter.",
     "Matches fortes": "Matches fortes: percentagem de conversões VSP para BO onde o cruzamento foi mais confiável, por exemplo contacto igual e reforço por marca/modelo. Quanto maior, mais segura é a ligação entre lead e encomenda.",
     "Melhor canal": "Melhor canal: origem com melhor sinal de qualidade ou volume útil no período. Normalmente vem de UTMs/origens dos ficheiros de leads e propostas.",
     "Campanhas a rever": "Campanhas a rever: campanhas com volume relevante mas sinais de qualidade abaixo do ideal. Servem para decidir onde ajustar criativo, segmentacao, landing page ou follow-up.",
     "Landing com potencial": "Landing com potencial: landing page que mostra maior valor potencial medio ou melhor sinal nas leads VSP/FAP.",
     "Maior urgência": "Maior urgência: sintoma/serviço com maior urgência média nos scorecards VSP/FAP. Ajuda a perceber que tipo de contacto deve ser tratado com prioridade.",
     "Maior urgencia": "Maior urgência: sintoma/serviço com maior urgência média nos scorecards VSP/FAP. Ajuda a perceber que tipo de contacto deve ser tratado com prioridade.",
-    "Leads VSP sem encomenda": "Leads VSP sem encomenda: leads do ficheiro PKE Leads FAP que ainda não foram encontradas como encomenda no BackOffice. São oportunidades para follow-up ou para melhorar o cruzamento de dados.",
+    "Leads VSP sem encomenda": "Leads VSP sem Venda identificada: leads do ficheiro PKE Leads FAP que ainda não foram encontradas mais tarde no BackOffice. Não é uma falha de proposta, porque as VSP não passam pelo BO no início; é uma oportunidade de follow-up e cruzamento.",
+    "Leads VSP sem Venda": "Leads VSP sem Venda identificada: leads do ficheiro PKE Leads FAP que ainda não foram encontradas mais tarde no BackOffice. Não é uma falha de proposta, porque as VSP não passam pelo BO no início; é uma oportunidade de follow-up e cruzamento.",
     "Scorecards VSP": "Scorecards VSP: número de leads VSP/FAP com informação de diagnóstico suficiente para perceber sintomas, urgência e potencial comercial.",
     "Entradas": "Entradas: total de oportunidades consideradas no funil. Neste bloco, o número grande é o total; a linha de baixo separa esse total por origem. Por exemplo: 15 161 entradas, das quais 980 são VSP e 14 181 são BO.",
-    "Propostas": "Propostas: oportunidades que chegaram a proposta no BackOffice. É uma fase mais avançada do que lead, mas ainda não significa venda fechada.",
-    "Encomendas": "Encomendas: propostas ou oportunidades que avançaram para encomenda no BackOffice. É um sinal comercial forte porque já passou da fase de intenção/proposta.",
-    "Faturacao": "Faturação: valor real faturado no período selecionado. Quando aparece com percentagem, compara esse valor com o objetivo definido."
+    "Propostas": "Propostas: no BackOffice, Proposta = Lead. É a fase em que o contacto preencheu dados e criou oportunidade comercial. Nas VSP, o lead existe sem criar proposta BO inicial.",
+    "Encomendas": "Vendas: no Dashboard podem vir da tab Encomendas do BackOffice, mas em linguagem MKT devem ser lidas como Venda/Marcação tentada. É a passagem depois da Proposta/Lead.",
+    "Faturacao": "Faturação/Marcação faturada: valor real pago/faturado no período selecionado. É a última fase do funil: só conta quando foi efetivamente pago."
   };
   function normalizeHelpKey(label) {
     return String(label || "").replace(/\s+/g, " ").trim();
@@ -2726,8 +2734,8 @@ input::placeholder { color: #7f93b3; }
     if (lower.includes("campanha")) return `${raw}: campanha identifica a ação de marketing que trouxe o contacto, como um email, anúncio, landing page ou iniciativa específica. Serve para saber onde investir mais ou cortar.`;
     if (lower.includes("landing")) return `${raw}: landing page é a página onde a pessoa entrou ou converteu. Ajuda a perceber que páginas geram leads com mais potencial ou mais urgência.`;
     if (lower.includes("canal") || lower.includes("origem") || lower.includes("source")) return `${raw}: canal/origem mostra de onde veio o contacto, por exemplo email, Google, Meta, direto ou website. Serve para comparar qualidade e valor por fonte.`;
-    if (lower.includes("convers")) return `${raw}: conversão é a passagem de uma fase para outra. Exemplo: lead para proposta, proposta para encomenda, ou VSP para encomenda. Uma percentagem baixa mostra perda no funil; uma percentagem alta mostra eficiência.`;
-    if (lower.includes("valor")) return `${raw}: quando o dashboard fala em valor, está normalmente a falar de euros associados a propostas, encomendas, faturação ou potencial estimado. Confirma sempre se o bloco diz proposto, encomendado, faturado ou potencial.`;
+    if (lower.includes("convers")) return `${raw}: conversão é a passagem de uma fase para outra. Na linguagem MKT da PKE, o funil é Desconhecido -> Proposta/Lead -> Venda -> Marcação/Faturado. Uma percentagem baixa mostra perda no funil; uma percentagem alta mostra eficiência.`;
+    if (lower.includes("valor")) return `${raw}: quando o dashboard fala em valor, está normalmente a falar de euros associados a Propostas/Leads, Vendas, Faturação ou potencial estimado. Confirma sempre se o bloco diz proposto, em venda, faturado ou potencial.`;
     if (lower.includes("%")) return `${raw}: este número é uma percentagem. Lê-se como "parte de um total". Exemplo: 12,8% significa 12,8 em cada 100 dentro daquele universo de dados.`;
     if (/[€]/.test(raw)) return `${raw}: este dado está em euros. Pode representar faturação, proposta, encomenda, potencial ou valor em aberto, dependendo do título do bloco onde aparece.`;
     return "";
@@ -2747,7 +2755,7 @@ input::placeholder { color: #7f93b3; }
     if (target.matches && target.matches("td")) return `${text || "Célula da tabela"}: isto é um valor bruto vindo de uma das folhas. Deve ser lido em conjunto com o cabeçalho da coluna e a linha onde aparece.`;
     if (target.matches && target.matches("svg, .chart-scroll")) return "Gráfico visual: transforma uma tabela de números numa leitura rápida. Barras maiores, fatias maiores ou linhas mais altas indicam maior peso relativo. Passa o cursor pelos elementos do gráfico para ver valores específicos quando disponível.";
     if (target.matches && target.matches(".section-shell, .detail-disclosure")) return `${text || "Secção"}: este bloco agrupa informação relacionada. Primeiro lê o título, depois os indicadores principais, e só depois entra no detalhe se precisares de explicar a causa.`;
-    return "Este elemento faz parte da leitura do Dashboard MKT. O dashboard junta dados de faturação, objetivos, leads VSP/FAP, propostas BO, encomendas BO e UTMs para mostrar onde estamos bem, onde há risco e que ação faz sentido a seguir.";
+    return "Este elemento faz parte da leitura do Dashboard MKT. O dashboard junta dados de faturação, objetivos, leads VSP/FAP, Propostas/Leads BO, Vendas BO e UTMs para mostrar onde estamos bem, onde há risco e que ação faz sentido a seguir.";
   }
   function UniversalHelpLens({ active }) {
     const [tip, setTip] = useState(null);
@@ -4689,7 +4697,7 @@ input::placeholder { color: #7f93b3; }
           h(Card, { title: "Qualidade por origem", subtitle: "Volume de propostas por origem. A convers\xE3o fica refletida nos KPIs e no detalhe." }, h(CategoryBarChart, { data: sourceChartRows, unit: "number" })),
           h(Card, { title: "Campanhas com mais propostas", subtitle: "Campanhas UTM principais por volume." }, h(CategoryBarChart, { data: campaignChartRows, unit: "number" }))
         ),
-        h(Card, { title: "Campanhas a rever", subtitle: "Campanhas com pelo menos 10 propostas e menor passagem para encomenda." }, h(CategoryBarChart, { data: weakCampaignChartRows, unit: "number" })),
+        h(Card, { title: "Campanhas a rever", subtitle: "Campanhas com pelo menos 10 Propostas/Leads e menor passagem para Venda." }, h(CategoryBarChart, { data: weakCampaignChartRows, unit: "number" })),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
           h(Card, { title: "Servi\xE7os mais pedidos", subtitle: "Categorias inferidas a partir do texto dos servi\xE7os." }, h(CategoryBarChart, { data: serviceChartRows, unit: "number" })),
           h(Card, { title: "Top marcas", subtitle: "Volume de propostas por marca." }, h(CategoryBarChart, { data: brandChartRows, unit: "number" }))
@@ -4929,10 +4937,10 @@ input::placeholder { color: #7f93b3; }
     const topChannels = groupOrdersByValue(activeOrders, (order) => order.channel || "Sem origem", 8);
     const topCampaigns = groupOrdersByValue(activeOrders, (order) => order.campaign || "Sem campanha", 8);
     const actions = [];
-    if (openProposalValue > 0) actions.push(`Recuperar propostas BO sem encomenda: ${fmtCurrency(openProposalValue)} ainda sem conversao no periodo.`);
-    if (vspConversion.leads && vspConversion.converted < vspConversion.leads) actions.push(`Trabalhar follow-up VSP: ${fmtNumber(vspConversion.leads - vspConversion.converted)} leads VSP ainda nao aparecem como encomenda.`);
+    if (openProposalValue > 0) actions.push(`Recuperar Propostas/Leads BO sem Venda identificada: ${fmtCurrency(openProposalValue)} ainda sem conversao no periodo.`);
+    if (vspConversion.leads && vspConversion.converted < vspConversion.leads) actions.push(`Trabalhar follow-up VSP: ${fmtNumber(vspConversion.leads - vspConversion.converted)} leads VSP ainda sem Venda identificada no BO.`);
     if (coreUtmMissing > 0) actions.push(`Corrigir tracking: ${fmtNumber(coreUtmMissing)} registos sem UTMs principais completos limitam a leitura por campanha.`);
-    if (topChannels[0]) actions.push(`Proteger o canal ${topChannels[0].label}: lidera valor encomendado com ${fmtCurrency(topChannels[0].value)}.`);
+    if (topChannels[0]) actions.push(`Proteger o canal ${topChannels[0].label}: lidera valor em Venda com ${fmtCurrency(topChannels[0].value)}.`);
     return {
       entries,
       proposals: boRecords.length,
@@ -5082,7 +5090,7 @@ input::placeholder { color: #7f93b3; }
       ${page("1. Volume e fontes - de onde vêm os leads", `${reportNarrative("Como ler esta página", "Esta página mostra se o crescimento vem de mais volume real ou apenas de uma fonte isolada. O gráfico semanal ajuda a perceber ritmo; o ranking de origens mostra onde está concentrada a procura.")}${reportStackedBars(report.weekRows, report.weekSources)}<div class="grid2"><div><h3>Top origens por volume</h3>${reportBarChart(report.sourceRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Top origens por valor</h3>${reportBarChart(report.sourceRows.map((r) => ({label:r.label,value:r.value})), "currency", "#42A585")}</div></div>${reportTable(["Origem", "Total", "BO", "VSP", "Valor"], sourceRows)}<h3>Leituras principais</h3>${reportBullets(report.volumeInsights)}`)}
       ${page("2. Qualificação Scorecard - oportunidades quentes", `${reportNarrative("Como ler esta página", "A gravidade mede o estado do problema; a urgência mede a pressa do cliente. Quando as duas sobem ao mesmo tempo, a lead deve deixar de ser tratada como volume e passar para prioridade comercial.")}<div class="grid2"><div><h3>Mapa gravidade x urgência</h3>${reportHeatMap(report.scoreMatrixRows)}</div><div><h3>Distribuição de prioridade</h3>${reportBarChart(report.priorityRows, "number", "#C99A4E")}</div></div><div class="grid2"><div>${reportBarChart(report.severityRows, "number", "#2F6FB2")}</div><div>${reportBarChart(report.urgencyRows, "number", "#42A585")}</div></div><div class="callout warn"><strong>Zona quente:</strong> ${fmtNumber(report.hotZoneTotal)} leads com gravidade e urgência elevadas.</div>${reportTable(["Lead/Viatura", "Grav.", "Urg.", "Tendência"], hotRows)}<h3>Leituras principais</h3>${reportBullets(report.scoreInsights)}`)}
       ${page("3. Auditoria de tracking (UTM)", `${reportNarrative("Como ler esta página", "UTMs são as etiquetas que dizem de onde veio cada lead. Sem UTMs consistentes, conseguimos contar leads, mas perdemos confiança para decidir que campanha merece orçamento.")}<div class="donut-row">${report.donutMetrics.map((item) => reportDonutChart(item.value, item.label, item.detail, item.color)).join("")}</div>${reportTable(["Problema", "Dimensão", "Correção"], report.utmAuditRows)}<h3>Convenção recomendada</h3>${reportTable(["Parâmetro", "Valores/Regra", "Exemplo"], report.utmRules)}`)}
-      ${page("4. Resultados BO e funil de valor", `${reportNarrative("Como ler esta página", "Aqui a leitura passa de leads para dinheiro. O funil mostra onde o volume se perde: entrada, proposta, encomenda e valor realmente capturado.")}${reportFunnelChart(report.funnelSteps)}<div class="kpis">${report.funnelKpis.map((k) => `<div class="kpi"><span>${escapeHtml(k.label)}</span><b>${escapeHtml(k.value)}</b><small>${escapeHtml(k.detail)}</small></div>`).join("")}</div><div class="grid2"><div><h3>Campanhas por volume</h3>${reportBarChart(report.campaignRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Campanhas por valor</h3>${reportBarChart(report.campaignRows.map((r) => ({label:r.label,value:r.value})), "currency", "#42A585")}</div></div>${reportTable(["Campanha", "Registos", "BO", "VSP", "Conv. BO"], campaignRows)}<h3>Leituras principais</h3>${reportBullets(report.funnelInsights)}`)}
+      ${page("4. Resultados BO e funil de valor", `${reportNarrative("Como ler esta página", "Aqui a leitura passa de leads para dinheiro. No BackOffice, Proposta = Lead. A fase seguinte é Venda/Marcação tentada; Faturação só conta quando foi efetivamente pago. As VSP entram como leads paralelos e podem aparecer no BO mais tarde, já na fase de Venda.")}${reportFunnelChart(report.funnelSteps)}<div class="kpis">${report.funnelKpis.map((k) => `<div class="kpi"><span>${escapeHtml(k.label)}</span><b>${escapeHtml(k.value)}</b><small>${escapeHtml(k.detail)}</small></div>`).join("")}</div><div class="grid2"><div><h3>Campanhas por volume</h3>${reportBarChart(report.campaignRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Campanhas por valor</h3>${reportBarChart(report.campaignRows.map((r) => ({label:r.label,value:r.value})), "currency", "#42A585")}</div></div>${reportTable(["Campanha", "Registos", "BO", "VSP", "Conv. BO"], campaignRows)}<h3>Leituras principais</h3>${reportBullets(report.funnelInsights)}`)}
       ${page("5. Procura por marca e páginas de destino", `${reportNarrative("Como ler esta página", "Marcas, modelos e landing pages mostram onde existe procura. A oportunidade está em distinguir procura saudável de páginas ou segmentos que geram volume sem avanço comercial.")}<div class="grid2"><div><h3>Top marcas</h3>${reportBarChart(report.brandRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Landing pages</h3>${reportBarChart(report.landingRows.map((r) => ({label:r.label,value:r.leads})), "number", "#42A585")}</div></div>${reportMiniMetrics(report.pageMetrics)}${reportTable(["Marca", "Total", "BO", "VSP"], brandRows)}<h3>Leituras principais</h3>${reportBullets(report.brandInsights)}`)}
       ${page("6. Plano de ação priorizado e KPIs semanais", `${reportNarrative("Como ler esta página", "Esta página transforma a análise em execução. P0 deve ser tratado primeiro porque afeta perda direta de leads, valor ou qualidade dos dados; P1 e P2 melhoram escala e leitura.")}${reportTable(["Pri.", "Ação", "Onde", "Impacto"], report.actionRows)}<h3>KPIs a reportar semanalmente</h3>${reportTable(["KPI", "Definição", "Baseline atual"], report.weeklyKpis)}<h3>Dados em falta para fechar o ciclo</h3>${reportTable(["Dado", "Para quê", "Como obter"], report.missingDataRows)}`)}
       <scr${"ipt"}>setTimeout(function(){window.focus();window.print();},400);</scr${"ipt"}>
@@ -5181,7 +5189,7 @@ input::placeholder { color: #7f93b3; }
     const generatedAt = new Date().toLocaleDateString("pt-PT");
     const periodLabel = readablePeriodLabel(selectedMonths);
     const healthTone = pctAtingido >= 1 ? "good" : pctAtingido >= 0.7 ? "warn" : "";
-    const executiveRead = `No período ${periodLabel}, a faturação está em ${fmtPercent(pctAtingido)} do objetivo (${fmtCurrency(revRealTotal)} de ${fmtCurrency(revObjTotal)}). O funil junta ${fmtNumber(globalFunnel.entries)} entradas, ${fmtNumber(globalFunnel.proposals)} propostas BO e ${fmtNumber(globalFunnel.orders)} encomendas BO.`;
+    const executiveRead = `No período ${periodLabel}, a faturação está em ${fmtPercent(pctAtingido)} do objetivo (${fmtCurrency(revRealTotal)} de ${fmtCurrency(revObjTotal)}). O funil MKT junta ${fmtNumber(globalFunnel.entries)} entradas, ${fmtNumber(globalFunnel.proposals)} Propostas/Leads BO e ${fmtNumber(globalFunnel.orders)} Vendas BO. As VSP entram como leads paralelos sem proposta BO inicial.`;
     const actionItems = [
       ...globalFunnel.actions,
       ...diagnosis.actions
@@ -5191,10 +5199,10 @@ input::placeholder { color: #7f93b3; }
     }
     const utmMissing = records.filter((record) => !record.hasCoreUtm).length;
     const funnelInsights = [
-      `O valor proposto no BO é ${fmtCurrency(globalFunnel.proposedValue)} e o valor encomendado é ${fmtCurrency(globalFunnel.orderedValue)}.`,
-      `O valor ainda em aberto nas propostas BO é ${fmtCurrency(globalFunnel.openProposalValue)}.`,
-      `A conversão de proposta BO para encomenda está em ${fmtPercent(globalFunnel.proposalToOrderRate)}.`,
-      `O cruzamento VSP com encomendas BO encontrou ${fmtNumber(vspConversion.converted)} conversões em ${fmtNumber(vspConversion.leads)} leads VSP.`
+      `O valor proposto no BO é ${fmtCurrency(globalFunnel.proposedValue)} e o valor em Venda BO é ${fmtCurrency(globalFunnel.orderedValue)}.`,
+      `O valor ainda em aberto nas Propostas/Leads BO é ${fmtCurrency(globalFunnel.openProposalValue)}.`,
+      `A conversão de Proposta/Lead BO para Venda está em ${fmtPercent(globalFunnel.proposalToOrderRate)}.`,
+      `O cruzamento VSP com o BackOffice encontrou ${fmtNumber(vspConversion.converted)} Vendas identificadas em ${fmtNumber(vspConversion.leads)} leads VSP.`
     ];
     const volumeInsights = [
       `${fmtNumber(globalFunnel.entries)} entradas no período: ${fmtNumber(globalFunnel.vspLeads)} vindas de VSP/FAP e ${fmtNumber(globalFunnel.proposals)} vindas do BackOffice.`,
@@ -5222,8 +5230,8 @@ input::placeholder { color: #7f93b3; }
       kpis: [
         { label: "Faturação vs objetivo", value: fmtPercent(pctAtingido), detail: `${fmtCurrency(revRealTotal)} / ${fmtCurrency(revObjTotal)}` },
         { label: "Entradas", value: fmtNumber(globalFunnel.entries), detail: `${fmtNumber(globalFunnel.vspLeads)} VSP + ${fmtNumber(globalFunnel.proposals)} BO` },
-        { label: "Valor capturado", value: fmtPercent(globalFunnel.valueCaptureRate), detail: `${fmtCurrency(globalFunnel.orderedValue)} encomendado` },
-        { label: "VSP para encomenda", value: fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0), detail: `${fmtNumber(vspConversion.converted)} conversões encontradas` }
+        { label: "Valor capturado", value: fmtPercent(globalFunnel.valueCaptureRate), detail: `${fmtCurrency(globalFunnel.orderedValue)} em Venda BO` },
+        { label: "VSP para Venda", value: fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0), detail: `${fmtNumber(vspConversion.converted)} Vendas identificadas` }
       ],
       actions: actionItems.slice(0, 5),
       sourceRows,
@@ -5257,15 +5265,15 @@ input::placeholder { color: #7f93b3; }
         ["utm_content", "criativo_conjunto_anuncio", "video01_cta"]
       ],
       funnelKpis: [
-        { label: "Propostas BO", value: fmtNumber(globalFunnel.proposals), detail: `${fmtPercent(globalFunnel.leadToProposalRate)} das entradas` },
-        { label: "Encomendas BO", value: fmtNumber(globalFunnel.orders), detail: `${fmtPercent(globalFunnel.proposalToOrderRate)} das propostas` },
-        { label: "Valor proposto", value: fmtCurrency(globalFunnel.proposedValue), detail: "BackOffice PKE" },
-        { label: "Valor em aberto", value: fmtCurrency(globalFunnel.openProposalValue), detail: "Propostas sem encomenda" }
+        { label: "Propostas/Leads BO", value: fmtNumber(globalFunnel.proposals), detail: `${fmtPercent(globalFunnel.leadToProposalRate)} das entradas` },
+        { label: "Vendas BO", value: fmtNumber(globalFunnel.orders), detail: `${fmtPercent(globalFunnel.proposalToOrderRate)} das Propostas/Leads` },
+        { label: "Valor proposto", value: fmtCurrency(globalFunnel.proposedValue), detail: "Propostas/Leads BO" },
+        { label: "Valor em aberto", value: fmtCurrency(globalFunnel.openProposalValue), detail: "Sem Venda identificada" }
       ],
       funnelSteps: [
         { label: "Entradas", value: globalFunnel.entries, detail: "VSP + BO", color: "#2F6FB2" },
-        { label: "Propostas BO", value: globalFunnel.proposals, detail: `${fmtPercent(globalFunnel.leadToProposalRate)} das entradas`, color: "#42A585" },
-        { label: "Encomendas", value: globalFunnel.orders, detail: `${fmtPercent(globalFunnel.proposalToOrderRate)} das propostas`, color: "#C99A4E" },
+        { label: "Propostas/Leads BO", value: globalFunnel.proposals, detail: `${fmtPercent(globalFunnel.leadToProposalRate)} das entradas`, color: "#42A585" },
+        { label: "Vendas", value: globalFunnel.orders, detail: `${fmtPercent(globalFunnel.proposalToOrderRate)} das Propostas/Leads`, color: "#C99A4E" },
         { label: "VSP convertidas", value: vspConversion.converted, detail: "Encontradas no BackOffice", color: "#6B7280" }
       ],
       funnelInsights,
@@ -5286,7 +5294,7 @@ input::placeholder { color: #7f93b3; }
         ["Leads/semana por fonte", "Contagem por origem normalizada", weekRows.length ? `Última semana: ${fmtNumber(weekRows[weekRows.length - 1].total)}` : "Sem histórico semanal"],
         ["% leads quentes", "Gravidade >= 4 e urgência >= 3 sobre scorecards", fmtPercent(scorecardRows.length ? hotZoneAllRows.length / scorecardRows.length : 0)],
         ["% UTMs completos", "Registos com source, medium, campaign e content", fmtPercent(coreUtmComplete)],
-        ["Conversão VSP para encomenda", "Leads VSP cruzados com Encomendas BO", fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0)]
+        ["Conversão VSP para Venda", "Leads VSP cruzados com fase avançada no BO", fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0)]
       ],
       missingDataRows: [
         ["Custos Meta/Google por campanha/dia", "Calcular CPL real por fonte e campanha", "Exportar CSV dos gestores de anúncios e ligar ao dashboard"],
@@ -5338,27 +5346,27 @@ input::placeholder { color: #7f93b3; }
     const vspScorecardRate = vspRecords.length ? vspSignals.scorecardRows.length / vspRecords.length : 0;
     const dataConfidence = [
       { label: "UTMs completos", value: fmtPercent(coreUtmComplete), detail: `${fmtNumber(combinedRecords.filter((record) => record.hasCoreUtm).length)} de ${fmtNumber(globalFunnel.entries)} registos`, tone: coreUtmComplete >= 0.8 ? "good" : coreUtmComplete >= 0.55 ? "warn" : "bad" },
-      { label: "BO com encomenda", value: fmtPercent(boOrderCoverage), detail: "Propostas ligadas a encomendas", tone: boOrderCoverage >= 0.08 ? "good" : boOrderCoverage >= 0.035 ? "warn" : "bad" },
+      { label: "BO com venda", value: fmtPercent(boOrderCoverage), detail: "Propostas/Leads ligadas a venda", tone: boOrderCoverage >= 0.08 ? "good" : boOrderCoverage >= 0.035 ? "warn" : "bad" },
       { label: "VSP com scorecard", value: fmtPercent(vspScorecardRate), detail: "Leads com leitura de sintomas", tone: vspScorecardRate >= 0.7 ? "good" : vspScorecardRate >= 0.45 ? "warn" : "bad" },
       { label: "Fontes carregadas", value: error ? "Parcial" : "Completo", detail: "Dashboard, VSP, BO e Encomendas", tone: error ? "warn" : "good" }
     ];
     const dataConfidenceChart = [
       { label: "UTMs completos", value: coreUtmComplete * 100 },
-      { label: "BO com encomenda", value: boOrderCoverage * 100 },
+      { label: "BO com venda", value: boOrderCoverage * 100 },
       { label: "VSP com scorecard", value: vspScorecardRate * 100 },
       { label: "Fontes carregadas", value: error ? 75 : 100 }
     ];
     const alerts = [
       { text: pctAtingido >= alertThreshold / 100 ? "Faturação dentro do limiar definido" : `Faturação abaixo do limiar de ${alertThreshold}%`, tone: pctAtingido >= alertThreshold / 100 ? "good" : "bad" },
-      { text: globalFunnel.openProposalValue > 0 ? `${fmtCurrency(globalFunnel.openProposalValue)} em propostas BO sem encomenda` : "Sem valor BO em aberto no período", tone: globalFunnel.openProposalValue > 0 ? "warn" : "good" },
-      { text: vspConversion.leads > vspConversion.converted ? `${fmtNumber(vspConversion.leads - vspConversion.converted)} leads VSP ainda não aparecem no BO` : "VSP cruzado sem perdas visíveis", tone: vspConversion.leads > vspConversion.converted ? "warn" : "good" },
+      { text: globalFunnel.openProposalValue > 0 ? `${fmtCurrency(globalFunnel.openProposalValue)} em Propostas/Leads BO sem Venda identificada` : "Sem valor BO em aberto no período", tone: globalFunnel.openProposalValue > 0 ? "warn" : "good" },
+      { text: vspConversion.leads > vspConversion.converted ? `${fmtNumber(vspConversion.leads - vspConversion.converted)} leads VSP ainda sem Venda identificada` : "VSP cruzado sem perdas visíveis", tone: vspConversion.leads > vspConversion.converted ? "warn" : "good" },
       { text: coreUtmComplete >= 0.8 ? "Tracking UTM com boa cobertura" : "Tracking UTM limita a leitura por campanha", tone: coreUtmComplete >= 0.8 ? "good" : "warn" }
     ];
     const funnelSteps = [
       { label: "Entradas", value: fmtNumber(globalFunnel.entries), detail: `${fmtNumber(globalFunnel.vspLeads)} VSP + ${fmtNumber(globalFunnel.proposals)} BO` },
-      { label: "Propostas", value: fmtNumber(globalFunnel.proposals), detail: `${fmtPercent(globalFunnel.leadToProposalRate)} das entradas` },
-      { label: "Encomendas", value: fmtNumber(globalFunnel.orders), detail: `${fmtPercent(globalFunnel.proposalToOrderRate)} das propostas` },
-      { label: "Faturação", value: fmtCurrency(revRealTotal), detail: `${fmtPercent(pctAtingido)} do objetivo` }
+      { label: "Proposta/Lead BO", value: fmtNumber(globalFunnel.proposals), detail: `${fmtPercent(globalFunnel.leadToProposalRate)} das entradas agregadas` },
+      { label: "Venda", value: fmtNumber(globalFunnel.orders), detail: `${fmtPercent(globalFunnel.proposalToOrderRate)} das Propostas/Leads BO` },
+      { label: "Marcação/Faturado", value: fmtCurrency(revRealTotal), detail: `${fmtPercent(pctAtingido)} do objetivo` }
     ];
     const actionItems = [
       ...globalFunnel.actions,
@@ -5375,7 +5383,7 @@ input::placeholder { color: #7f93b3; }
           h("div", null,
             h("div", { className: "section-kicker" }, "LEITURA RÁPIDA"),
             h("h2", { className: "section-heading" }, "Estado geral do marketing e vendas"),
-            h("p", { className: "section-subtitle" }, "Cruza faturação, objetivos, leads VSP, propostas BO e encomendas BO para orientar as próximas decisões.")
+            h("p", { className: "section-subtitle" }, "Cruza faturação, objetivos, leads VSP, Propostas/Leads BO e Vendas BO para orientar as próximas decisões.")
           ),
           h(MetricBadge, { tone: primaryTone }, diagnosis.status, " agora")
         ),
@@ -5383,7 +5391,7 @@ input::placeholder { color: #7f93b3; }
           h(KpiCard, { label: "Faturação vs objetivo", numeric: pctAtingido, format: "percent", gauge: true, icon: Target, kind: "ratio", tone: toneForPercent(pctAtingido, alertThreshold) }),
           h(KpiCard, { label: revenueGap >= 0 ? "Acima do objetivo" : "Falta para objetivo", numeric: Math.abs(revenueGap), format: "currency", icon: Euro, kind: revenueGap >= 0 ? "money" : "risk", tone: revenueGap >= 0 ? "good" : "warn" }),
           h(KpiCard, { label: "Valor capturado", numeric: globalFunnel.valueCaptureRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: globalFunnel.valueCaptureRate >= 0.2 ? "good" : globalFunnel.valueCaptureRate >= 0.08 ? "warn" : "bad" }),
-          h(KpiCard, { label: "VSP para encomenda", numeric: vspRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspRate >= 0.04 ? "good" : vspRate > 0 ? "warn" : "neutral" })
+          h(KpiCard, { label: "VSP para Venda", numeric: vspRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspRate >= 0.04 ? "good" : vspRate > 0 ? "warn" : "neutral" })
         )
       ),
       h("section", { className: "section-shell space-y-4" },
@@ -5400,7 +5408,7 @@ input::placeholder { color: #7f93b3; }
         h("div", null,
           h("div", { className: "section-kicker" }, "FUNIL GLOBAL"),
           h("h3", { className: "section-heading" }, "Leads para valor real"),
-          h("p", { className: "section-subtitle" }, "A leitura principal passa de volume para dinheiro: entradas, propostas, encomendas e faturação.")
+          h("p", { className: "section-subtitle" }, "Funil MKT: Desconhecido → Proposta/Lead → Venda → Marcação/Faturado. As VSP entram como leads paralelos, sem proposta BO inicial.")
         ),
         h("div", { className: "funnel-steps" }, funnelSteps.map((step) => h("div", { key: step.label, className: "funnel-step", "data-help": `${step.label}: ${step.value} ${step.label.toLowerCase()} no período selecionado. A linha de detalhe explica a composição deste valor: ${String(step.detail).replace(" + ", " e ")}.` },
           h("div", { className: "funnel-step-label" }, step.label),
@@ -5427,7 +5435,7 @@ input::placeholder { color: #7f93b3; }
           h("p", { className: "text-sm font-semibold text-slate-100 leading-snug" }, action)
         )))
       ),
-      h(DetailDisclosure, { title: "Confiança dos dados", subtitle: "UTMs, encomendas ligadas, scorecards e estado das fontes.", defaultOpen: false },
+      h(DetailDisclosure, { title: "Confiança dos dados", subtitle: "UTMs, vendas ligadas, scorecards e estado das fontes.", defaultOpen: false },
         h(CategoryBarChart, { data: dataConfidenceChart, unit: "percent" })
       ),
       h(DetailDisclosure, { title: "Canais e campanhas", subtitle: "Rankings para perceber onde há valor e onde rever qualidade.", defaultOpen: false },
@@ -5447,10 +5455,10 @@ input::placeholder { color: #7f93b3; }
           weakCampaignRows.length ? h(CategoryBarChart, { data: weakCampaignRows.map((row) => ({ label: row.label, value: row.bo || row.total || 0 })), unit: "number" }) : h("p", { className: "text-xs text-slate-400" }, "Sem campanhas BO com volume suficiente para alerta no período.")
         )
       )),
-      h(DetailDisclosure, { title: "Qualidade de lead", subtitle: "Sinais VSP, scorecards e leads ainda sem encomenda.", defaultOpen: false },
+      h(DetailDisclosure, { title: "Qualidade de lead", subtitle: "Sinais VSP, scorecards e leads ainda sem Venda identificada.", defaultOpen: false },
         h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
           diagnosis.insights.map((item) => h(DiagnosisTile, { key: item.label, item })),
-          h(DiagnosisTile, { item: { label: "Leads VSP sem encomenda", value: fmtNumber(Math.max(0, vspConversion.leads - vspConversion.converted)), detail: "Não encontradas no BackOffice", tone: vspConversion.leads > vspConversion.converted ? "warn" : "good" } }),
+          h(DiagnosisTile, { item: { label: "Leads VSP sem Venda", value: fmtNumber(Math.max(0, vspConversion.leads - vspConversion.converted)), detail: "Ainda sem fase avançada no BO", tone: vspConversion.leads > vspConversion.converted ? "warn" : "good" } }),
           h(DiagnosisTile, { item: { label: "Scorecards VSP", value: fmtNumber(vspSignals.scorecardRows.length), detail: "Leads com leitura de sintomas", tone: vspSignals.scorecardRows.length ? "good" : "neutral" } })
         )
       )
@@ -5511,13 +5519,13 @@ input::placeholder { color: #7f93b3; }
       !records.length ? h(EmptyState, { text: "Sem dados para o per\xEDodo selecionado." }) : h(React.Fragment, null,
         h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
           h(KpiCard, { label: "Total registos", numeric: totalRecords, format: "number", icon: Target, kind: "volume" }),
-          h(KpiCard, { label: "BO propostas", numeric: boRecords.length, format: "number", icon: Target, kind: "volume" }),
+          h(KpiCard, { label: "BO Propostas/Leads", numeric: boRecords.length, format: "number", icon: Target, kind: "volume" }),
           h(KpiCard, { label: "VSP leads", numeric: vspRecords.length, format: "number", icon: Target, kind: "volume" }),
           h(KpiCard, { label: "Valor/Potencial total", numeric: totalValue, format: "currency", icon: Euro, kind: "money" })
         ),
         h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
           h(KpiCard, { label: "Valor m\xE9dio", numeric: avgValue, format: "currency", icon: Euro, kind: "money" }),
-          h(KpiCard, { label: "Convers\xE3o BO", numeric: boOrderRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: boOrderRate >= 0.06 ? "good" : boOrderRate >= 0.035 ? "warn" : "bad" }),
+          h(KpiCard, { label: "Convers\xE3o BO para Venda", numeric: boOrderRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: boOrderRate >= 0.06 ? "good" : boOrderRate >= 0.035 ? "warn" : "bad" }),
           h(KpiCard, { label: "Scorecard VSP", numeric: vspScorecardRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspScorecardRate >= 0.75 ? "good" : vspScorecardRate >= 0.45 ? "warn" : "bad" }),
           h(KpiCard, { label: "Registos com UTM", numeric: utmRate, format: "percent", gauge: true, icon: Target, kind: "ratio", tone: coreUtmRate >= 0.7 ? "good" : utmRate >= 0.4 ? "warn" : "bad" })
         ),
@@ -5525,21 +5533,21 @@ input::placeholder { color: #7f93b3; }
           h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
             h("div", null,
               h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, "Funil Global de Valor"),
-              h("p", { className: "text-xs text-slate-400" }, "Junta entradas VSP/BO, propostas BO e encomendas BO para ler volume, valor proposto e valor realmente encomendado.")
+              h("p", { className: "text-xs text-slate-400" }, "Funil MKT: Desconhecido → Proposta/Lead → Venda → Marcação/Faturado. No BO, Proposta = Lead; nas VSP, o lead entra fora do BO e pode aparecer mais tarde como Venda.")
             ),
             h(MetricBadge, { tone: globalFunnel.valueCaptureRate >= 0.2 ? "good" : globalFunnel.valueCaptureRate >= 0.08 ? "warn" : "bad" }, fmtPercent(globalFunnel.valueCaptureRate), " valor capturado")
           ),
           h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
             h(DiagnosisTile, { item: { label: "Entradas totais", value: fmtNumber(globalFunnel.entries), detail: `${fmtNumber(globalFunnel.vspLeads)} VSP + ${fmtNumber(globalFunnel.proposals)} BO`, tone: "neutral" } }),
-            h(DiagnosisTile, { item: { label: "Taxa entrada \u2192 proposta", value: fmtPercent(globalFunnel.leadToProposalRate), detail: `${fmtNumber(globalFunnel.proposals)} propostas BO`, tone: globalFunnel.leadToProposalRate >= 0.75 ? "good" : "warn" } }),
-            h(DiagnosisTile, { item: { label: "Taxa proposta \u2192 encomenda", value: fmtPercent(globalFunnel.proposalToOrderRate), detail: `${fmtNumber(globalFunnel.orders)} encomendas nao canceladas`, tone: globalFunnel.proposalToOrderRate >= 0.06 ? "good" : globalFunnel.proposalToOrderRate >= 0.035 ? "warn" : "bad" } }),
-            h(DiagnosisTile, { item: { label: "Taxa VSP \u2192 encomenda", value: fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0), detail: `${fmtNumber(vspConversion.converted)} leads VSP convertidas`, tone: vspConversion.converted ? "warn" : "neutral" } })
+            h(DiagnosisTile, { item: { label: "Taxa entrada \u2192 Proposta/Lead", value: fmtPercent(globalFunnel.leadToProposalRate), detail: `${fmtNumber(globalFunnel.proposals)} Propostas/Leads BO`, tone: globalFunnel.leadToProposalRate >= 0.75 ? "good" : "warn" } }),
+            h(DiagnosisTile, { item: { label: "Taxa Proposta/Lead \u2192 Venda", value: fmtPercent(globalFunnel.proposalToOrderRate), detail: `${fmtNumber(globalFunnel.orders)} Vendas nao canceladas`, tone: globalFunnel.proposalToOrderRate >= 0.06 ? "good" : globalFunnel.proposalToOrderRate >= 0.035 ? "warn" : "bad" } }),
+            h(DiagnosisTile, { item: { label: "Taxa VSP \u2192 Venda", value: fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0), detail: `${fmtNumber(vspConversion.converted)} leads VSP convertidas`, tone: vspConversion.converted ? "warn" : "neutral" } })
           ),
           h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
-            h(DiagnosisTile, { item: { label: "Valor proposto BO", value: fmtCurrency(globalFunnel.proposedValue), detail: "Soma das propostas BO", tone: "neutral" } }),
-            h(DiagnosisTile, { item: { label: "Valor encomendado BO", value: fmtCurrency(globalFunnel.orderedValue), detail: "Encomendas nao canceladas", tone: "good" } }),
-            h(DiagnosisTile, { item: { label: "Valor em aberto", value: fmtCurrency(globalFunnel.openProposalValue), detail: "Propostas BO sem encomenda", tone: globalFunnel.openProposalValue ? "warn" : "good" } }),
-            h(DiagnosisTile, { item: { label: "Valor VSP convertido", value: fmtCurrency(vspConversion.value), detail: "Encomendas cruzadas com VSP", tone: vspConversion.value ? "good" : "neutral" } })
+            h(DiagnosisTile, { item: { label: "Valor proposto BO", value: fmtCurrency(globalFunnel.proposedValue), detail: "Soma das Propostas/Leads BO", tone: "neutral" } }),
+            h(DiagnosisTile, { item: { label: "Valor em Venda BO", value: fmtCurrency(globalFunnel.orderedValue), detail: "Vendas nao canceladas", tone: "good" } }),
+            h(DiagnosisTile, { item: { label: "Valor em aberto", value: fmtCurrency(globalFunnel.openProposalValue), detail: "Propostas/Leads BO sem Venda", tone: globalFunnel.openProposalValue ? "warn" : "good" } }),
+            h(DiagnosisTile, { item: { label: "Valor VSP convertido", value: fmtCurrency(vspConversion.value), detail: "Vendas cruzadas com VSP", tone: vspConversion.value ? "good" : "neutral" } })
           ),
           h("div", { className: "grid lg:grid-cols-2 gap-4" },
             h("div", { className: "bg-slate-50 rounded-lg border border-slate-200 p-3" },
@@ -5549,41 +5557,41 @@ input::placeholder { color: #7f93b3; }
             h("div", { className: "bg-slate-50 rounded-lg border border-slate-200 p-3" },
               h("h4", { className: "text-xs font-bold text-blue-900 mb-2" }, "Leitura"),
               h("ul", { className: "executive-list space-y-1 text-blue-900" },
-                h("li", null, "Valor proposto vem das propostas BO."),
-                h("li", null, "Valor encomendado vem da tab Encomendas."),
-                h("li", null, "VSP entra como lead/potencial e tambem como conversao quando aparece em Encomendas.")
+                h("li", null, "Valor proposto vem das Propostas/Leads BO."),
+                h("li", null, "Valor em Venda vem da tab Encomendas do BO, lida como fase comercial avançada."),
+                h("li", null, "VSP entra como lead/potencial sem proposta BO inicial e também como conversão quando aparece mais tarde no BO.")
               )
             )
           )
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Top canais por valor encomendado", subtitle: "Apenas encomendas BO nao canceladas." }, h(CategoryBarChart, { data: topChannelValueRows, unit: "currency" })),
-          h(Card, { title: "Top campanhas por valor encomendado", subtitle: "Apenas encomendas BO nao canceladas." }, h(CategoryBarChart, { data: topCampaignValueRows, unit: "currency" }))
+          h(Card, { title: "Top canais por valor em Venda", subtitle: "Apenas vendas BO nao canceladas." }, h(CategoryBarChart, { data: topChannelValueRows, unit: "currency" })),
+          h(Card, { title: "Top campanhas por valor em Venda", subtitle: "Apenas vendas BO nao canceladas." }, h(CategoryBarChart, { data: topCampaignValueRows, unit: "currency" }))
         ),
         h("section", { className: "bg-white rounded-xl border border-slate-200 p-4 space-y-4" },
           h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
             h("div", null,
-              h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, "Convers\xE3o VSP \u2192 Encomendas BO"),
-              h("p", { className: "text-xs text-slate-400" }, "Cruza leads VSP/FAP com a tab Encomendas por email/telefone, exigindo encomenda posterior \xE0 data da lead. Marca/modelo refor\xE7am o match.")
+              h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, "Convers\xE3o VSP \u2192 Venda BO"),
+              h("p", { className: "text-xs text-slate-400" }, "Cruza leads VSP/FAP com o BackOffice por email/telefone, exigindo registo posterior \xE0 data da lead. Isto mede Venda/Marcação identificada, não proposta BO inicial.")
             ),
             h(MetricBadge, { tone: vspConversion.converted ? "good" : "neutral" }, vspConversion.converted, " convers\xF5es")
           ),
           h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
             h(DiagnosisTile, { item: { label: "Leads VSP analisadas", value: fmtNumber(vspConversion.leads), detail: periodFilterLabel(selectedMonths), tone: "neutral" } }),
-            h(DiagnosisTile, { item: { label: "Taxa VSP \u2192 encomenda", value: fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0), detail: `${fmtNumber(vspConversion.converted)} leads convertidas`, tone: vspConversion.converted / Math.max(1, vspConversion.leads) >= 0.04 ? "good" : vspConversion.converted ? "warn" : "neutral" } }),
-            h(DiagnosisTile, { item: { label: "Valor encomendas VSP", value: fmtCurrency(vspConversion.value), detail: `${fmtCurrency(vspConversion.converted ? vspConversion.value / vspConversion.converted : 0)} media`, tone: "good" } }),
-            h(DiagnosisTile, { item: { label: "Dias médios até encomenda", value: fmtNumber(vspConversion.avgDays), detail: "Desde a data da lead VSP", tone: "neutral" } })
+            h(DiagnosisTile, { item: { label: "Taxa VSP \u2192 Venda", value: fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0), detail: `${fmtNumber(vspConversion.converted)} leads convertidas`, tone: vspConversion.converted / Math.max(1, vspConversion.leads) >= 0.04 ? "good" : vspConversion.converted ? "warn" : "neutral" } }),
+            h(DiagnosisTile, { item: { label: "Valor vendas VSP", value: fmtCurrency(vspConversion.value), detail: `${fmtCurrency(vspConversion.converted ? vspConversion.value / vspConversion.converted : 0)} media`, tone: "good" } }),
+            h(DiagnosisTile, { item: { label: "Dias médios até Venda", value: fmtNumber(vspConversion.avgDays), detail: "Desde a data da lead VSP", tone: "neutral" } })
           ),
           h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
             h(DiagnosisTile, { item: { label: "Matches fortes", value: fmtPercent(vspConversion.converted ? vspConversion.strong / vspConversion.converted : 0), detail: "Contacto + marca/modelo", tone: vspConversion.strong === vspConversion.converted && vspConversion.converted ? "good" : "warn" } }),
-            h(DiagnosisTile, { item: { label: "Não canceladas", value: fmtPercent(vspConversion.converted ? vspConversion.finalized / vspConversion.converted : 0), detail: `${fmtNumber(vspConversion.finalized)} encomendas`, tone: vspConversion.finalized === vspConversion.converted && vspConversion.converted ? "good" : "warn" } }),
-            h(DiagnosisTile, { item: { label: "Leads sem conversão", value: fmtNumber(Math.max(0, vspConversion.leads - vspConversion.converted)), detail: "Não encontradas na tab Encomendas", tone: "warn" } }),
+            h(DiagnosisTile, { item: { label: "Não canceladas", value: fmtPercent(vspConversion.converted ? vspConversion.finalized / vspConversion.converted : 0), detail: `${fmtNumber(vspConversion.finalized)} vendas`, tone: vspConversion.finalized === vspConversion.converted && vspConversion.converted ? "good" : "warn" } }),
+            h(DiagnosisTile, { item: { label: "Leads sem Venda", value: fmtNumber(Math.max(0, vspConversion.leads - vspConversion.converted)), detail: "Sem fase avançada identificada", tone: "warn" } }),
             h(DiagnosisTile, { item: { label: "Fonte do cruzamento", value: "VSP + BO", detail: "Sem expor dados pessoais", tone: "neutral" } })
           )
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Convers\xE3o VSP por origem", subtitle: "N\xFAmero de leads VSP que chegaram a encomenda no BackOffice." }, h(CategoryBarChart, { data: vspConversionSourceRows, unit: "number" })),
-          h(Card, { title: "Convers\xE3o VSP por campanha", subtitle: "Campanhas VSP/FAP com leads que aparecem depois como encomendas." }, h(CategoryBarChart, { data: vspConversionCampaignRows, unit: "number" }))
+          h(Card, { title: "Convers\xE3o VSP por origem", subtitle: "N\xFAmero de leads VSP que chegaram a Venda identificada no BackOffice." }, h(CategoryBarChart, { data: vspConversionSourceRows, unit: "number" })),
+          h(Card, { title: "Convers\xE3o VSP por campanha", subtitle: "Campanhas VSP/FAP com leads que aparecem depois como Venda no BO." }, h(CategoryBarChart, { data: vspConversionCampaignRows, unit: "number" }))
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
           h(Card, { title: "Volume mensal BO vs VSP", subtitle: "Compara propostas BO e leads VSP no mesmo per\xEDodo." }, h(MonthlyComparisonChart, { data: monthComparisonRows, nameA: "BO", nameB: "VSP" })),
@@ -5593,7 +5601,7 @@ input::placeholder { color: #7f93b3; }
           h(Card, { title: "Qualidade por origem", subtitle: "Volume total combinado por origem." }, h(CategoryBarChart, { data: sourceChartRows, unit: "number" })),
           h(Card, { title: "Campanhas combinadas", subtitle: "Campanhas com maior volume em BO + VSP." }, h(CategoryBarChart, { data: campaignChartRows, unit: "number" }))
         ),
-        h(Card, { title: "Campanhas BO a rever", subtitle: "Dentro do BO, campanhas com volume e menor passagem para encomenda." }, h(CategoryBarChart, { data: weakCampaignRows.map((row) => ({ label: row.label, value: row.bo || 0 })), unit: "number" })),
+        h(Card, { title: "Campanhas BO a rever", subtitle: "Dentro do BO, campanhas com volume e menor passagem para Venda." }, h(CategoryBarChart, { data: weakCampaignRows.map((row) => ({ label: row.label, value: row.bo || 0 })), unit: "number" })),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
           h(Card, { title: "Servi\xE7os agregados", subtitle: "Categorias BO + inten\xE7\xF5es/potencial VSP." }, h(CategoryBarChart, { data: serviceChartRows, unit: "number" })),
           h(Card, { title: "Top marcas agregadas", subtitle: "Marcas mais frequentes em BO + VSP." }, h(CategoryBarChart, { data: brandChartRows, unit: "number" }))
@@ -6116,7 +6124,7 @@ input::placeholder { color: #7f93b3; }
       { label: "Dashboard MKT", value: dashboardTable ? "OK" : "A carregar", detail: "Faturação, objetivos e linhas" },
       { label: "Resultados VSP", value: fmtNumber(vspRecords.length), detail: "Leads VSP/FAP no período" },
       { label: "Resultados BO", value: fmtNumber(boRecords.length), detail: "Propostas BackOffice no período" },
-      { label: "Encomendas BO", value: fmtNumber(vspConversion.converted), detail: "Conversões VSP encontradas" }
+      { label: "Vendas BO", value: fmtNumber(vspConversion.converted), detail: "Conversões VSP encontradas" }
     ];
     const generate = () => generateDashboardReport(reportData);
     return h("div", { className: "space-y-6" },
