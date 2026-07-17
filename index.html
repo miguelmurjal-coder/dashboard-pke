@@ -4972,15 +4972,16 @@ input::placeholder { color: #7f93b3; }
   }
   function reportDonutChart(value, label, detail, color = "#2F6FB2") {
     const safeValue = Math.max(0, Math.min(1, value || 0));
-    const degrees = Math.round(safeValue * 360);
-    return `<div class="donut-card"><div class="donut" style="background:conic-gradient(${color} ${degrees}deg,#e6ebf3 0deg)"><span>${escapeHtml(fmtPercent(safeValue))}</span></div><div><strong>${escapeHtml(label)}</strong><p>${escapeHtml(detail)}</p></div></div>`;
+    const dash = Math.round(safeValue * 100);
+    return `<div class="donut-card"><div class="donut"><svg viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="17" fill="none" stroke="#e6ebf3" stroke-width="7"></circle><circle cx="22" cy="22" r="17" pathLength="100" fill="none" stroke="${escapeHtml(color)}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${dash} 100" transform="rotate(-90 22 22)"></circle></svg><span>${escapeHtml(fmtPercent(safeValue))}</span></div><div><strong>${escapeHtml(label)}</strong><p>${escapeHtml(detail)}</p></div></div>`;
   }
   function reportFunnelChart(steps) {
     const clean = (steps || []).filter((step) => step && step.value >= 0);
     const max = Math.max(1, ...clean.map((step) => step.value));
     return `<div class="report-funnel">${clean.map((step, index) => {
       const width = Math.max(18, step.value / max * 100);
-      return `<div class="funnel-row"><div class="funnel-label"><strong>${escapeHtml(step.label)}</strong><span>${escapeHtml(step.detail || "")}</span></div><div class="funnel-shape" style="width:${width}%;background:${step.color || ["#2F6FB2", "#42A585", "#C99A4E", "#6B7280"][index % 4]}">${escapeHtml(fmtByUnit(step.value, step.unit || "number"))}</div></div>`;
+      const color = step.color || ["#2F6FB2", "#42A585", "#C99A4E", "#6B7280"][index % 4];
+      return `<div class="funnel-row"><div class="funnel-label"><strong>${escapeHtml(step.label)}</strong><span>${escapeHtml(step.detail || "")}</span></div><div class="funnel-track"><svg viewBox="0 0 100 14" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="0" width="100" height="14" fill="#edf1f7"></rect><rect x="0" y="0" width="${width}" height="14" fill="${escapeHtml(color)}"></rect></svg><b>${escapeHtml(fmtByUnit(step.value, step.unit || "number"))}</b></div></div>`;
     }).join("")}</div>`;
   }
   function reportBarChart(rows, unit = "number", color = "#2F6FB2") {
@@ -4989,7 +4990,7 @@ input::placeholder { color: #7f93b3; }
     if (!clean.length) return `<p class="muted">Sem dados suficientes para gráfico.</p>`;
     return `<div class="report-bars">${clean.map((r) => {
       const width = Math.max(3, r.value / max * 100);
-      return `<div class="report-bar-row"><div class="report-bar-label">${escapeHtml(r.label)}</div><div class="report-bar-track"><div class="report-bar-fill" style="width:${width}%;background:${color}"></div></div><div class="report-bar-value">${escapeHtml(fmtByUnit(r.value, unit))}</div></div>`;
+      return `<div class="report-bar-row"><div class="report-bar-label">${escapeHtml(r.label)}</div><svg class="report-bar-svg" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="0" width="100" height="10" fill="#edf1f7"></rect><rect x="0" y="0" width="${width}" height="10" fill="${escapeHtml(color)}"></rect></svg><div class="report-bar-value">${escapeHtml(fmtByUnit(r.value, unit))}</div></div>`;
     }).join("")}</div>`;
   }
   function reportStackedBars(weeks, sources) {
@@ -4997,13 +4998,22 @@ input::placeholder { color: #7f93b3; }
     const max = Math.max(1, ...weeks.map((week) => week.total));
     const colors = ["#2F6FB2", "#42A585", "#C99A4E", "#6B7280", "#8B5CF6"];
     return `<div class="stacked-report">${weeks.map((week) => {
+      let cursor = 0;
       const segments = sources.map((source, i) => {
         const value = week[source] || 0;
         const width = week.total ? value / week.total * 100 : 0;
-        return `<span style="width:${width}%;background:${colors[i % colors.length]}" title="${escapeHtml(source)} ${value}"></span>`;
+        const rect = `<rect x="${cursor}" y="0" width="${width}" height="14" fill="${colors[i % colors.length]}"><title>${escapeHtml(source)} ${escapeHtml(fmtNumber(value))}</title></rect>`;
+        cursor += width;
+        return rect;
       }).join("");
-      return `<div class="stack-row"><div class="stack-label">${escapeHtml(week.label)}</div><div class="stack-track" style="max-width:${Math.max(8, week.total / max * 100)}%">${segments}</div><div class="stack-total">${fmtNumber(week.total)}</div></div>`;
+      const scaledWidth = Math.max(8, week.total / max * 100);
+      return `<div class="stack-row"><div class="stack-label">${escapeHtml(week.label)}</div><svg class="stack-svg" viewBox="0 0 100 14" preserveAspectRatio="none" style="width:${scaledWidth}%" aria-hidden="true"><rect x="0" y="0" width="100" height="14" fill="#edf1f7"></rect>${segments}</svg><div class="stack-total">${fmtNumber(week.total)}</div></div>`;
     }).join("")}</div><div class="legend">${sources.map((s, i) => `<span><b style="background:${colors[i % colors.length]}"></b>${escapeHtml(s)}</span>`).join("")}</div>`;
+  }
+  function reportHeatColor(value, max) {
+    if (!value) return "#f3f6fa";
+    const shades = ["#dbe8f5", "#c6d9ed", "#a9c7e4", "#83aed7", "#5f96cb", "#3678ba"];
+    return shades[Math.min(shades.length - 1, Math.floor(value / Math.max(1, max) * shades.length))];
   }
   function reportHeatMap(rows) {
     const map = new Map();
@@ -5013,8 +5023,7 @@ input::placeholder { color: #7f93b3; }
     const severities = [5, 4, 3, 2, 1];
     return `<div class="heatmap"><div class="heat-label"></div>${urgencies.map((u) => `<div class="heat-head">U${u}</div>`).join("")}${severities.map((g) => `<div class="heat-head">G${g}</div>${urgencies.map((u) => {
       const value = map.get(`${g}-${u}`) || 0;
-      const opacity = value ? 0.18 + value / max * 0.72 : 0.05;
-      return `<div class="heat-cell" style="background:rgba(47,111,178,${opacity})">${value ? escapeHtml(fmtNumber(value)) : ""}</div>`;
+      return `<div class="heat-cell"><svg viewBox="0 0 42 24" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="0" width="42" height="24" fill="${reportHeatColor(value, max)}" stroke="#d8e3ef"></rect></svg><span>${value ? escapeHtml(fmtNumber(value)) : ""}</span></div>`;
     }).join("")}`).join("")}</div>`;
   }
   function weekKeyForDate(date) {
@@ -5051,7 +5060,7 @@ input::placeholder { color: #7f93b3; }
     const hotRows = report.hotZoneRows.map((r) => [vehicleLabel(r), fmtNumber(numericValue(r, VSP_SEVERITY_COL)), fmtNumber(numericValue(r, VSP_URGENCY_COL)), textValue(r, VSP_TREND_COL) || "—"]);
     return `<!DOCTYPE html><html lang="pt-PT"><head><meta charset="utf-8"><title>${escapeHtml(report.title)}</title><style>
       @page{size:A4;margin:16mm 18mm 14mm}
-      *{box-sizing:border-box} body{margin:0;background:#f3f6fb;color:#1f2937;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.35}
+      *{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact} body{margin:0;background:#f3f6fb;color:#1f2937;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.35}
       .page{width:210mm;min-height:297mm;margin:0 auto 12px;background:white;padding:18mm 18mm 12mm;page-break-after:always;position:relative}
       .page main{min-height:246mm}.cover{display:flex;flex-direction:column;justify-content:center}
       h1{font-size:30px;line-height:1.1;color:#1f4f8a;margin:0 0 14px} h2{font-size:18px;color:#1f4f8a;margin:0 0 12px} h3{font-size:13px;color:#1f2937;margin:14px 0 7px}
@@ -5061,11 +5070,11 @@ input::placeholder { color: #7f93b3; }
       .report-bullets{margin:9px 0 0 0;padding-left:16px}.report-bullets li{margin:5px 0}.muted{color:#6b7280}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.callout{border-left:4px solid #C64D5A;background:#fff5f5;padding:9px 11px;margin:10px 0}.good{border-left-color:#42A585;background:#f2fbf7}.warn{border-left-color:#C99A4E;background:#fffaf0}
       .narrative{background:#f7f9fc;border:1px solid #dfe6ef;padding:10px 12px;margin:8px 0 12px}.narrative strong{color:#1f4f8a;font-size:12px}.narrative p{margin:4px 0 0;color:#465569}
       .mini-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 12px}.mini-metric{background:#f8fafc;border:1px solid #d6dde8;padding:8px}.mini-metric span{display:block;font-size:9px;text-transform:uppercase;color:#64748b;font-weight:800}.mini-metric b{display:block;font-size:15px;color:#111827}.mini-metric small{color:#64748b}
-      .donut-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 12px}.donut-card{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:center;border:1px solid #d6dde8;background:#f8fafc;padding:9px}.donut{width:58px;height:58px;border-radius:50%;display:grid;place-items:center}.donut span{background:white;border-radius:50%;width:40px;height:40px;display:grid;place-items:center;font-weight:800;color:#111827;font-size:10px}.donut-card strong{display:block;color:#1f2937}.donut-card p{margin:3px 0 0;color:#64748b}
-      .report-bars{margin:8px 0}.report-bar-row{display:grid;grid-template-columns:105px 1fr 70px;gap:8px;align-items:center;margin:6px 0}.report-bar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.report-bar-track{height:12px;background:#edf1f7}.report-bar-fill{height:100%}.report-bar-value{text-align:right;font-weight:700}
-      .stack-row{display:grid;grid-template-columns:85px 1fr 42px;gap:8px;align-items:center;margin:8px 0}.stack-track{height:22px;background:#edf1f7;display:flex}.stack-track span{display:block;height:100%}.stack-total{text-align:right;font-weight:800}.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;color:#4b5563}.legend b{display:inline-block;width:9px;height:9px;margin-right:4px}
-      .report-funnel{margin:8px 0 12px}.funnel-row{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin:7px 0}.funnel-label strong{display:block;color:#1f2937}.funnel-label span{display:block;color:#64748b;font-size:9px}.funnel-shape{height:24px;color:white;font-weight:800;text-align:right;padding:5px 8px;min-width:72px}
-      .heatmap{display:grid;grid-template-columns:32px repeat(5,1fr);gap:4px;margin:8px 0 12px;max-width:430px}.heat-head{font-weight:800;color:#64748b;text-align:center;font-size:10px}.heat-cell{height:32px;display:grid;place-items:center;font-weight:800;color:#111827;border:1px solid rgba(31,79,138,.12)}
+      .donut-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 12px}.donut-card{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:center;border:1px solid #d6dde8;background:#f8fafc;padding:9px}.donut{width:58px;height:58px;position:relative}.donut svg{width:58px;height:58px;display:block}.donut span{position:absolute;inset:9px;display:grid;place-items:center;font-weight:800;color:#111827;font-size:10px}.donut-card strong{display:block;color:#1f2937}.donut-card p{margin:3px 0 0;color:#64748b}
+      .report-bars{margin:8px 0}.report-bar-row{display:grid;grid-template-columns:105px 1fr 70px;gap:8px;align-items:center;margin:6px 0}.report-bar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.report-bar-svg{width:100%;height:12px;display:block}.report-bar-value{text-align:right;font-weight:700}
+      .stack-row{display:grid;grid-template-columns:85px 1fr 42px;gap:8px;align-items:center;margin:8px 0}.stack-svg{height:22px;display:block}.stack-total{text-align:right;font-weight:800}.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;color:#4b5563}.legend b{display:inline-block;width:9px;height:9px;margin-right:4px}
+      .report-funnel{margin:8px 0 12px}.funnel-row{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin:7px 0}.funnel-label strong{display:block;color:#1f2937}.funnel-label span{display:block;color:#64748b;font-size:9px}.funnel-track{height:24px;position:relative}.funnel-track svg{width:100%;height:24px;display:block}.funnel-track b{position:absolute;right:8px;top:5px;color:white;font-weight:800}
+      .heatmap{display:grid;grid-template-columns:32px repeat(5,1fr);gap:4px;margin:8px 0 12px;max-width:430px}.heat-head{font-weight:800;color:#64748b;text-align:center;font-size:10px}.heat-cell{height:32px;position:relative;border:1px solid #d8e3ef}.heat-cell svg{position:absolute;inset:0;width:100%;height:100%;display:block}.heat-cell span{position:absolute;inset:0;display:grid;place-items:center;font-weight:800;color:#111827}
       footer{position:absolute;left:18mm;right:18mm;bottom:8mm;border-top:1px solid #d8dee8;padding-top:5px;color:#7c8798;font-size:9px}
       @media print{body{background:white}.page{margin:0;box-shadow:none}}
     </style></head><body>
