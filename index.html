@@ -1672,6 +1672,7 @@ input::placeholder { color: #7f93b3; }
   ];
   const TOOL_PANELS = [
     { name: "UTM Creator", label: "UTM Creator" },
+    { name: "Gerador de Relatórios", label: "Gerador de Relatórios" },
     { name: "Log Tarefas", label: "Log Tarefas" }
   ];
   const SEARCH_INDEX = [
@@ -1687,6 +1688,7 @@ input::placeholder { color: #7f93b3; }
     { title: "Ficheiro JM", location: "Aprofundar Dados", target: "Ficheiro JM", description: "Dados JM, faturação, sinais, VMT e informação operacional por linha.", keywords: ["jm", "ficheiro jm", "vmt", "sinal", "sinais", "ft", "faturacao jm", "adb", "fo"] },
     { title: "Leads Diários", location: "Aprofundar Dados", target: "Leads Di\xE1rios", description: "Leads por dia, origem e apoio ao funil de conversão.", keywords: ["leads diarios", "leads diários", "leads", "diario", "diário", "origem leads"] },
     { title: "UTM Creator", location: "Ferramentas", target: "UTM Creator", description: "Gerar links com utm_source, utm_medium, utm_campaign e utm_content.", keywords: ["utm creator", "criador utm", "gerar utm", "link utm", "source", "medium", "campaign", "content"] },
+    { title: "Gerador de Relatórios", location: "Ferramentas", target: "Gerador de Relatórios", description: "Gerar relatório executivo em PDF com dados do Dashboard, VSP, BO, UTMs, funil e plano de ação.", keywords: ["relatorio", "relatório", "pdf", "gerador", "analise", "análise", "exportar", "imprimir"] },
     { title: "Log Tarefas", location: "Ferramentas", target: "Log Tarefas", description: "Registar horas, tarefas, categorias, estados e notas de trabalho.", keywords: ["log", "tarefas", "horas", "tempo", "registo", "categoria", "estado", "notas"] },
     { title: "Campanhas", location: "Dashboard / Resultados", target: "Resultados Totais", description: "Campanhas com volume, valor, conversão e campanhas a rever.", keywords: ["campanha", "campanhas", "meta", "google", "ads", "qualidade campanha", "campanhas a rever"] },
     { title: "Canais e origens", location: "Dashboard / Resultados", target: "Resultados Totais", description: "Canais que puxam valor, origens combinadas e origem dos leads/propostas.", keywords: ["canal", "canais", "origem", "origens", "source", "meta", "google", "organico", "orgânico"] }
@@ -4947,6 +4949,261 @@ input::placeholder { color: #7f93b3; }
       actions: actions.slice(0, 3)
     };
   }
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[ch]);
+  }
+  function reportTable(headers, rows) {
+    return `<table class="report-table"><thead><tr>${headers.map((h2) => `<th>${escapeHtml(h2)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${row.map((cell) => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  }
+  function reportBullets(items) {
+    return `<ul class="report-bullets">${items.filter(Boolean).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+  }
+  function reportBarChart(rows, unit = "number", color = "#2F6FB2") {
+    const clean = (rows || []).filter((r) => r && r.value > 0).slice(0, 10);
+    const max = Math.max(1, ...clean.map((r) => r.value));
+    if (!clean.length) return `<p class="muted">Sem dados suficientes para gráfico.</p>`;
+    return `<div class="report-bars">${clean.map((r) => {
+      const width = Math.max(3, r.value / max * 100);
+      return `<div class="report-bar-row"><div class="report-bar-label">${escapeHtml(r.label)}</div><div class="report-bar-track"><div class="report-bar-fill" style="width:${width}%;background:${color}"></div></div><div class="report-bar-value">${escapeHtml(fmtByUnit(r.value, unit))}</div></div>`;
+    }).join("")}</div>`;
+  }
+  function reportStackedBars(weeks, sources) {
+    if (!weeks.length || !sources.length) return `<p class="muted">Sem dados suficientes para gráfico semanal.</p>`;
+    const max = Math.max(1, ...weeks.map((week) => week.total));
+    const colors = ["#2F6FB2", "#42A585", "#C99A4E", "#6B7280", "#8B5CF6"];
+    return `<div class="stacked-report">${weeks.map((week) => {
+      const segments = sources.map((source, i) => {
+        const value = week[source] || 0;
+        const width = week.total ? value / week.total * 100 : 0;
+        return `<span style="width:${width}%;background:${colors[i % colors.length]}" title="${escapeHtml(source)} ${value}"></span>`;
+      }).join("");
+      return `<div class="stack-row"><div class="stack-label">${escapeHtml(week.label)}</div><div class="stack-track" style="max-width:${Math.max(8, week.total / max * 100)}%">${segments}</div><div class="stack-total">${fmtNumber(week.total)}</div></div>`;
+    }).join("")}</div><div class="legend">${sources.map((s, i) => `<span><b style="background:${colors[i % colors.length]}"></b>${escapeHtml(s)}</span>`).join("")}</div>`;
+  }
+  function weekKeyForDate(date) {
+    const d = new Date(date);
+    const day = d.getDay() || 7;
+    d.setDate(d.getDate() - day + 1);
+    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    return { key: dateKey(start), label: `${start.getDate()} ${MONTH_NAMES[start.getMonth()].slice(0, 3)}–${end.getDate()} ${MONTH_NAMES[end.getMonth()].slice(0, 3)}` };
+  }
+  function reportWeeklySourceRows(vspRows, boRows) {
+    const map = new Map();
+    const add = (date, source) => {
+      const week = weekKeyForDate(date);
+      if (!map.has(week.key)) map.set(week.key, { label: week.label, total: 0, sort: date });
+      const item = map.get(week.key);
+      item[source] = (item[source] || 0) + 1;
+      item.total += 1;
+    };
+    vspRows.forEach((row) => {
+      const d = parseRowDate(row, VSP_DATE_COL);
+      if (d) add(d, trafficSourceLabel(row));
+    });
+    boRows.forEach((record) => add(record.date, record.channel || "BackOffice"));
+    return Array.from(map.values()).sort((a, b) => a.sort - b.sort).slice(-8);
+  }
+  function buildReportHtml(report) {
+    const footer = `PKE · Relatório Dashboard MKT · ${escapeHtml(report.generatedAt)} · Confidencial - uso interno`;
+    const page = (title, body) => `<section class="page"><main><h2>${title}</h2>${body}</main><footer>${footer}</footer></section>`;
+    const sourceRows = report.sourceRows.map((r) => [r.label, fmtNumber(r.total), fmtNumber(r.bo), fmtNumber(r.vsp), fmtCurrency(r.value)]);
+    const brandRows = report.brandRows.map((r) => [r.label, fmtNumber(r.total), fmtNumber(r.bo), fmtNumber(r.vsp)]);
+    const campaignRows = report.campaignRows.map((r) => [r.label, fmtNumber(r.total), fmtNumber(r.bo), fmtNumber(r.vsp), r.boOrderRate == null ? "—" : fmtPercent(r.boOrderRate)]);
+    const hotRows = report.hotZoneRows.map((r) => [vehicleLabel(r), fmtNumber(numericValue(r, VSP_SEVERITY_COL)), fmtNumber(numericValue(r, VSP_URGENCY_COL)), textValue(r, VSP_TREND_COL) || "—"]);
+    return `<!DOCTYPE html><html lang="pt-PT"><head><meta charset="utf-8"><title>${escapeHtml(report.title)}</title><style>
+      @page{size:A4;margin:16mm 18mm 14mm}
+      *{box-sizing:border-box} body{margin:0;background:#f3f6fb;color:#1f2937;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:1.35}
+      .page{width:210mm;min-height:297mm;margin:0 auto 12px;background:white;padding:18mm 18mm 12mm;page-break-after:always;position:relative}
+      .page main{min-height:246mm}.cover{display:flex;flex-direction:column;justify-content:center}
+      h1{font-size:30px;line-height:1.1;color:#1f4f8a;margin:0 0 14px} h2{font-size:18px;color:#1f4f8a;margin:0 0 12px} h3{font-size:13px;color:#1f2937;margin:14px 0 7px}
+      .eyebrow{font-weight:800;color:#6b7280;text-transform:uppercase;letter-spacing:.08em}.subtitle{font-size:14px;color:#4b5563;max-width:520px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+      .kpi{border:1px solid #d6dde8;background:#f8fafc;padding:9px}.kpi b{display:block;font-size:17px;color:#111827}.kpi span{color:#64748b;font-size:10px;text-transform:uppercase;font-weight:800}
+      .report-table{width:100%;border-collapse:collapse;margin:8px 0 14px}.report-table th{background:#e9edf3;color:#263445;text-align:left;font-weight:800}.report-table th,.report-table td{border-bottom:1px solid #d8dee8;padding:5px 7px;vertical-align:top}.report-table td:not(:first-child),.report-table th:not(:first-child){text-align:right}
+      .report-bullets{margin:9px 0 0 0;padding-left:16px}.report-bullets li{margin:5px 0}.muted{color:#6b7280}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.callout{border-left:4px solid #C64D5A;background:#fff5f5;padding:9px 11px;margin:10px 0}.good{border-left-color:#42A585;background:#f2fbf7}.warn{border-left-color:#C99A4E;background:#fffaf0}
+      .report-bars{margin:8px 0}.report-bar-row{display:grid;grid-template-columns:105px 1fr 70px;gap:8px;align-items:center;margin:6px 0}.report-bar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.report-bar-track{height:12px;background:#edf1f7}.report-bar-fill{height:100%}.report-bar-value{text-align:right;font-weight:700}
+      .stack-row{display:grid;grid-template-columns:85px 1fr 42px;gap:8px;align-items:center;margin:8px 0}.stack-track{height:22px;background:#edf1f7;display:flex}.stack-track span{display:block;height:100%}.stack-total{text-align:right;font-weight:800}.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;color:#4b5563}.legend b{display:inline-block;width:9px;height:9px;margin-right:4px}
+      footer{position:absolute;left:18mm;right:18mm;bottom:8mm;border-top:1px solid #d8dee8;padding-top:5px;color:#7c8798;font-size:9px}
+      @media print{body{background:white}.page{margin:0;box-shadow:none}}
+    </style></head><body>
+      <section class="page cover"><main><div class="eyebrow">PKE · Dashboard MKT</div><h1>${escapeHtml(report.title)}</h1><p class="subtitle">${escapeHtml(report.subtitle)}</p><div class="kpis">${report.kpis.map((k) => `<div class="kpi"><span>${escapeHtml(k.label)}</span><b>${escapeHtml(k.value)}</b><small>${escapeHtml(k.detail)}</small></div>`).join("")}</div><div class="callout ${report.healthTone}"><strong>Leitura executiva:</strong><br>${escapeHtml(report.executiveRead)}</div>${reportBullets(report.actions)}</main><footer>${footer}</footer></section>
+      ${page("1. Volume e fontes - de onde vêm os leads", `${reportStackedBars(report.weekRows, report.weekSources)}${reportTable(["Origem", "Total", "BO", "VSP", "Valor"], sourceRows)}<h3>Leituras principais</h3>${reportBullets(report.volumeInsights)}`)}
+      ${page("2. Qualificação Scorecard - oportunidades quentes", `<div class="grid2"><div>${reportBarChart(report.severityRows, "number", "#2F6FB2")}</div><div>${reportBarChart(report.urgencyRows, "number", "#42A585")}</div></div><div class="callout warn"><strong>Zona quente:</strong> ${fmtNumber(report.hotZoneTotal)} leads com gravidade e urgência elevadas.</div>${reportTable(["Lead/Viatura", "Grav.", "Urg.", "Tendência"], hotRows)}<h3>Leituras principais</h3>${reportBullets(report.scoreInsights)}`)}
+      ${page("3. Auditoria de tracking (UTM)", `${reportTable(["Problema", "Dimensão", "Correção"], report.utmAuditRows)}<h3>Convenção recomendada</h3>${reportTable(["Parâmetro", "Valores/Regra", "Exemplo"], report.utmRules)}`)}
+      ${page("4. Resultados BO e funil de valor", `<div class="kpis">${report.funnelKpis.map((k) => `<div class="kpi"><span>${escapeHtml(k.label)}</span><b>${escapeHtml(k.value)}</b><small>${escapeHtml(k.detail)}</small></div>`).join("")}</div>${reportTable(["Campanha", "Registos", "BO", "VSP", "Conv. BO"], campaignRows)}<h3>Leituras principais</h3>${reportBullets(report.funnelInsights)}`)}
+      ${page("5. Procura por marca e páginas de destino", `<div class="grid2"><div><h3>Top marcas</h3>${reportBarChart(report.brandRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Landing pages</h3>${reportBarChart(report.landingRows.map((r) => ({label:r.label,value:r.leads})), "number", "#42A585")}</div></div>${reportTable(["Marca", "Total", "BO", "VSP"], brandRows)}<h3>Leituras principais</h3>${reportBullets(report.brandInsights)}`)}
+      ${page("6. Plano de ação priorizado e KPIs semanais", `${reportTable(["Pri.", "Ação", "Onde", "Impacto"], report.actionRows)}<h3>KPIs a reportar semanalmente</h3>${reportTable(["KPI", "Definição", "Baseline atual"], report.weeklyKpis)}<h3>Dados em falta para fechar o ciclo</h3>${reportTable(["Dado", "Para quê", "Como obter"], report.missingDataRows)}`)}
+      <scr${"ipt"}>setTimeout(function(){window.focus();window.print();},400);</scr${"ipt"}>
+    </body></html>`;
+  }
+  function generateDashboardReport(data) {
+    const w = window.open("", "_blank");
+    if (!w) {
+      alert("O browser bloqueou a janela do relatório. Permite pop-ups para este site e tenta novamente.");
+      return;
+    }
+    w.document.open();
+    w.document.write(buildReportHtml(data));
+    w.document.close();
+  }
+  function readablePeriodLabel(selectedMonths) {
+    return periodFilterLabel(selectedMonths).replace("Ano completo", "ano completo");
+  }
+  function buildDashboardReportData({ model, vspTable, boTable, boOrdersTable, selectedMonths }) {
+    const revObjTotal = sumByMonths(model.revenue.objetivo && model.revenue.objetivo.monthly, selectedMonths);
+    const revRealTotal = sumByMonths(model.revenue.real && model.revenue.real.monthly, selectedMonths);
+    const pctAtingido = revObjTotal ? revRealTotal / revObjTotal : 0;
+    const boRecords = boTotalRecords(boTable, selectedMonths);
+    const vspRecords = vspTotalRecords(vspTable, selectedMonths);
+    const records = [...boRecords, ...vspRecords];
+    const vspRows = (vspTable && vspTable.rows || []).filter((row) => {
+      const d = parseRowDate(row, VSP_DATE_COL);
+      return d && selectedMonths.has(d.getMonth());
+    });
+    const boRecordRows = boRecords;
+    const scorecardRows = scorecardCompletionRows(vspRows);
+    const vspConversion = buildVspToOrderConversion(vspTable, boOrdersTable, selectedMonths);
+    const globalFunnel = buildGlobalValueFunnel({ boRecords, vspRecords, ordersTable: boOrdersTable, selectedMonths, vspConversion });
+    const diagnosis = buildExecutiveDiagnosis({ model, selectedMonths, pctAtingido, alertThreshold: 80, vspTable });
+    const sourceRows = totalGroupStats(records, totalRecordSourceLabel, 10, 1);
+    const brandRows = totalGroupStats(records, (record) => record.brand || "Sem marca", 10, 1);
+    const campaignRows = totalGroupStats(records, (record) => record.campaign || "Sem campanha", 10, 1);
+    const landingRows = groupedLeadStats(vspRows, (row) => landingPageLabel(textValue(row, VSP_LANDING_COL)), 10);
+    const severityRows = groupCount(scorecardRows, (row) => {
+      const value = numericValue(row, VSP_SEVERITY_COL);
+      return value ? `Gravidade ${fmtNumber(value)}` : "Sem gravidade";
+    }, 6).filter((row) => row.label !== "Sem gravidade");
+    const urgencyRows = groupCount(scorecardRows, (row) => {
+      const value = numericValue(row, VSP_URGENCY_COL);
+      return value ? `Urgência ${fmtNumber(value)}` : "Sem urgência";
+    }, 6).filter((row) => row.label !== "Sem urgência");
+    const hotZoneAllRows = scorecardRows.filter((row) => numericValue(row, VSP_SEVERITY_COL) >= 4 && numericValue(row, VSP_URGENCY_COL) >= 3).sort((a, b) => leadPriorityScore(b) - leadPriorityScore(a));
+    const weekRows = reportWeeklySourceRows(vspRows, boRecordRows);
+    const preferredSources = ["Meta Ads", "Google Ads", "Email/newsletter", "Direto/Website", "BackOffice", "Scorecard", "VSP", "Sem origem"];
+    const weekSourceSet = new Set();
+    weekRows.forEach((row) => Object.keys(row).forEach((key) => {
+      if (!["label", "total", "sort"].includes(key)) weekSourceSet.add(key);
+    }));
+    const weekSources = Array.from(weekSourceSet).sort((a, b) => {
+      const ia = preferredSources.indexOf(a);
+      const ib = preferredSources.indexOf(b);
+      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib) || a.localeCompare(b, "pt-PT");
+    }).slice(0, 5);
+    const coreUtmComplete = records.length ? records.filter((record) => record.hasCoreUtm).length / records.length : 0;
+    const anyUtmComplete = records.length ? records.filter((record) => record.hasUtm).length / records.length : 0;
+    const suspiciousCampaigns = campaignRows.filter((row) => /^\d{6,}$/.test(normalizeSearchText(row.label).replace(/\D/g, "")) || /\{\{|id|campaign id/i.test(row.label));
+    const topSource = sourceRows[0];
+    const topBrand = brandRows[0];
+    const topLanding = landingRows[0];
+    const topCampaign = campaignRows[0];
+    const title = "Relatório Executivo Dashboard MKT";
+    const generatedAt = new Date().toLocaleDateString("pt-PT");
+    const periodLabel = readablePeriodLabel(selectedMonths);
+    const healthTone = pctAtingido >= 1 ? "good" : pctAtingido >= 0.7 ? "warn" : "";
+    const executiveRead = `No período ${periodLabel}, a faturação está em ${fmtPercent(pctAtingido)} do objetivo (${fmtCurrency(revRealTotal)} de ${fmtCurrency(revObjTotal)}). O funil junta ${fmtNumber(globalFunnel.entries)} entradas, ${fmtNumber(globalFunnel.proposals)} propostas BO e ${fmtNumber(globalFunnel.orders)} encomendas BO.`;
+    const actionItems = [
+      ...globalFunnel.actions,
+      ...diagnosis.actions
+    ].filter(Boolean).filter((item, index, arr) => arr.indexOf(item) === index);
+    while (actionItems.length < 5) {
+      actionItems.push("Rever semanalmente fontes, campanhas e páginas com maior volume antes de ajustar investimento.");
+    }
+    const utmMissing = records.filter((record) => !record.hasCoreUtm).length;
+    const funnelInsights = [
+      `O valor proposto no BO é ${fmtCurrency(globalFunnel.proposedValue)} e o valor encomendado é ${fmtCurrency(globalFunnel.orderedValue)}.`,
+      `O valor ainda em aberto nas propostas BO é ${fmtCurrency(globalFunnel.openProposalValue)}.`,
+      `A conversão de proposta BO para encomenda está em ${fmtPercent(globalFunnel.proposalToOrderRate)}.`,
+      `O cruzamento VSP com encomendas BO encontrou ${fmtNumber(vspConversion.converted)} conversões em ${fmtNumber(vspConversion.leads)} leads VSP.`
+    ];
+    const volumeInsights = [
+      `${fmtNumber(globalFunnel.entries)} entradas no período: ${fmtNumber(globalFunnel.vspLeads)} vindas de VSP/FAP e ${fmtNumber(globalFunnel.proposals)} vindas do BackOffice.`,
+      topSource ? `${topSource.label} é a origem com maior volume: ${fmtNumber(topSource.total)} registos e ${fmtCurrency(topSource.value)} em valor associado.` : "Sem origem dominante no período selecionado.",
+      topCampaign ? `${topCampaign.label} é a campanha com maior volume: ${fmtNumber(topCampaign.total)} registos.` : "Sem campanhas suficientes para análise.",
+      `UTMs principais completos em ${fmtPercent(coreUtmComplete)} dos registos, o que define a confiança da leitura por campanha.`
+    ];
+    const scoreInsights = [
+      `${fmtNumber(scorecardRows.length)} leads VSP/FAP têm scorecard ou sinais de qualificação.`,
+      `${fmtNumber(hotZoneAllRows.length)} leads estão na zona quente, ou seja, combinam gravidade elevada com urgência elevada.`,
+      hotZoneAllRows.length ? "A zona quente deve ser tratada como fila prioritária de contacto comercial." : "Sem zona quente visível no período selecionado.",
+      "A análise de gravidade e urgência ajuda a separar leads de curiosidade de leads com maior probabilidade de compra."
+    ];
+    const brandInsights = [
+      topBrand ? `${topBrand.label} lidera a procura por marca com ${fmtNumber(topBrand.total)} registos.` : "Sem marcas suficientes para ranking.",
+      topLanding ? `${topLanding.label} é a landing page com maior volume VSP: ${fmtNumber(topLanding.leads)} leads.` : "Sem landing pages suficientes para ranking.",
+      "Marcas e páginas com muito volume mas pouca conversão devem ser revistas por mensagem, oferta e qualidade da lead."
+    ];
+    return {
+      title,
+      subtitle: `${periodLabel} · gerado a ${generatedAt}`,
+      generatedAt,
+      healthTone,
+      executiveRead,
+      kpis: [
+        { label: "Faturação vs objetivo", value: fmtPercent(pctAtingido), detail: `${fmtCurrency(revRealTotal)} / ${fmtCurrency(revObjTotal)}` },
+        { label: "Entradas", value: fmtNumber(globalFunnel.entries), detail: `${fmtNumber(globalFunnel.vspLeads)} VSP + ${fmtNumber(globalFunnel.proposals)} BO` },
+        { label: "Valor capturado", value: fmtPercent(globalFunnel.valueCaptureRate), detail: `${fmtCurrency(globalFunnel.orderedValue)} encomendado` },
+        { label: "VSP para encomenda", value: fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0), detail: `${fmtNumber(vspConversion.converted)} conversões encontradas` }
+      ],
+      actions: actionItems.slice(0, 5),
+      sourceRows,
+      brandRows,
+      campaignRows,
+      landingRows,
+      weekRows,
+      weekSources,
+      severityRows,
+      urgencyRows,
+      hotZoneTotal: hotZoneAllRows.length,
+      hotZoneRows: hotZoneAllRows.slice(0, 8),
+      volumeInsights,
+      scoreInsights,
+      utmAuditRows: [
+        ["UTMs principais incompletos", `${fmtNumber(utmMissing)} registos`, "Preencher utm_source, utm_medium, utm_campaign e utm_content em todas as campanhas."],
+        ["Campanhas por ID ou macro", `${fmtNumber(suspiciousCampaigns.length)} campanhas no ranking`, "Usar nomes legíveis nos URLs e validar macros antes de lançar campanhas."],
+        ["Cobertura de tracking", `${fmtPercent(anyUtmComplete)} com algum UTM; ${fmtPercent(coreUtmComplete)} completos`, "Adotar a mesma convenção em Meta, Google, MailerLite e tráfego orgânico."]
+      ],
+      utmRules: [
+        ["utm_source", "meta · google · mailerlite · organic · referral", "meta"],
+        ["utm_medium", "paid_social · cpc · email · organic · referral", "paid_social"],
+        ["utm_campaign", "servico_objetivo_aaaamm", "fap_leads_202607"],
+        ["utm_content", "criativo_conjunto_anuncio", "video01_cta"]
+      ],
+      funnelKpis: [
+        { label: "Propostas BO", value: fmtNumber(globalFunnel.proposals), detail: `${fmtPercent(globalFunnel.leadToProposalRate)} das entradas` },
+        { label: "Encomendas BO", value: fmtNumber(globalFunnel.orders), detail: `${fmtPercent(globalFunnel.proposalToOrderRate)} das propostas` },
+        { label: "Valor proposto", value: fmtCurrency(globalFunnel.proposedValue), detail: "BackOffice PKE" },
+        { label: "Valor em aberto", value: fmtCurrency(globalFunnel.openProposalValue), detail: "Propostas sem encomenda" }
+      ],
+      funnelInsights,
+      brandInsights,
+      actionRows: [
+        ["P0", actionItems[0], "Comercial / Marketing", "Reduzir perda no funil"],
+        ["P0", actionItems[1], "BackOffice / Follow-up", "Converter valor em aberto"],
+        ["P1", actionItems[2], "Tracking / Campanhas", "Melhorar atribuição"],
+        ["P1", topSource ? `Proteger e escalar a origem ${topSource.label}` : "Rever origem com melhor qualidade", "Marketing", "Aumentar volume com leitura limpa"],
+        ["P2", topLanding ? `Rever potencial da landing ${topLanding.label}` : "Auditar páginas de destino VSP", "Website / GA4", "Evitar páginas com tráfego parado"]
+      ],
+      weeklyKpis: [
+        ["Leads/semana por fonte", "Contagem por origem normalizada", weekRows.length ? `Última semana: ${fmtNumber(weekRows[weekRows.length - 1].total)}` : "Sem histórico semanal"],
+        ["% leads quentes", "Gravidade >= 4 e urgência >= 3 sobre scorecards", fmtPercent(scorecardRows.length ? hotZoneAllRows.length / scorecardRows.length : 0)],
+        ["% UTMs completos", "Registos com source, medium, campaign e content", fmtPercent(coreUtmComplete)],
+        ["Conversão VSP para encomenda", "Leads VSP cruzados com Encomendas BO", fmtPercent(vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0)]
+      ],
+      missingDataRows: [
+        ["Custos Meta/Google por campanha/dia", "Calcular CPL real por fonte e campanha", "Exportar CSV dos gestores de anúncios e ligar ao dashboard"],
+        ["GA4 visitas por página", "Separar página sem tráfego de página que não converte", "Relatórios por página/landing no GA4 ou Search Console"],
+        ["Pipeline fechado por lead", "Saber que fonte converte em euros e não só em leads", "Export BackOffice/GHL com ID, email/telefone e estado final"],
+        ["Taxonomia UTM única", "Evitar campanhas partidas entre nomes diferentes", "Usar o UTM Creator antes de lançar novos envios/campanhas"]
+      ]
+    };
+  }
   function ResumoExecutivoView({ selectedMonths, alertThreshold, onNavigate }) {
     const dashboardFetchOpts = useMemo(() => ({ gid: DASHBOARD_GID, headers: 0 }), []);
     const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
@@ -5737,14 +5994,93 @@ input::placeholder { color: #7f93b3; }
       h(ResultadosVSPView, { selectedMonths })
     );
   }
-  function FerramentasView({ activePanel, setActivePanel, taskProps }) {
+  function ReportGeneratorView({ selectedMonths }) {
+    const dashboardFetchOpts = useMemo(() => ({ gid: DASHBOARD_GID, headers: 0 }), []);
+    const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const boFetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const boOrdersFetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID }), []);
+    const { table: dashboardTable, loading: dashboardLoading, error: dashboardError, updatedAt: dashboardUpdatedAt, reload: reloadDashboard } = useSheetData("Dashboard MKT", dashboardFetchOpts);
+    const { table: vspTable, loading: vspLoading, error: vspError, updatedAt: vspUpdatedAt, reload: reloadVsp } = useSheetData("Resultados VSP", vspFetchOpts);
+    const { table: boTable, loading: boLoading, error: boError, updatedAt: boUpdatedAt, reload: reloadBo } = useSheetData("Resultados BO", boFetchOpts);
+    const { table: boOrdersTable, loading: boOrdersLoading, error: boOrdersError, updatedAt: boOrdersUpdatedAt, reload: reloadBoOrders } = useSheetData("Encomendas", boOrdersFetchOpts);
+    const model = useMemo(() => buildDashboardModel(dashboardTable), [dashboardTable]);
+    const loading = dashboardLoading || vspLoading || boLoading || boOrdersLoading;
+    const error = dashboardError || vspError || boError || boOrdersError;
+    const updatedAt = [dashboardUpdatedAt, vspUpdatedAt, boUpdatedAt, boOrdersUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
+    const reload = () => {
+      reloadDashboard();
+      reloadVsp();
+      reloadBo();
+      reloadBoOrders();
+    };
+    if (dashboardLoading && !dashboardTable) return h(LoadingState, null);
+    if (dashboardError && !dashboardTable) return h(ErrorState, { message: dashboardError, onRetry: reload, sheetName: "Dashboard MKT" });
+    if (!model) return h(EmptyState, { text: "Sem dados suficientes para gerar relatório." });
+    const boRecords = boTotalRecords(boTable, selectedMonths);
+    const vspRecords = vspTotalRecords(vspTable, selectedMonths);
+    const vspConversion = buildVspToOrderConversion(vspTable, boOrdersTable, selectedMonths);
+    const reportData = buildDashboardReportData({ model, vspTable, boTable, boOrdersTable, selectedMonths });
+    const sourceCards = [
+      { label: "Dashboard MKT", value: dashboardTable ? "OK" : "A carregar", detail: "Faturação, objetivos e linhas" },
+      { label: "Resultados VSP", value: fmtNumber(vspRecords.length), detail: "Leads VSP/FAP no período" },
+      { label: "Resultados BO", value: fmtNumber(boRecords.length), detail: "Propostas BackOffice no período" },
+      { label: "Encomendas BO", value: fmtNumber(vspConversion.converted), detail: "Conversões VSP encontradas" }
+    ];
+    const generate = () => generateDashboardReport(reportData);
+    return h("div", { className: "space-y-6" },
+      h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
+      error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Uma das fontes não carregou totalmente. O relatório pode sair parcial: ", error),
+      h("section", { className: "section-shell section-shell-hero space-y-4", "data-help": "Gerador de Relatórios: cria uma versão imprimível do Dashboard MKT em formato de relatório executivo. Junta faturação, fontes, VSP, BO, UTMs, funil, páginas, marcas e plano de ação. Ao clicar em Gerar relatório PDF, abre uma nova janela preparada para imprimir ou guardar como PDF." },
+        h("div", { className: "flex items-start justify-between gap-4 flex-wrap" },
+          h("div", null,
+            h("div", { className: "section-kicker" }, "RELATÓRIO PDF"),
+            h("h2", { className: "section-heading" }, "Gerador de Relatórios"),
+            h("p", { className: "section-subtitle" }, "Gera um relatório executivo com a lógica do documento de análise: volume e fontes, qualificação, auditoria UTM, funil BO, marcas, páginas e plano de ação.")
+          ),
+          h(MetricBadge, { tone: loading ? "warn" : "good" }, loading ? "A carregar" : "Pronto")
+        ),
+        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, sourceCards.map((card) => h("div", { key: card.label, className: "diagnosis-tile" },
+          h("div", { className: "text-xs font-semibold text-slate-400 mb-2" }, card.label),
+          h("div", { className: "text-2xl font-black text-slate-100" }, card.value),
+          h("p", { className: "text-xs text-slate-400 mt-1" }, card.detail)
+        ))),
+        h("div", { className: "flex flex-wrap items-center gap-3" },
+          h("button", {
+            type: "button",
+            className: "task-primary-btn",
+            disabled: loading,
+            onClick: generate
+          }, "Gerar relatório PDF"),
+          h("span", { className: "text-xs text-slate-400" }, "Abre numa nova janela. Depois escolhe Guardar como PDF na janela de impressão.")
+        )
+      ),
+      h("section", { className: "section-shell space-y-4" },
+        h("div", null,
+          h("div", { className: "section-kicker" }, "CONTEÚDO"),
+          h("h3", { className: "section-heading" }, "O que entra no relatório"),
+          h("p", { className: "section-subtitle" }, `${readablePeriodLabel(selectedMonths)} · dados cruzados do Dashboard, PKE Leads FAP e BackOffice PKE.`)
+        ),
+        h("div", { className: "grid md:grid-cols-2 gap-3" },
+          [
+            "Capa com KPIs executivos e leitura rápida.",
+            "Volume semanal por origem e tabela de fontes.",
+            "Scorecard VSP: gravidade, urgência e zona quente.",
+            "Auditoria de UTMs e convenção recomendada.",
+            "Funil BO: propostas, encomendas, valor capturado e campanhas.",
+            "Procura por marca, landing pages e plano de ação priorizado."
+          ].map((item) => h("div", { key: item, className: "diagnosis-tile text-sm font-semibold text-slate-100" }, item))
+        )
+      )
+    );
+  }
+  function FerramentasView({ activePanel, setActivePanel, taskProps, selectedMonths }) {
     const current = TOOL_PANELS.some((panel) => panel.name === activePanel) ? activePanel : TOOL_PANELS[0].name;
     return h("div", { className: "space-y-6" },
       h("section", { className: "section-shell section-shell-hero space-y-4" },
         h("div", null,
           h("div", { className: "section-kicker" }, "FERRAMENTAS"),
           h("h2", { className: "section-heading" }, "Escolhe a ferramenta que queres usar"),
-          h("p", { className: "section-subtitle" }, "Aqui ficam as ferramentas operacionais: criador de UTMs e registo de tarefas.")
+          h("p", { className: "section-subtitle" }, "Aqui ficam as ferramentas operacionais: criador de UTMs, relatórios PDF e registo de tarefas.")
         ),
         h("div", { className: "deep-tabs" }, TOOL_PANELS.map((panel) => h("button", {
           key: panel.name,
@@ -5754,6 +6090,7 @@ input::placeholder { color: #7f93b3; }
         }, panel.label)))
       ),
       current === "UTM Creator" ? h(UtmCreatorView, null) :
+      current === "Gerador de Relatórios" ? h(ReportGeneratorView, { selectedMonths }) :
       current === "Log Tarefas" ? h(TaskLogView, taskProps) :
       h(UtmCreatorView, null)
     );
@@ -6215,7 +6552,7 @@ input::placeholder { color: #7f93b3; }
         setToStage,
         onNavigate: navigateDashboard
       }
-    ) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
