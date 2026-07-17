@@ -4964,6 +4964,25 @@ input::placeholder { color: #7f93b3; }
   function reportBullets(items) {
     return `<ul class="report-bullets">${items.filter(Boolean).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
   }
+  function reportNarrative(title, text) {
+    return `<div class="narrative"><strong>${escapeHtml(title)}</strong><p>${escapeHtml(text)}</p></div>`;
+  }
+  function reportMiniMetrics(items) {
+    return `<div class="mini-metrics">${items.map((item) => `<div class="mini-metric"><span>${escapeHtml(item.label)}</span><b>${escapeHtml(item.value)}</b><small>${escapeHtml(item.detail || "")}</small></div>`).join("")}</div>`;
+  }
+  function reportDonutChart(value, label, detail, color = "#2F6FB2") {
+    const safeValue = Math.max(0, Math.min(1, value || 0));
+    const degrees = Math.round(safeValue * 360);
+    return `<div class="donut-card"><div class="donut" style="background:conic-gradient(${color} ${degrees}deg,#e6ebf3 0deg)"><span>${escapeHtml(fmtPercent(safeValue))}</span></div><div><strong>${escapeHtml(label)}</strong><p>${escapeHtml(detail)}</p></div></div>`;
+  }
+  function reportFunnelChart(steps) {
+    const clean = (steps || []).filter((step) => step && step.value >= 0);
+    const max = Math.max(1, ...clean.map((step) => step.value));
+    return `<div class="report-funnel">${clean.map((step, index) => {
+      const width = Math.max(18, step.value / max * 100);
+      return `<div class="funnel-row"><div class="funnel-label"><strong>${escapeHtml(step.label)}</strong><span>${escapeHtml(step.detail || "")}</span></div><div class="funnel-shape" style="width:${width}%;background:${step.color || ["#2F6FB2", "#42A585", "#C99A4E", "#6B7280"][index % 4]}">${escapeHtml(fmtByUnit(step.value, step.unit || "number"))}</div></div>`;
+    }).join("")}</div>`;
+  }
   function reportBarChart(rows, unit = "number", color = "#2F6FB2") {
     const clean = (rows || []).filter((r) => r && r.value > 0).slice(0, 10);
     const max = Math.max(1, ...clean.map((r) => r.value));
@@ -4985,6 +5004,18 @@ input::placeholder { color: #7f93b3; }
       }).join("");
       return `<div class="stack-row"><div class="stack-label">${escapeHtml(week.label)}</div><div class="stack-track" style="max-width:${Math.max(8, week.total / max * 100)}%">${segments}</div><div class="stack-total">${fmtNumber(week.total)}</div></div>`;
     }).join("")}</div><div class="legend">${sources.map((s, i) => `<span><b style="background:${colors[i % colors.length]}"></b>${escapeHtml(s)}</span>`).join("")}</div>`;
+  }
+  function reportHeatMap(rows) {
+    const map = new Map();
+    rows.forEach((row) => map.set(`${row.severity}-${row.urgency}`, row.count));
+    const max = Math.max(1, ...rows.map((row) => row.count || 0));
+    const urgencies = [1, 2, 3, 4, 5];
+    const severities = [5, 4, 3, 2, 1];
+    return `<div class="heatmap"><div class="heat-label"></div>${urgencies.map((u) => `<div class="heat-head">U${u}</div>`).join("")}${severities.map((g) => `<div class="heat-head">G${g}</div>${urgencies.map((u) => {
+      const value = map.get(`${g}-${u}`) || 0;
+      const opacity = value ? 0.18 + value / max * 0.72 : 0.05;
+      return `<div class="heat-cell" style="background:rgba(47,111,178,${opacity})">${value ? escapeHtml(fmtNumber(value)) : ""}</div>`;
+    }).join("")}`).join("")}</div>`;
   }
   function weekKeyForDate(date) {
     const d = new Date(date);
@@ -5028,18 +5059,23 @@ input::placeholder { color: #7f93b3; }
       .kpi{border:1px solid #d6dde8;background:#f8fafc;padding:9px}.kpi b{display:block;font-size:17px;color:#111827}.kpi span{color:#64748b;font-size:10px;text-transform:uppercase;font-weight:800}
       .report-table{width:100%;border-collapse:collapse;margin:8px 0 14px}.report-table th{background:#e9edf3;color:#263445;text-align:left;font-weight:800}.report-table th,.report-table td{border-bottom:1px solid #d8dee8;padding:5px 7px;vertical-align:top}.report-table td:not(:first-child),.report-table th:not(:first-child){text-align:right}
       .report-bullets{margin:9px 0 0 0;padding-left:16px}.report-bullets li{margin:5px 0}.muted{color:#6b7280}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.callout{border-left:4px solid #C64D5A;background:#fff5f5;padding:9px 11px;margin:10px 0}.good{border-left-color:#42A585;background:#f2fbf7}.warn{border-left-color:#C99A4E;background:#fffaf0}
+      .narrative{background:#f7f9fc;border:1px solid #dfe6ef;padding:10px 12px;margin:8px 0 12px}.narrative strong{color:#1f4f8a;font-size:12px}.narrative p{margin:4px 0 0;color:#465569}
+      .mini-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 12px}.mini-metric{background:#f8fafc;border:1px solid #d6dde8;padding:8px}.mini-metric span{display:block;font-size:9px;text-transform:uppercase;color:#64748b;font-weight:800}.mini-metric b{display:block;font-size:15px;color:#111827}.mini-metric small{color:#64748b}
+      .donut-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 12px}.donut-card{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:center;border:1px solid #d6dde8;background:#f8fafc;padding:9px}.donut{width:58px;height:58px;border-radius:50%;display:grid;place-items:center}.donut span{background:white;border-radius:50%;width:40px;height:40px;display:grid;place-items:center;font-weight:800;color:#111827;font-size:10px}.donut-card strong{display:block;color:#1f2937}.donut-card p{margin:3px 0 0;color:#64748b}
       .report-bars{margin:8px 0}.report-bar-row{display:grid;grid-template-columns:105px 1fr 70px;gap:8px;align-items:center;margin:6px 0}.report-bar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.report-bar-track{height:12px;background:#edf1f7}.report-bar-fill{height:100%}.report-bar-value{text-align:right;font-weight:700}
       .stack-row{display:grid;grid-template-columns:85px 1fr 42px;gap:8px;align-items:center;margin:8px 0}.stack-track{height:22px;background:#edf1f7;display:flex}.stack-track span{display:block;height:100%}.stack-total{text-align:right;font-weight:800}.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;color:#4b5563}.legend b{display:inline-block;width:9px;height:9px;margin-right:4px}
+      .report-funnel{margin:8px 0 12px}.funnel-row{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin:7px 0}.funnel-label strong{display:block;color:#1f2937}.funnel-label span{display:block;color:#64748b;font-size:9px}.funnel-shape{height:24px;color:white;font-weight:800;text-align:right;padding:5px 8px;min-width:72px}
+      .heatmap{display:grid;grid-template-columns:32px repeat(5,1fr);gap:4px;margin:8px 0 12px;max-width:430px}.heat-head{font-weight:800;color:#64748b;text-align:center;font-size:10px}.heat-cell{height:32px;display:grid;place-items:center;font-weight:800;color:#111827;border:1px solid rgba(31,79,138,.12)}
       footer{position:absolute;left:18mm;right:18mm;bottom:8mm;border-top:1px solid #d8dee8;padding-top:5px;color:#7c8798;font-size:9px}
       @media print{body{background:white}.page{margin:0;box-shadow:none}}
     </style></head><body>
       <section class="page cover"><main><div class="eyebrow">PKE · Dashboard MKT</div><h1>${escapeHtml(report.title)}</h1><p class="subtitle">${escapeHtml(report.subtitle)}</p><div class="kpis">${report.kpis.map((k) => `<div class="kpi"><span>${escapeHtml(k.label)}</span><b>${escapeHtml(k.value)}</b><small>${escapeHtml(k.detail)}</small></div>`).join("")}</div><div class="callout ${report.healthTone}"><strong>Leitura executiva:</strong><br>${escapeHtml(report.executiveRead)}</div>${reportBullets(report.actions)}</main><footer>${footer}</footer></section>
-      ${page("1. Volume e fontes - de onde vêm os leads", `${reportStackedBars(report.weekRows, report.weekSources)}${reportTable(["Origem", "Total", "BO", "VSP", "Valor"], sourceRows)}<h3>Leituras principais</h3>${reportBullets(report.volumeInsights)}`)}
-      ${page("2. Qualificação Scorecard - oportunidades quentes", `<div class="grid2"><div>${reportBarChart(report.severityRows, "number", "#2F6FB2")}</div><div>${reportBarChart(report.urgencyRows, "number", "#42A585")}</div></div><div class="callout warn"><strong>Zona quente:</strong> ${fmtNumber(report.hotZoneTotal)} leads com gravidade e urgência elevadas.</div>${reportTable(["Lead/Viatura", "Grav.", "Urg.", "Tendência"], hotRows)}<h3>Leituras principais</h3>${reportBullets(report.scoreInsights)}`)}
-      ${page("3. Auditoria de tracking (UTM)", `${reportTable(["Problema", "Dimensão", "Correção"], report.utmAuditRows)}<h3>Convenção recomendada</h3>${reportTable(["Parâmetro", "Valores/Regra", "Exemplo"], report.utmRules)}`)}
-      ${page("4. Resultados BO e funil de valor", `<div class="kpis">${report.funnelKpis.map((k) => `<div class="kpi"><span>${escapeHtml(k.label)}</span><b>${escapeHtml(k.value)}</b><small>${escapeHtml(k.detail)}</small></div>`).join("")}</div>${reportTable(["Campanha", "Registos", "BO", "VSP", "Conv. BO"], campaignRows)}<h3>Leituras principais</h3>${reportBullets(report.funnelInsights)}`)}
-      ${page("5. Procura por marca e páginas de destino", `<div class="grid2"><div><h3>Top marcas</h3>${reportBarChart(report.brandRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Landing pages</h3>${reportBarChart(report.landingRows.map((r) => ({label:r.label,value:r.leads})), "number", "#42A585")}</div></div>${reportTable(["Marca", "Total", "BO", "VSP"], brandRows)}<h3>Leituras principais</h3>${reportBullets(report.brandInsights)}`)}
-      ${page("6. Plano de ação priorizado e KPIs semanais", `${reportTable(["Pri.", "Ação", "Onde", "Impacto"], report.actionRows)}<h3>KPIs a reportar semanalmente</h3>${reportTable(["KPI", "Definição", "Baseline atual"], report.weeklyKpis)}<h3>Dados em falta para fechar o ciclo</h3>${reportTable(["Dado", "Para quê", "Como obter"], report.missingDataRows)}`)}
+      ${page("1. Volume e fontes - de onde vêm os leads", `${reportNarrative("Como ler esta página", "Esta página mostra se o crescimento vem de mais volume real ou apenas de uma fonte isolada. O gráfico semanal ajuda a perceber ritmo; o ranking de origens mostra onde está concentrada a procura.")}${reportStackedBars(report.weekRows, report.weekSources)}<div class="grid2"><div><h3>Top origens por volume</h3>${reportBarChart(report.sourceRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Top origens por valor</h3>${reportBarChart(report.sourceRows.map((r) => ({label:r.label,value:r.value})), "currency", "#42A585")}</div></div>${reportTable(["Origem", "Total", "BO", "VSP", "Valor"], sourceRows)}<h3>Leituras principais</h3>${reportBullets(report.volumeInsights)}`)}
+      ${page("2. Qualificação Scorecard - oportunidades quentes", `${reportNarrative("Como ler esta página", "A gravidade mede o estado do problema; a urgência mede a pressa do cliente. Quando as duas sobem ao mesmo tempo, a lead deve deixar de ser tratada como volume e passar para prioridade comercial.")}<div class="grid2"><div><h3>Mapa gravidade x urgência</h3>${reportHeatMap(report.scoreMatrixRows)}</div><div><h3>Distribuição de prioridade</h3>${reportBarChart(report.priorityRows, "number", "#C99A4E")}</div></div><div class="grid2"><div>${reportBarChart(report.severityRows, "number", "#2F6FB2")}</div><div>${reportBarChart(report.urgencyRows, "number", "#42A585")}</div></div><div class="callout warn"><strong>Zona quente:</strong> ${fmtNumber(report.hotZoneTotal)} leads com gravidade e urgência elevadas.</div>${reportTable(["Lead/Viatura", "Grav.", "Urg.", "Tendência"], hotRows)}<h3>Leituras principais</h3>${reportBullets(report.scoreInsights)}`)}
+      ${page("3. Auditoria de tracking (UTM)", `${reportNarrative("Como ler esta página", "UTMs são as etiquetas que dizem de onde veio cada lead. Sem UTMs consistentes, conseguimos contar leads, mas perdemos confiança para decidir que campanha merece orçamento.")}<div class="donut-row">${report.donutMetrics.map((item) => reportDonutChart(item.value, item.label, item.detail, item.color)).join("")}</div>${reportTable(["Problema", "Dimensão", "Correção"], report.utmAuditRows)}<h3>Convenção recomendada</h3>${reportTable(["Parâmetro", "Valores/Regra", "Exemplo"], report.utmRules)}`)}
+      ${page("4. Resultados BO e funil de valor", `${reportNarrative("Como ler esta página", "Aqui a leitura passa de leads para dinheiro. O funil mostra onde o volume se perde: entrada, proposta, encomenda e valor realmente capturado.")}${reportFunnelChart(report.funnelSteps)}<div class="kpis">${report.funnelKpis.map((k) => `<div class="kpi"><span>${escapeHtml(k.label)}</span><b>${escapeHtml(k.value)}</b><small>${escapeHtml(k.detail)}</small></div>`).join("")}</div><div class="grid2"><div><h3>Campanhas por volume</h3>${reportBarChart(report.campaignRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Campanhas por valor</h3>${reportBarChart(report.campaignRows.map((r) => ({label:r.label,value:r.value})), "currency", "#42A585")}</div></div>${reportTable(["Campanha", "Registos", "BO", "VSP", "Conv. BO"], campaignRows)}<h3>Leituras principais</h3>${reportBullets(report.funnelInsights)}`)}
+      ${page("5. Procura por marca e páginas de destino", `${reportNarrative("Como ler esta página", "Marcas, modelos e landing pages mostram onde existe procura. A oportunidade está em distinguir procura saudável de páginas ou segmentos que geram volume sem avanço comercial.")}<div class="grid2"><div><h3>Top marcas</h3>${reportBarChart(report.brandRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Landing pages</h3>${reportBarChart(report.landingRows.map((r) => ({label:r.label,value:r.leads})), "number", "#42A585")}</div></div>${reportMiniMetrics(report.pageMetrics)}${reportTable(["Marca", "Total", "BO", "VSP"], brandRows)}<h3>Leituras principais</h3>${reportBullets(report.brandInsights)}`)}
+      ${page("6. Plano de ação priorizado e KPIs semanais", `${reportNarrative("Como ler esta página", "Esta página transforma a análise em execução. P0 deve ser tratado primeiro porque afeta perda direta de leads, valor ou qualidade dos dados; P1 e P2 melhoram escala e leitura.")}${reportTable(["Pri.", "Ação", "Onde", "Impacto"], report.actionRows)}<h3>KPIs a reportar semanalmente</h3>${reportTable(["KPI", "Definição", "Baseline atual"], report.weeklyKpis)}<h3>Dados em falta para fechar o ciclo</h3>${reportTable(["Dado", "Para quê", "Como obter"], report.missingDataRows)}`)}
       <scr${"ipt"}>setTimeout(function(){window.focus();window.print();},400);</scr${"ipt"}>
     </body></html>`;
   }
@@ -5085,6 +5121,33 @@ input::placeholder { color: #7f93b3; }
       return value ? `Urgência ${fmtNumber(value)}` : "Sem urgência";
     }, 6).filter((row) => row.label !== "Sem urgência");
     const hotZoneAllRows = scorecardRows.filter((row) => numericValue(row, VSP_SEVERITY_COL) >= 4 && numericValue(row, VSP_URGENCY_COL) >= 3).sort((a, b) => leadPriorityScore(b) - leadPriorityScore(a));
+    const scoreMatrixMap = new Map();
+    scorecardRows.forEach((row) => {
+      const rawSeverity = Math.round(numericValue(row, VSP_SEVERITY_COL) || 0);
+      const rawUrgency = Math.round(numericValue(row, VSP_URGENCY_COL) || 0);
+      if (!rawSeverity || !rawUrgency) return;
+      const severity = Math.max(1, Math.min(5, rawSeverity));
+      const urgency = Math.max(1, Math.min(5, rawUrgency));
+      const key = `${severity}-${urgency}`;
+      scoreMatrixMap.set(key, (scoreMatrixMap.get(key) || 0) + 1);
+    });
+    const scoreMatrixRows = Array.from(scoreMatrixMap, ([key, count]) => {
+      const [severity, urgency] = key.split("-").map(Number);
+      return { severity, urgency, count };
+    });
+    const priorityRows = [
+      { label: "Quente", value: hotZoneAllRows.length },
+      { label: "Morna", value: scorecardRows.filter((row) => {
+        const severity = numericValue(row, VSP_SEVERITY_COL);
+        const urgency = numericValue(row, VSP_URGENCY_COL);
+        return !(severity >= 4 && urgency >= 3) && (severity >= 3 || urgency >= 2);
+      }).length },
+      { label: "Fria/baixa urgência", value: scorecardRows.filter((row) => {
+        const severity = numericValue(row, VSP_SEVERITY_COL);
+        const urgency = numericValue(row, VSP_URGENCY_COL);
+        return severity < 3 && urgency < 2;
+      }).length }
+    ];
     const weekRows = reportWeeklySourceRows(vspRows, boRecordRows);
     const preferredSources = ["Meta Ads", "Google Ads", "Email/newsletter", "Direto/Website", "BackOffice", "Scorecard", "VSP", "Sem origem"];
     const weekSourceSet = new Set();
@@ -5103,6 +5166,8 @@ input::placeholder { color: #7f93b3; }
     const topBrand = brandRows[0];
     const topLanding = landingRows[0];
     const topCampaign = campaignRows[0];
+    const uniqueBrands = new Set(records.map((record) => normalizeSearchText(record.brand || "")).filter(Boolean)).size;
+    const uniqueLandings = new Set(landingRows.map((row) => normalizeSearchText(row.label || "")).filter(Boolean)).size;
     const title = "Relatório Executivo Dashboard MKT";
     const generatedAt = new Date().toLocaleDateString("pt-PT");
     const periodLabel = readablePeriodLabel(selectedMonths);
@@ -5160,10 +5225,17 @@ input::placeholder { color: #7f93b3; }
       weekSources,
       severityRows,
       urgencyRows,
+      scoreMatrixRows,
+      priorityRows,
       hotZoneTotal: hotZoneAllRows.length,
       hotZoneRows: hotZoneAllRows.slice(0, 8),
       volumeInsights,
       scoreInsights,
+      donutMetrics: [
+        { label: "UTMs completos", value: coreUtmComplete, detail: "Registos com source, medium, campaign e content.", color: "#42A585" },
+        { label: "Algum tracking", value: anyUtmComplete, detail: "Registos onde pelo menos uma etiqueta UTM existe.", color: "#2F6FB2" },
+        { label: "Sem correção pendente", value: records.length ? 1 - utmMissing / records.length : 1, detail: "Quanto mais alto, menos registos precisam de limpeza.", color: "#C99A4E" }
+      ],
       utmAuditRows: [
         ["UTMs principais incompletos", `${fmtNumber(utmMissing)} registos`, "Preencher utm_source, utm_medium, utm_campaign e utm_content em todas as campanhas."],
         ["Campanhas por ID ou macro", `${fmtNumber(suspiciousCampaigns.length)} campanhas no ranking`, "Usar nomes legíveis nos URLs e validar macros antes de lançar campanhas."],
@@ -5181,8 +5253,19 @@ input::placeholder { color: #7f93b3; }
         { label: "Valor proposto", value: fmtCurrency(globalFunnel.proposedValue), detail: "BackOffice PKE" },
         { label: "Valor em aberto", value: fmtCurrency(globalFunnel.openProposalValue), detail: "Propostas sem encomenda" }
       ],
+      funnelSteps: [
+        { label: "Entradas", value: globalFunnel.entries, detail: "VSP + BO", color: "#2F6FB2" },
+        { label: "Propostas BO", value: globalFunnel.proposals, detail: `${fmtPercent(globalFunnel.leadToProposalRate)} das entradas`, color: "#42A585" },
+        { label: "Encomendas", value: globalFunnel.orders, detail: `${fmtPercent(globalFunnel.proposalToOrderRate)} das propostas`, color: "#C99A4E" },
+        { label: "VSP convertidas", value: vspConversion.converted, detail: "Encontradas no BackOffice", color: "#6B7280" }
+      ],
       funnelInsights,
       brandInsights,
+      pageMetrics: [
+        { label: "Marcas distintas", value: fmtNumber(uniqueBrands), detail: "Procura total BO + VSP" },
+        { label: "Landing principal", value: topLanding ? fmtNumber(topLanding.leads) : "0", detail: topLanding ? topLanding.label : "Sem dados" },
+        { label: "Landings ativas", value: fmtNumber(uniqueLandings), detail: "Páginas VSP com leads" }
+      ],
       actionRows: [
         ["P0", actionItems[0], "Comercial / Marketing", "Reduzir perda no funil"],
         ["P0", actionItems[1], "BackOffice / Follow-up", "Converter valor em aberto"],
