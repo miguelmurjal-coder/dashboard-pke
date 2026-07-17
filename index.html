@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PKE — Dashboard MKT</title>
+<title>PKE — Marketing Control Panel</title>
 <style>
 /* ------------------------------------------------------------------ */
 /* Reset — night mode                                                  */
@@ -1650,16 +1650,16 @@ input::placeholder { color: #7f93b3; }
   const DASHBOARD_GID = "1179921659";
   const SPREADSHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
   const DATA_SOURCE_LINKS = {
-    dashboard: { label: "Dashboard MKT", url: `${SPREADSHEET_URL}#gid=${DASHBOARD_GID}` },
+    dashboard: { label: "Marketing Control Panel", url: `${SPREADSHEET_URL}#gid=${DASHBOARD_GID}` },
     vsp: { label: "PKE Leads FAP", url: `https://docs.google.com/spreadsheets/d/${VSP_RESULTS_SHEET_ID}/edit` },
     bo: { label: "BackOffice PKE", url: `https://docs.google.com/spreadsheets/d/${BO_RESULTS_SHEET_ID}/edit` },
     encomendas: { label: "BackOffice PKE · Encomendas", url: `https://docs.google.com/spreadsheets/d/${BO_RESULTS_SHEET_ID}/edit` },
-    leads: { label: "Dashboard MKT · Leads Diários", url: `${SPREADSHEET_URL}#gid=1508480304` },
-    jm: { label: "Dashboard MKT · Ficheiro JM", url: `${SPREADSHEET_URL}#gid=785129550` },
-    tarefas: { label: "Dashboard MKT · Log Tarefas", url: SPREADSHEET_URL }
+    leads: { label: "Marketing Control Panel · Leads Diários", url: `${SPREADSHEET_URL}#gid=1508480304` },
+    jm: { label: "Marketing Control Panel · Ficheiro JM", url: `${SPREADSHEET_URL}#gid=785129550` },
+    tarefas: { label: "Marketing Control Panel · Log Tarefas", url: SPREADSHEET_URL }
   };
   const SHEETS = [
-    { name: "Dashboard MKT", label: "Dashboard MKT" },
+    { name: "Dashboard MKT", label: "Marketing Control Panel" },
     { name: "Resultados Totais", label: "Resultados Totais" },
     { name: "Aprofundar Dados", label: "Aprofundar Dados" },
     { name: "Ferramentas", label: "Ferramentas" }
@@ -1676,9 +1676,9 @@ input::placeholder { color: #7f93b3; }
     { name: "Log Tarefas", label: "Log Tarefas" }
   ];
   const SEARCH_INDEX = [
-    { title: "Cockpit principal", location: "Dashboard MKT", target: "Dashboard MKT", description: "Estado geral, alertas, funil global, faturação e próximas ações.", keywords: ["dashboard", "cockpit", "resumo", "estado", "alertas", "acoes", "ações", "diagnostico", "diagnóstico"] },
-    { title: "Faturação e objetivos", location: "Dashboard MKT", target: "Dashboard MKT", description: "Objetivo, faturado, delta, ritmo do mês e linhas PS/FAP/AdBlue.", keywords: ["faturacao", "faturação", "objetivo", "objetivos", "delta", "ritmo", "ps", "fap", "adblue", "receita"] },
-    { title: "Funil global", location: "Dashboard MKT", target: "Dashboard MKT", description: "Desconhecido, Proposta/Lead, Venda, Marcação/Faturado e valor capturado.", keywords: ["funil", "leads", "propostas", "vendas", "encomendas", "conversao", "conversão", "valor capturado"] },
+    { title: "Cockpit principal", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Estado geral, alertas, funil global, faturação e próximas ações.", keywords: ["dashboard", "marketing control panel", "cockpit", "resumo", "estado", "alertas", "acoes", "ações", "diagnostico", "diagnóstico"] },
+    { title: "Faturação e objetivos", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Objetivo, faturado, delta, ritmo do mês e linhas PS/FAP/AdBlue.", keywords: ["faturacao", "faturação", "objetivo", "objetivos", "delta", "ritmo", "ps", "fap", "adblue", "receita"] },
+    { title: "Funil global", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Desconhecido, Proposta/Lead, Venda, Marcação/Faturado e valor capturado.", keywords: ["funil", "leads", "propostas", "vendas", "encomendas", "conversao", "conversão", "valor capturado"] },
     { title: "Resultados agregados", location: "Resultados Totais", target: "Resultados Totais", description: "Merge de VSP + BO, funil global, canais, campanhas, marcas e modelos.", keywords: ["resultados totais", "totais", "merge", "global", "vsp bo", "agregado", "agregados", "cruzado", "cruzamento"] },
     { title: "Conversão VSP para vendas", location: "Resultados Totais", target: "Resultados Totais", description: "Leads VSP encontrados mais tarde como vendas/marcações no BackOffice.", keywords: ["vsp vendas", "vsp encomendas", "vsp para venda", "vsp para encomenda", "conversao vsp", "conversão vsp", "matches", "backoffice", "bo", "telefone", "email"] },
     { title: "UTMs das leads VSP", location: "Aprofundar Dados > Resultados VSP", target: "Resultados VSP", description: "Origem, campanha e tracking associados aos leads VSP/FAP.", keywords: ["utm vsp", "utms vsp", "utm de vsp", "utm da vsp", "tracking vsp", "source vsp", "campaign vsp", "campanha vsp"] },
@@ -2618,8 +2618,8 @@ input::placeholder { color: #7f93b3; }
     )), label && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-900 tabular-nums" }, label)));
   }
   const HELP_TEXT_BY_LABEL = {
-    "Faturação vs objetivo": "Faturação vs objetivo: mostra que percentagem do objetivo de faturação já foi atingida no período escolhido. Vem da comparação entre faturação real e objetivo definidos no ficheiro principal do Dashboard MKT. Exemplo: 41,6% quer dizer que, para o período selecionado, ainda falta chegar aos 100% da meta.",
-    "Faturacao vs objetivo": "Faturação vs objetivo: mostra que percentagem do objetivo de faturação já foi atingida no período escolhido. Vem da comparação entre faturação real e objetivo definidos no ficheiro principal do Dashboard MKT. Exemplo: 41,6% quer dizer que, para o período selecionado, ainda falta chegar aos 100% da meta.",
+    "Faturação vs objetivo": "Faturação vs objetivo: mostra que percentagem do objetivo de faturação já foi atingida no período escolhido. Vem da comparação entre faturação real e objetivo definidos no ficheiro principal do Marketing Control Panel. Exemplo: 41,6% quer dizer que, para o período selecionado, ainda falta chegar aos 100% da meta.",
+    "Faturacao vs objetivo": "Faturação vs objetivo: mostra que percentagem do objetivo de faturação já foi atingida no período escolhido. Vem da comparação entre faturação real e objetivo definidos no ficheiro principal do Marketing Control Panel. Exemplo: 41,6% quer dizer que, para o período selecionado, ainda falta chegar aos 100% da meta.",
     "Falta para objetivo": "Falta para objetivo: é o valor em euros que ainda falta faturar para chegar ao objetivo do período selecionado. Vem da diferença entre objetivo de faturação e faturação real.",
     "Acima do objetivo": "Acima do objetivo: é o valor em euros que já ficou acima da meta. Vem da diferença positiva entre faturação real e objetivo.",
     "Valor capturado": "Valor capturado: percentagem do valor proposto no BackOffice que já chegou à fase de Venda/Marcação identificada. Em termos simples: de todo o dinheiro que apareceu como Proposta/Lead no BO, quanto já avançou comercialmente. Fórmula: valor de vendas BO / valor proposto BO. O pagamento efetivo entra depois na Faturação.",
@@ -2698,7 +2698,7 @@ input::placeholder { color: #7f93b3; }
   function sourceLinksForHelp(text) {
     const lower = normalizeSearchText(text || "");
     const sources = [];
-    if (lower.includes("dashboard mkt") || lower.includes("objetivo") || lower.includes("faturacao") || lower.includes("faturação") || lower.includes("meta") || lower.includes("ritmo")) sources.push(DATA_SOURCE_LINKS.dashboard);
+    if (lower.includes("dashboard mkt") || lower.includes("marketing control panel") || lower.includes("objetivo") || lower.includes("faturacao") || lower.includes("faturação") || lower.includes("meta") || lower.includes("ritmo")) sources.push(DATA_SOURCE_LINKS.dashboard);
     if (lower.includes("vsp") || lower.includes("fap") || lower.includes("scorecard") || lower.includes("sintoma") || lower.includes("landing")) sources.push(DATA_SOURCE_LINKS.vsp);
     if (lower.includes("bo") || lower.includes("backoffice") || lower.includes("proposta")) sources.push(DATA_SOURCE_LINKS.bo);
     if (lower.includes("encomenda")) sources.push(DATA_SOURCE_LINKS.encomendas);
@@ -2755,7 +2755,7 @@ input::placeholder { color: #7f93b3; }
     if (target.matches && target.matches("td")) return `${text || "Célula da tabela"}: isto é um valor bruto vindo de uma das folhas. Deve ser lido em conjunto com o cabeçalho da coluna e a linha onde aparece.`;
     if (target.matches && target.matches("svg, .chart-scroll")) return "Gráfico visual: transforma uma tabela de números numa leitura rápida. Barras maiores, fatias maiores ou linhas mais altas indicam maior peso relativo. Passa o cursor pelos elementos do gráfico para ver valores específicos quando disponível.";
     if (target.matches && target.matches(".section-shell, .detail-disclosure")) return `${text || "Secção"}: este bloco agrupa informação relacionada. Primeiro lê o título, depois os indicadores principais, e só depois entra no detalhe se precisares de explicar a causa.`;
-    return "Este elemento faz parte da leitura do Dashboard MKT. O dashboard junta dados de faturação, objetivos, leads VSP/FAP, Propostas/Leads BO, Vendas BO e UTMs para mostrar onde estamos bem, onde há risco e que ação faz sentido a seguir.";
+    return "Este elemento faz parte da leitura do Marketing Control Panel. O painel junta dados de faturação, objetivos, leads VSP/FAP, Propostas/Leads BO, Vendas BO e UTMs para mostrar onde estamos bem, onde há risco e que ação faz sentido a seguir.";
   }
   function UniversalHelpLens({ active }) {
     const [tip, setTip] = useState(null);
@@ -3313,7 +3313,7 @@ input::placeholder { color: #7f93b3; }
       setError(true);
       setPassword("");
     };
-    return h("div", { className: "password-screen" }, h("form", { className: "password-card bg-white rounded-xl border border-slate-200", onSubmit: submit }, h("div", { className: "text-xs text-slate-500 font-semibold" }, "PKE Dashboard MKT"), h("h1", { className: "text-xl font-bold text-slate-900" }, "Acesso protegido"), h("p", { className: "text-sm text-slate-400" }, "Introduz a password para aceder ao dashboard."), h("label", { className: "task-field" }, h("span", null, "Password"), h("input", { type: "password", inputMode: "numeric", value: password, onChange: (e) => {
+    return h("div", { className: "password-screen" }, h("form", { className: "password-card bg-white rounded-xl border border-slate-200", onSubmit: submit }, h("div", { className: "text-xs text-slate-500 font-semibold" }, "PKE Marketing Control Panel"), h("h1", { className: "text-xl font-bold text-slate-900" }, "Acesso protegido"), h("p", { className: "text-sm text-slate-400" }, "Introduz a password para aceder ao painel de marketing."), h("label", { className: "task-field" }, h("span", null, "Password"), h("input", { type: "password", inputMode: "numeric", value: password, onChange: (e) => {
       setPassword(e.target.value);
       setError(false);
     }, autoFocus: true })), error && h("p", { className: "text-xs text-red-600 font-semibold" }, "Password incorreta."), h("button", { type: "submit", className: "task-primary-btn password-submit" }, "Entrar")));
@@ -5060,7 +5060,7 @@ input::placeholder { color: #7f93b3; }
     return Array.from(map.values()).sort((a, b) => a.sort - b.sort).slice(-8);
   }
   function buildReportHtml(report) {
-    const footer = `PKE · Relatório Dashboard MKT · ${escapeHtml(report.generatedAt)} · Confidencial - uso interno`;
+    const footer = `PKE · Marketing Control Panel · ${escapeHtml(report.generatedAt)} · Confidencial - uso interno`;
     const page = (title, body) => `<section class="page"><main><h2>${title}</h2>${body}</main><footer>${footer}</footer></section>`;
     const sourceRows = report.sourceRows.map((r) => [r.label, fmtNumber(r.total), fmtNumber(r.bo), fmtNumber(r.vsp), fmtCurrency(r.value)]);
     const brandRows = report.brandRows.map((r) => [r.label, fmtNumber(r.total), fmtNumber(r.bo), fmtNumber(r.vsp)]);
@@ -5086,7 +5086,7 @@ input::placeholder { color: #7f93b3; }
       footer{position:absolute;left:18mm;right:18mm;bottom:8mm;border-top:1px solid #d8dee8;padding-top:5px;color:#7c8798;font-size:9px}
       @media print{body{background:white}.page{margin:0;box-shadow:none}}
     </style></head><body>
-      <section class="page cover"><main><div class="eyebrow">PKE · Dashboard MKT</div><h1>${escapeHtml(report.title)}</h1><p class="subtitle">${escapeHtml(report.subtitle)}</p><div class="kpis">${report.kpis.map((k) => `<div class="kpi"><span>${escapeHtml(k.label)}</span><b>${escapeHtml(k.value)}</b><small>${escapeHtml(k.detail)}</small></div>`).join("")}</div><div class="callout ${report.healthTone}"><strong>Leitura executiva:</strong><br>${escapeHtml(report.executiveRead)}</div>${reportBullets(report.actions)}</main><footer>${footer}</footer></section>
+      <section class="page cover"><main><div class="eyebrow">PKE · Marketing Control Panel</div><h1>${escapeHtml(report.title)}</h1><p class="subtitle">${escapeHtml(report.subtitle)}</p><div class="kpis">${report.kpis.map((k) => `<div class="kpi"><span>${escapeHtml(k.label)}</span><b>${escapeHtml(k.value)}</b><small>${escapeHtml(k.detail)}</small></div>`).join("")}</div><div class="callout ${report.healthTone}"><strong>Leitura executiva:</strong><br>${escapeHtml(report.executiveRead)}</div>${reportBullets(report.actions)}</main><footer>${footer}</footer></section>
       ${page("1. Volume e fontes - de onde vêm os leads", `${reportNarrative("Como ler esta página", "Esta página mostra se o crescimento vem de mais volume real ou apenas de uma fonte isolada. O gráfico semanal ajuda a perceber ritmo; o ranking de origens mostra onde está concentrada a procura.")}${reportStackedBars(report.weekRows, report.weekSources)}<div class="grid2"><div><h3>Top origens por volume</h3>${reportBarChart(report.sourceRows.map((r) => ({label:r.label,value:r.total})), "number", "#2F6FB2")}</div><div><h3>Top origens por valor</h3>${reportBarChart(report.sourceRows.map((r) => ({label:r.label,value:r.value})), "currency", "#42A585")}</div></div>${reportTable(["Origem", "Total", "BO", "VSP", "Valor"], sourceRows)}<h3>Leituras principais</h3>${reportBullets(report.volumeInsights)}`)}
       ${page("2. Qualificação Scorecard - oportunidades quentes", `${reportNarrative("Como ler esta página", "A gravidade mede o estado do problema; a urgência mede a pressa do cliente. Quando as duas sobem ao mesmo tempo, a lead deve deixar de ser tratada como volume e passar para prioridade comercial.")}<div class="grid2"><div><h3>Mapa gravidade x urgência</h3>${reportHeatMap(report.scoreMatrixRows)}</div><div><h3>Distribuição de prioridade</h3>${reportBarChart(report.priorityRows, "number", "#C99A4E")}</div></div><div class="grid2"><div>${reportBarChart(report.severityRows, "number", "#2F6FB2")}</div><div>${reportBarChart(report.urgencyRows, "number", "#42A585")}</div></div><div class="callout warn"><strong>Zona quente:</strong> ${fmtNumber(report.hotZoneTotal)} leads com gravidade e urgência elevadas.</div>${reportTable(["Lead/Viatura", "Grav.", "Urg.", "Tendência"], hotRows)}<h3>Leituras principais</h3>${reportBullets(report.scoreInsights)}`)}
       ${page("3. Auditoria de tracking (UTM)", `${reportNarrative("Como ler esta página", "UTMs são as etiquetas que dizem de onde veio cada lead. Sem UTMs consistentes, conseguimos contar leads, mas perdemos confiança para decidir que campanha merece orçamento.")}<div class="donut-row">${report.donutMetrics.map((item) => reportDonutChart(item.value, item.label, item.detail, item.color)).join("")}</div>${reportTable(["Problema", "Dimensão", "Correção"], report.utmAuditRows)}<h3>Convenção recomendada</h3>${reportTable(["Parâmetro", "Valores/Regra", "Exemplo"], report.utmRules)}`)}
@@ -5185,7 +5185,7 @@ input::placeholder { color: #7f93b3; }
     const topCampaign = campaignRows[0];
     const uniqueBrands = new Set(records.map((record) => normalizeSearchText(record.brand || "")).filter(Boolean)).size;
     const uniqueLandings = new Set(landingRows.map((row) => normalizeSearchText(row.label || "")).filter(Boolean)).size;
-    const title = "Relatório Executivo Dashboard MKT";
+    const title = "Relatório Executivo Marketing Control Panel";
     const generatedAt = new Date().toLocaleDateString("pt-PT");
     const periodLabel = readablePeriodLabel(selectedMonths);
     const healthTone = pctAtingido >= 1 ? "good" : pctAtingido >= 0.7 ? "warn" : "";
@@ -5324,7 +5324,7 @@ input::placeholder { color: #7f93b3; }
       reloadBoOrders();
     };
     if (dashboardLoading && !dashboardTable) return h(LoadingState, null);
-    if (dashboardError && !dashboardTable) return h(ErrorState, { message: dashboardError, onRetry: reload, sheetName: "Dashboard MKT" });
+    if (dashboardError && !dashboardTable) return h(ErrorState, { message: dashboardError, onRetry: reload, sheetName: "Marketing Control Panel" });
     if (!model) return h(EmptyState, { text: "Sem dados para mostrar." });
     const revObjTotal = sumByMonths(model.revenue.objetivo && model.revenue.objetivo.monthly, selectedMonths);
     const revRealTotal = sumByMonths(model.revenue.real && model.revenue.real.monthly, selectedMonths);
@@ -5862,7 +5862,7 @@ input::placeholder { color: #7f93b3; }
     const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
     const { table: vspTable } = useSheetData("Resultados VSP", vspFetchOpts);
     if (loading && !table) return /* @__PURE__ */ React.createElement(LoadingState, null);
-    if (error) return /* @__PURE__ */ React.createElement(ErrorState, { message: error, onRetry: reload, sheetName: "Dashboard MKT" });
+    if (error) return /* @__PURE__ */ React.createElement(ErrorState, { message: error, onRetry: reload, sheetName: "Marketing Control Panel" });
     if (!model) return /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para mostrar." });
     const revObj = model.revenue.objetivo;
     const revReal = model.revenue.real;
@@ -6066,7 +6066,7 @@ input::placeholder { color: #7f93b3; }
   function DashboardMKTCockpitView({ selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage, onNavigate }) {
     return h("div", { className: "space-y-6" },
       h(ResumoExecutivoView, { selectedMonths, alertThreshold, onNavigate }),
-      h(DetailDisclosure, { title: "Análise detalhada do Dashboard MKT", subtitle: "Objetivos, faturação por linha, funil configurável, VMT e tabelas completas.", defaultOpen: false },
+      h(DetailDisclosure, { title: "Análise detalhada do Marketing Control Panel", subtitle: "Objetivos, faturação por linha, funil configurável, VMT e tabelas completas.", defaultOpen: false },
         h(DashboardMKTView, { selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage })
       )
     );
@@ -6114,14 +6114,14 @@ input::placeholder { color: #7f93b3; }
       reloadBoOrders();
     };
     if (dashboardLoading && !dashboardTable) return h(LoadingState, null);
-    if (dashboardError && !dashboardTable) return h(ErrorState, { message: dashboardError, onRetry: reload, sheetName: "Dashboard MKT" });
+    if (dashboardError && !dashboardTable) return h(ErrorState, { message: dashboardError, onRetry: reload, sheetName: "Marketing Control Panel" });
     if (!model) return h(EmptyState, { text: "Sem dados suficientes para gerar relatório." });
     const boRecords = boTotalRecords(boTable, selectedMonths);
     const vspRecords = vspTotalRecords(vspTable, selectedMonths);
     const vspConversion = buildVspToOrderConversion(vspTable, boOrdersTable, selectedMonths);
     const reportData = buildDashboardReportData({ model, vspTable, boTable, boOrdersTable, selectedMonths });
     const sourceCards = [
-      { label: "Dashboard MKT", value: dashboardTable ? "OK" : "A carregar", detail: "Faturação, objetivos e linhas" },
+      { label: "Marketing Control Panel", value: dashboardTable ? "OK" : "A carregar", detail: "Faturação, objetivos e linhas" },
       { label: "Resultados VSP", value: fmtNumber(vspRecords.length), detail: "Leads VSP/FAP no período" },
       { label: "Resultados BO", value: fmtNumber(boRecords.length), detail: "Propostas BackOffice no período" },
       { label: "Vendas BO", value: fmtNumber(vspConversion.converted), detail: "Conversões VSP encontradas" }
@@ -6130,7 +6130,7 @@ input::placeholder { color: #7f93b3; }
     return h("div", { className: "space-y-6" },
       h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Uma das fontes não carregou totalmente. O relatório pode sair parcial: ", error),
-      h("section", { className: "section-shell section-shell-hero space-y-4", "data-help": "Gerador de Relatórios: cria uma versão imprimível do Dashboard MKT em formato de relatório executivo. Junta faturação, fontes, VSP, BO, UTMs, funil, páginas, marcas e plano de ação. Ao clicar em Gerar relatório PDF, abre uma nova janela preparada para imprimir ou guardar como PDF." },
+      h("section", { className: "section-shell section-shell-hero space-y-4", "data-help": "Gerador de Relatórios: cria uma versão imprimível do Marketing Control Panel em formato de relatório executivo. Junta faturação, fontes, VSP, BO, UTMs, funil, páginas, marcas e plano de ação. Ao clicar em Gerar relatório PDF, abre uma nova janela preparada para imprimir ou guardar como PDF." },
         h("div", { className: "flex items-start justify-between gap-4 flex-wrap" },
           h("div", null,
             h("div", { className: "section-kicker" }, "RELATÓRIO PDF"),
@@ -6601,7 +6601,7 @@ input::placeholder { color: #7f93b3; }
             }
           }
         ),
-        /* @__PURE__ */ React.createElement("div", { className: "relative brand-panel" }, /* @__PURE__ */ React.createElement("div", { className: "brand-title tracking-tight" }, "PKE"), /* @__PURE__ */ React.createElement("div", { className: "brand-subtitle" }, "Dashboard MKT 2026 · Log V2"))
+        /* @__PURE__ */ React.createElement("div", { className: "relative brand-panel" }, /* @__PURE__ */ React.createElement("div", { className: "brand-title tracking-tight" }, "PKE"), /* @__PURE__ */ React.createElement("div", { className: "brand-subtitle" }, "Marketing Control Panel 2026"))
       ),
       /* @__PURE__ */ React.createElement("nav", { className: "px-3 py-4 space-y-1 flex-shrink-0" }, SHEETS.map((s) => /* @__PURE__ */ React.createElement(
         "button",
