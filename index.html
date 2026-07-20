@@ -6128,7 +6128,7 @@ input::placeholder { color: #7f93b3; }
           h("div", null,
             h("div", { className: "section-kicker" }, "RELATÓRIO PDF"),
             h("h2", { className: "section-heading" }, "Gerador de Relatórios"),
-            h("p", { className: "section-subtitle" }, "Gera um relatório executivo com a lógica do documento de análise: volume e fontes, qualificação, auditoria UTM, funil BO, marcas, páginas e plano de ação.")
+            h("p", { className: "section-subtitle" }, `Gera um relatório executivo para ${readablePeriodLabel(selectedMonths)} com a lógica do documento de análise: volume e fontes, qualificação, auditoria UTM, funil BO, marcas, páginas e plano de ação.`)
           ),
           h(MetricBadge, { tone: loading ? "warn" : "good" }, loading ? "A carregar" : "Pronto")
         ),
@@ -6144,7 +6144,7 @@ input::placeholder { color: #7f93b3; }
             disabled: loading,
             onClick: generate
           }, "Gerar relatório PDF"),
-          h("span", { className: "text-xs text-slate-400" }, "Abre numa nova janela. Depois escolhe Guardar como PDF na janela de impressão.")
+          h("span", { className: "text-xs text-slate-400" }, `O PDF usa o período selecionado no topo: ${periodFilterLabel(selectedMonths)}.`)
         )
       ),
       h("section", { className: "section-shell space-y-4" },
@@ -6573,6 +6573,7 @@ input::placeholder { color: #7f93b3; }
     if (!authenticated) {
       return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true) });
     }
+    const showPeriodFilter = selected !== "Ferramentas" || activeToolPanel === "Gerador de Relatórios";
     return /* @__PURE__ */ React.createElement("div", { className: `min-h-screen bg-slate-100 flex app-shell ${helpMode ? "help-mode-on" : ""}`, style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
       "aside",
       {
@@ -6624,7 +6625,7 @@ input::placeholder { color: #7f93b3; }
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "page-title-pill min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "page-title-pill min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
