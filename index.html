@@ -5631,21 +5631,6 @@ input::placeholder { color: #7f93b3; }
     const weakCampaignRows = totalGroupStats(combinedRecords.filter((record) => record.source === "BO"), (record) => record.campaign || "Sem campanha", 5, 8).filter((row) => row.label !== "Sem campanha").sort((a, b) => (a.boOrderRate || 0) - (b.boOrderRate || 0) || b.total - a.total).slice(0, 4);
     const primaryTone = diagnosis.tone || "neutral";
     const vspRate = vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0;
-    const coreUtmComplete = globalFunnel.entries ? combinedRecords.filter((record) => record.hasCoreUtm).length / globalFunnel.entries : 1;
-    const boOrderCoverage = boRecords.length ? boRecords.filter((record) => record.hasOrder).length / boRecords.length : 0;
-    const vspScorecardRate = vspRecords.length ? vspSignals.scorecardRows.length / vspRecords.length : 0;
-    const dataConfidence = [
-      { label: "UTMs completos", value: fmtPercent(coreUtmComplete), detail: `${fmtNumber(combinedRecords.filter((record) => record.hasCoreUtm).length)} de ${fmtNumber(globalFunnel.entries)} registos`, tone: coreUtmComplete >= 0.8 ? "good" : coreUtmComplete >= 0.55 ? "warn" : "bad" },
-      { label: "BO com encomenda", value: fmtPercent(boOrderCoverage), detail: "Propostas ligadas a encomenda", tone: boOrderCoverage >= 0.08 ? "good" : boOrderCoverage >= 0.035 ? "warn" : "bad" },
-      { label: "VSP com scorecard", value: fmtPercent(vspScorecardRate), detail: "Leads com leitura de sintomas", tone: vspScorecardRate >= 0.7 ? "good" : vspScorecardRate >= 0.45 ? "warn" : "bad" },
-      { label: "Fontes carregadas", value: error ? "Parcial" : "Completo", detail: "Dashboard, VSP, BO e Encomendas", tone: error ? "warn" : "good" }
-    ];
-    const dataConfidenceChart = [
-      { label: "UTMs completos", value: coreUtmComplete * 100 },
-      { label: "BO com encomenda", value: boOrderCoverage * 100 },
-      { label: "VSP com scorecard", value: vspScorecardRate * 100 },
-      { label: "Fontes carregadas", value: error ? 75 : 100 }
-    ];
     const actionItems = [
       ...globalFunnel.actions,
       ...diagnosis.actions
@@ -5684,9 +5669,6 @@ input::placeholder { color: #7f93b3; }
           h("p", { className: "text-sm font-semibold text-slate-100 leading-snug" }, action)
         )))
       ),
-      h(DetailDisclosure, { title: "Confiança dos dados", subtitle: "UTMs, encomendas ligadas, scorecards e estado das fontes.", defaultOpen: false },
-        h(CategoryBarChart, { data: dataConfidenceChart, unit: "percent" })
-      ),
       h(DetailDisclosure, { title: "Canais e campanhas", subtitle: "Rankings para perceber onde há valor e onde rever qualidade.", defaultOpen: false },
       h("div", { className: "summary-grid-tight" },
         h("section", { className: "section-shell space-y-3" },
@@ -5703,14 +5685,7 @@ input::placeholder { color: #7f93b3; }
           ),
           weakCampaignRows.length ? h(CategoryBarChart, { data: weakCampaignRows.map((row) => ({ label: row.label, value: row.bo || row.total || 0 })), unit: "number" }) : h("p", { className: "text-xs text-slate-400" }, "Sem campanhas BO com volume suficiente para alerta no período.")
         )
-      )),
-      h(DetailDisclosure, { title: "Qualidade de lead", subtitle: "Sinais VSP, scorecards e leads ainda sem encomenda identificada.", defaultOpen: false },
-        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
-          diagnosis.insights.map((item) => h(DiagnosisTile, { key: item.label, item })),
-          h(DiagnosisTile, { item: { label: "Leads VSP sem encomenda", value: fmtNumber(Math.max(0, vspConversion.leads - vspConversion.converted)), detail: "Ainda sem encomenda no BO", tone: vspConversion.leads > vspConversion.converted ? "warn" : "good" } }),
-          h(DiagnosisTile, { item: { label: "Scorecards VSP", value: fmtNumber(vspSignals.scorecardRows.length), detail: "Leads com leitura de sintomas", tone: vspSignals.scorecardRows.length ? "good" : "neutral" } })
-        )
-      )
+      ))
     );
   }
   function ResultadosTotaisView({ selectedMonths }) {
