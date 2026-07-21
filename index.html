@@ -5527,87 +5527,21 @@ input::placeholder { color: #7f93b3; }
       ]
     };
   }
-  function DetailedFunnelPreview({ model, leadsData, selectedMonths, fromStage, setFromStage, toStage, setToStage }) {
-    const stageExtra = { leadsData };
-    const fromStageDef = findFunnelStage(fromStage) || FUNNEL_STAGES[2];
-    const toStageDef = findFunnelStage(toStage) || FUNNEL_STAGES[4];
-    const fromStageData = fromStageDef.get(model, stageExtra);
-    const toStageData = toStageDef.get(model, stageExtra);
-    const funnelLines = ["PS", "FAP", "AdBlue"].map((key) => {
-      const f = fromStageData && fromStageData.lines[key] && fromStageData.lines[key].count;
-      const t = toStageData && toStageData.lines[key] && toStageData.lines[key].count;
-      const fv = fromStageData && fromStageData.lines[key] && fromStageData.lines[key].value;
-      const tv = toStageData && toStageData.lines[key] && toStageData.lines[key].value;
-      if (!f || !t) return null;
-      return {
-        key,
-        stages: [
-          {
-            label: fromStageDef.shortLabel,
-            value: sumByMonths(f.monthly, selectedMonths),
-            unit: "number",
-            valueEur: fv ? sumByMonths(fv.monthly, selectedMonths) : null
-          },
-          {
-            label: toStageDef.shortLabel,
-            value: sumByMonths(t.monthly, selectedMonths),
-            unit: "number",
-            valueEur: tv ? sumByMonths(tv.monthly, selectedMonths) : null
-          }
-        ]
-      };
-    }).filter(Boolean);
-    const funnelTotal = fromStageData && fromStageData.totalCount && toStageData && toStageData.totalCount ? [
-      {
-        label: fromStageDef.shortLabel,
-        value: sumByMonths(fromStageData.totalCount.monthly, selectedMonths),
-        unit: "number",
-        valueEur: fromStageData.totalValue ? sumByMonths(fromStageData.totalValue.monthly, selectedMonths) : null
-      },
-      {
-        label: toStageDef.shortLabel,
-        value: sumByMonths(toStageData.totalCount.monthly, selectedMonths),
-        unit: "number",
-        valueEur: toStageData.totalValue ? sumByMonths(toStageData.totalValue.monthly, selectedMonths) : null
-      }
-    ] : null;
-    return h("section", { className: "section-shell space-y-4", "data-help": "Funis detalhados: são os mesmos funis configuráveis da Análise detalhada do Marketing Control Panel. Permitem comparar qualquer fase do funil, por total e por linha PS, FAP e AdBlue." },
-      h("div", { className: "flex items-center justify-between flex-wrap gap-3" },
-        h("div", null,
-          h("div", { className: "section-kicker" }, "FUNIS DETALHADOS"),
-          h("h3", { className: "section-heading" }, "Conversão por fase e por linha"),
-          h("p", { className: "section-subtitle" }, "Escolhe duas fases para ver onde se perde volume entre PS, FAP, AdBlue e o total.")
-        ),
-        h("div", { className: "flex items-center gap-2 flex-wrap" },
-          h("select", { value: fromStage, onChange: (e) => setFromStage(e.target.value), className: "funnel-select" }, h(FunnelStageOptions, null)),
-          h("span", { className: "text-slate-400 text-sm" }, "\u2192"),
-          h("select", { value: toStage, onChange: (e) => setToStage(e.target.value), className: "funnel-select" }, h(FunnelStageOptions, null))
-        )
-      ),
-      funnelTotal || funnelLines.length > 0 ? h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
-        funnelTotal && h(FunnelChart, { title: "Total", stages: funnelTotal }),
-        funnelLines.map((f) => h(FunnelChart, { key: f.key, title: f.key, stages: f.stages }))
-      ) : h(EmptyState, { text: "Sem dados para esta combinação de fases." })
-    );
-  }
   function ResumoExecutivoView({ selectedMonths, alertThreshold, onNavigate, fromStage, setFromStage, toStage, setToStage }) {
     const dashboardFetchOpts = useMemo(() => ({ gid: DASHBOARD_GID, headers: 0 }), []);
-    const leadsFetchOpts = useMemo(() => ({ gid: SHEET_GIDS["Leads Di\xE1rios"] }), []);
     const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
     const boFetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID, firstSheet: true }), []);
     const boOrdersFetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID }), []);
     const { table: dashboardTable, loading: dashboardLoading, error: dashboardError, updatedAt: dashboardUpdatedAt, reload: reloadDashboard } = useSheetData("Dashboard MKT", dashboardFetchOpts);
-    const { table: leadsTable, loading: leadsLoading, error: leadsError, updatedAt: leadsUpdatedAt, reload: reloadLeads } = useSheetData("Leads Di\xE1rios", leadsFetchOpts);
     const { table: vspTable, loading: vspLoading, error: vspError, updatedAt: vspUpdatedAt, reload: reloadVsp } = useSheetData("Resultados VSP", vspFetchOpts);
     const { table: boTable, loading: boLoading, error: boError, updatedAt: boUpdatedAt, reload: reloadBo } = useSheetData("Resultados BO", boFetchOpts);
     const { table: boOrdersTable, loading: boOrdersLoading, error: boOrdersError, updatedAt: boOrdersUpdatedAt, reload: reloadBoOrders } = useSheetData("Encomendas", boOrdersFetchOpts);
     const model = useMemo(() => buildDashboardModel(dashboardTable), [dashboardTable]);
-    const loading = dashboardLoading || leadsLoading || vspLoading || boLoading || boOrdersLoading;
-    const error = dashboardError || leadsError || vspError || boError || boOrdersError;
-    const updatedAt = [dashboardUpdatedAt, leadsUpdatedAt, vspUpdatedAt, boUpdatedAt, boOrdersUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
+    const loading = dashboardLoading || vspLoading || boLoading || boOrdersLoading;
+    const error = dashboardError || vspError || boError || boOrdersError;
+    const updatedAt = [dashboardUpdatedAt, vspUpdatedAt, boUpdatedAt, boOrdersUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
     const reload = () => {
       reloadDashboard();
-      reloadLeads();
       reloadVsp();
       reloadBo();
       reloadBoOrders();
@@ -5620,15 +5554,12 @@ input::placeholder { color: #7f93b3; }
     const pctAtingido = revObjTotal ? revRealTotal / revObjTotal : 0;
     const revenueGap = revRealTotal - revObjTotal;
     const boRecords = boTotalRecords(boTable, selectedMonths);
-    const leadsData = buildLeadsStageData(leadsTable);
     const vspRecords = vspTotalRecords(vspTable, selectedMonths);
     const vspConversion = buildVspToOrderConversion(vspTable, boOrdersTable, selectedMonths);
     const globalFunnel = buildGlobalValueFunnel({ boRecords, vspRecords, ordersTable: boOrdersTable, selectedMonths, vspConversion });
     const diagnosis = buildExecutiveDiagnosis({ model, selectedMonths, pctAtingido, alertThreshold, vspTable });
-    const vspSignals = buildVspExecutiveSignals(vspTable, selectedMonths);
     const combinedRecords = [...boRecords, ...vspRecords];
     const topSources = totalGroupStats(combinedRecords, totalRecordSourceLabel, 5, 1);
-    const weakCampaignRows = totalGroupStats(combinedRecords.filter((record) => record.source === "BO"), (record) => record.campaign || "Sem campanha", 5, 8).filter((row) => row.label !== "Sem campanha").sort((a, b) => (a.boOrderRate || 0) - (b.boOrderRate || 0) || b.total - a.total).slice(0, 4);
     const primaryTone = diagnosis.tone || "neutral";
     const vspRate = vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0;
     const actionItems = [
@@ -5657,7 +5588,9 @@ input::placeholder { color: #7f93b3; }
           h(KpiCard, { label: "VSP para Encomenda", numeric: vspRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspRate >= 0.04 ? "good" : vspRate > 0 ? "warn" : "neutral" })
         )
       ),
-      h(DetailedFunnelPreview, { model, leadsData, selectedMonths, fromStage, setFromStage, toStage, setToStage }),
+      h(DetailDisclosure, { title: "Análise detalhada do Marketing Control Panel", subtitle: "Objetivos, faturação por linha, funil configurável, VMT e tabelas completas.", defaultOpen: false },
+        h(DashboardMKTView, { selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage })
+      ),
       h("section", { className: "section-shell space-y-4" },
         h("div", null,
           h("div", { className: "section-kicker" }, "PRÓXIMAS AÇÕES"),
@@ -5669,23 +5602,14 @@ input::placeholder { color: #7f93b3; }
           h("p", { className: "text-sm font-semibold text-slate-100 leading-snug" }, action)
         )))
       ),
-      h(DetailDisclosure, { title: "Canais e campanhas", subtitle: "Rankings para perceber onde há valor e onde rever qualidade.", defaultOpen: false },
-      h("div", { className: "summary-grid-tight" },
-        h("section", { className: "section-shell space-y-3" },
-          h("div", null,
-            h("div", { className: "section-kicker" }, "CANAIS"),
-            h("h3", { className: "section-heading" }, "Quem está a puxar valor")
-          ),
-          h(CategoryBarChart, { data: topSources.map((row) => ({ label: row.label, value: row.value || row.total || 0 })), unit: topSources.some((row) => row.value) ? "currency" : "number" })
+      h("section", { className: "section-shell space-y-3" },
+        h("div", null,
+          h("div", { className: "section-kicker" }, "CANAIS"),
+          h("h3", { className: "section-heading" }, "Quem está a puxar valor"),
+          h("p", { className: "section-subtitle" }, "Ranking das origens com mais volume ou valor no período selecionado.")
         ),
-        h("section", { className: "section-shell space-y-3" },
-          h("div", null,
-            h("div", { className: "section-kicker" }, "CAMPANHAS"),
-            h("h3", { className: "section-heading" }, "Onde rever qualidade")
-          ),
-          weakCampaignRows.length ? h(CategoryBarChart, { data: weakCampaignRows.map((row) => ({ label: row.label, value: row.bo || row.total || 0 })), unit: "number" }) : h("p", { className: "text-xs text-slate-400" }, "Sem campanhas BO com volume suficiente para alerta no período.")
-        )
-      ))
+        h(CategoryBarChart, { data: topSources.map((row) => ({ label: row.label, value: row.value || row.total || 0 })), unit: topSources.some((row) => row.value) ? "currency" : "number" })
+      )
     );
   }
   function ResultadosTotaisView({ selectedMonths }) {
@@ -6380,10 +6304,7 @@ input::placeholder { color: #7f93b3; }
   }
   function DashboardMKTCockpitView({ selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage, onNavigate }) {
     return h("div", { className: "space-y-6" },
-      h(ResumoExecutivoView, { selectedMonths, alertThreshold, onNavigate, fromStage, setFromStage, toStage, setToStage }),
-      h(DetailDisclosure, { title: "Análise detalhada do Marketing Control Panel", subtitle: "Objetivos, faturação por linha, funil configurável, VMT e tabelas completas.", defaultOpen: false },
-        h(DashboardMKTView, { selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage })
-      )
+      h(ResumoExecutivoView, { selectedMonths, alertThreshold, onNavigate, fromStage, setFromStage, toStage, setToStage })
     );
   }
   function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
