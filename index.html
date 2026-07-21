@@ -2633,8 +2633,11 @@ input::placeholder { color: #7f93b3; }
     "Conversao BO": "Conversão BO: percentagem de propostas do BackOffice que chegaram a Encomenda. Fórmula: encomendas BO / propostas BO.",
     "Scorecard VSP": "Scorecard VSP: percentagem de leads VSP que têm informação suficiente de scorecard, como sintomas, urgência ou dados técnicos. Quanto maior, melhor conseguimos avaliar a qualidade do lead.",
     "Registos com UTM": "Registos com UTM: percentagem de registos que têm informação UTM associada. UTM serve para saber de onde veio o lead: campanha, origem, meio e conteúdo.",
+    "UTMs completos": "UTMs completos: percentagem de registos que têm os campos UTM principais preenchidos de forma utilizável. Normalmente inclui origem/source, meio/medium, campanha/campaign e conteúdo/content. Quanto maior, melhor conseguimos perceber que campanhas, anúncios, emails ou páginas trouxeram os contactos.",
+    "BO com encomenda": "BO com encomenda: percentagem de propostas do BackOffice que já têm uma encomenda associada. Ajuda a perceber que parte das propostas BO avançou para uma fase comercial mais forte.",
     "Leads VSP/FAP": "Leads VSP/FAP: total de leads presentes no ficheiro PKE Leads FAP para o período selecionado.",
     "Scorecard completo": "Scorecard completo: percentagem de leads VSP/FAP com os campos principais preenchidos para avaliar qualidade, sintomas, urgência e potencial.",
+    "VSP com scorecard": "VSP com scorecard: percentagem de leads VSP/FAP que têm dados de scorecard preenchidos. O scorecard ajuda a perceber sintomas, gravidade, urgência e potencial antes do contacto comercial.",
     "Potencial limpeza": "Potencial limpeza: estimativa de valor associada a serviços de limpeza, calculada a partir dos dados das leads VSP/FAP.",
     "Potencial substituicao": "Potencial substituição: estimativa de valor associada a substituição, calculada a partir dos dados das leads VSP/FAP.",
     "Leads com tracking": "Leads com tracking: percentagem de leads VSP/FAP com dados de origem/campanha suficientes para perceber que ação de marketing trouxe o contacto.",
@@ -2657,6 +2660,7 @@ input::placeholder { color: #7f93b3; }
     "Maior urgencia": "Maior urgência: sintoma/serviço com maior urgência média nos scorecards VSP/FAP. Ajuda a perceber que tipo de contacto deve ser tratado com prioridade.",
     "Leads VSP sem encomenda": "Leads VSP sem encomenda identificada: leads do ficheiro PKE Leads FAP que ainda não foram encontradas mais tarde no BackOffice. Não é uma falha de proposta, porque as VSP não passam pelo BO no início; é uma oportunidade de follow-up e cruzamento.",
     "Scorecards VSP": "Scorecards VSP: número de leads VSP/FAP com informação de diagnóstico suficiente para perceber sintomas, urgência e potencial comercial.",
+    "Fontes carregadas": "Fontes carregadas: indica se as folhas principais que alimentam esta leitura foram carregadas com sucesso nesta sessão. Neste bloco, as fontes são Marketing Control Panel, PKE Leads FAP/VSP, Resultados BO e Encomendas BO. 100% significa que o dashboard conseguiu ler todas; parcial significa que alguma fonte falhou ou ainda não carregou.",
     "Entradas": "Entradas: total de oportunidades consideradas no funil. Neste bloco, o número grande é o total; a linha de baixo separa esse total por origem. Por exemplo: 15 161 entradas, das quais 980 são VSP e 14 181 são BO.",
     "Propostas": "Propostas: no BackOffice, Proposta = Lead. É a fase em que o contacto preencheu dados e criou oportunidade comercial. Nas VSP, o lead existe sem criar proposta BO inicial.",
     "Encomendas": "Encomendas: propostas ou oportunidades que avançaram para encomenda no BackOffice. É a passagem depois da proposta.",
@@ -2672,6 +2676,22 @@ input::placeholder { color: #7f93b3; }
     const dynamicKey = Object.keys(HELP_TEXT_BY_LABEL).find((item) => key.startsWith(item));
     if (dynamicKey) return HELP_TEXT_BY_LABEL[dynamicKey];
     return `${key}: indicador calculado a partir dos ficheiros que alimentam o dashboard, sempre respeitando o período selecionado. Serve para dar uma leitura rápida antes de entrar no detalhe da folha original.`;
+  }
+  function knownHelpTextForLabel(label) {
+    const key = normalizeHelpKey(label);
+    if (!key) return "";
+    if (HELP_TEXT_BY_LABEL[key]) return HELP_TEXT_BY_LABEL[key];
+    const dynamicKey = Object.keys(HELP_TEXT_BY_LABEL).find((item) => key.startsWith(item));
+    return dynamicKey ? HELP_TEXT_BY_LABEL[dynamicKey] : "";
+  }
+  function chartItemHelp(item, unit, total) {
+    const label = item && item.label ? item.label : "Item";
+    const value = Number(item && item.value || 0);
+    const known = item && item.help ? item.help : knownHelpTextForLabel(label) || phraseHelp(label);
+    const formattedValue = fmtByUnit(value, unit);
+    const share = total ? Math.round(value / total * 100) : 0;
+    const base = known || `${label}: item específico deste gráfico. O dashboard está a comparar esta categoria com as restantes categorias do mesmo bloco.`;
+    return `${base} Neste gráfico, o valor apresentado é ${formattedValue}, equivalente a cerca de ${share}% do total visível neste bloco.`;
   }
   function helpAttrs(label, help) {
     return {
@@ -3738,10 +3758,12 @@ input::placeholder { color: #7f93b3; }
     const { ref, tip, show, move, hide } = useChartTooltip();
     const [hoverIdx, setHoverIdx] = useState(null);
     const palette = ["#0EA5E9", "#F2A93B", "#34D399", "#A78BFA", "#F472B6", "#FB923C", "#60A5FA", "#22C55E"];
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-2 relative", ref, "data-help": `Gráfico de barras: cada linha representa uma categoria e o tamanho da barra mostra o peso dessa categoria no total. O valor à direita mostra o número ou euros. Quanto maior a barra, mais importante é essa categoria neste bloco.` }, data.map((d, i) => /* @__PURE__ */ React.createElement(
+    const chartHelp = `Gráfico de barras: cada linha representa uma categoria e o tamanho da barra mostra o peso dessa categoria no total. O valor à direita mostra o número ou euros. Quanto maior a barra, mais importante é essa categoria neste bloco.`;
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-2 relative", ref, "data-help": chartHelp }, data.map((d, i) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: i,
+        "data-help": chartItemHelp(d, unit, total),
         style: { opacity: hoverIdx !== null && hoverIdx !== i ? 0.55 : 1 },
         onMouseEnter: (e) => {
           setHoverIdx(i);
@@ -5339,13 +5361,13 @@ input::placeholder { color: #7f93b3; }
     const vspScorecardRate = vspRecords.length ? vspSignals.scorecardRows.length / vspRecords.length : 0;
     const dataConfidence = [
       { label: "UTMs completos", value: fmtPercent(coreUtmComplete), detail: `${fmtNumber(combinedRecords.filter((record) => record.hasCoreUtm).length)} de ${fmtNumber(globalFunnel.entries)} registos`, tone: coreUtmComplete >= 0.8 ? "good" : coreUtmComplete >= 0.55 ? "warn" : "bad" },
-      { label: "BO com venda", value: fmtPercent(boOrderCoverage), detail: "Propostas/Leads ligadas a venda", tone: boOrderCoverage >= 0.08 ? "good" : boOrderCoverage >= 0.035 ? "warn" : "bad" },
+      { label: "BO com encomenda", value: fmtPercent(boOrderCoverage), detail: "Propostas ligadas a encomenda", tone: boOrderCoverage >= 0.08 ? "good" : boOrderCoverage >= 0.035 ? "warn" : "bad" },
       { label: "VSP com scorecard", value: fmtPercent(vspScorecardRate), detail: "Leads com leitura de sintomas", tone: vspScorecardRate >= 0.7 ? "good" : vspScorecardRate >= 0.45 ? "warn" : "bad" },
       { label: "Fontes carregadas", value: error ? "Parcial" : "Completo", detail: "Dashboard, VSP, BO e Encomendas", tone: error ? "warn" : "good" }
     ];
     const dataConfidenceChart = [
       { label: "UTMs completos", value: coreUtmComplete * 100 },
-      { label: "BO com venda", value: boOrderCoverage * 100 },
+      { label: "BO com encomenda", value: boOrderCoverage * 100 },
       { label: "VSP com scorecard", value: vspScorecardRate * 100 },
       { label: "Fontes carregadas", value: error ? 75 : 100 }
     ];
