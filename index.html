@@ -5649,6 +5649,7 @@ input::placeholder { color: #7f93b3; }
       { label: "Fontes carregadas", value: error ? 75 : 100 }
     ];
     const alerts = [
+      ...diagnosis.metrics.map((item) => ({ text: `${item.label}: ${item.value}${item.detail ? ` · ${item.detail}` : ""}`, tone: item.tone || "neutral" })),
       { text: pctAtingido >= alertThreshold / 100 ? "Faturação dentro do limiar definido" : `Faturação abaixo do limiar de ${alertThreshold}%`, tone: pctAtingido >= alertThreshold / 100 ? "good" : "bad" },
       { text: globalFunnel.openProposalValue > 0 ? `${fmtCurrency(globalFunnel.openProposalValue)} em propostas BO sem encomenda identificada` : "Sem valor BO em aberto no período", tone: globalFunnel.openProposalValue > 0 ? "warn" : "good" },
       { text: vspConversion.leads > vspConversion.converted ? `${fmtNumber(vspConversion.leads - vspConversion.converted)} leads VSP ainda sem encomenda identificada` : "VSP cruzado sem perdas visíveis", tone: vspConversion.leads > vspConversion.converted ? "warn" : "good" },
@@ -5691,9 +5692,6 @@ input::placeholder { color: #7f93b3; }
         h("div", { className: "alert-rail" }, alerts.map((alert, index) => h("span", { key: index, className: `alert-chip alert-chip-${alert.tone}` }, alert.text)))
       ),
       h(DetailedFunnelPreview, { model, leadsData, selectedMonths, fromStage, setFromStage, toStage, setToStage }),
-      h(DetailDisclosure, { title: "Diagnóstico executivo", subtitle: "Ritmo, faturação, linha mais fraca e estado geral.", defaultOpen: false },
-        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, diagnosis.metrics.map((item) => h(DiagnosisTile, { key: item.label, item })))
-      ),
       h("section", { className: "section-shell space-y-4" },
         h("div", null,
           h("div", { className: "section-kicker" }, "PRÓXIMAS AÇÕES"),
