@@ -2175,6 +2175,50 @@ input::placeholder { color: #7f93b3; }
     };
     return items.sort((a, b) => priority(a.label) - priority(b.label));
   }
+  const MARKETING_SERVICE_DEFS = [
+    { key: "PS", label: "PS" },
+    { key: "FAP", label: "FAP" },
+    { key: "AdBlue", label: "AdBlue" }
+  ];
+  function marketingKpiService(label) {
+    const lower = normalizeSearchText(label);
+    if (/\bps\b/.test(lower)) return "PS";
+    if (/\bfap\b/.test(lower)) return "FAP";
+    if (/\badb\b/.test(lower) || lower.includes("adblue")) return "AdBlue";
+    return "Outros";
+  }
+  function marketingKpiMetricType(label) {
+    const lower = normalizeSearchText(label);
+    if (lower.includes("roas")) return "roas";
+    if (lower.includes("cpl") || lower.includes("lead")) return "cpl";
+    if (lower.includes("cpa") || lower.includes("aquis")) return "cpa";
+    if (lower.includes("invest")) return "invest";
+    return "other";
+  }
+  function marketingKpiMetricLabel(type) {
+    return {
+      roas: "ROAS",
+      cpl: "CPL",
+      cpa: "CPA",
+      invest: "Média de investimento",
+      other: "KPI"
+    }[type] || "KPI";
+  }
+  function buildMarketingServiceGroups(kpis) {
+    const groups = MARKETING_SERVICE_DEFS.map((service) => ({ ...service, metrics: [] }));
+    kpis.forEach((item) => {
+      const serviceKey = marketingKpiService(item.label);
+      const group = groups.find((candidate) => candidate.key === serviceKey);
+      if (!group) return;
+      const type = marketingKpiMetricType(item.label);
+      group.metrics.push({ ...item, type, shortLabel: marketingKpiMetricLabel(type) });
+    });
+    const priority = { roas: 0, cpl: 1, cpa: 2, invest: 3, other: 4 };
+    return groups.map((group) => ({
+      ...group,
+      metrics: group.metrics.sort((a, b) => (priority[a.type] || 4) - (priority[b.type] || 4))
+    }));
+  }
   function findAll(block, label) {
     return block.filter((r) => rowLabel(r) === label);
   }
@@ -5876,7 +5920,10 @@ input::placeholder { color: #7f93b3; }
     const averageInvestmentRows = kpis.filter((item) => /invest/.test(normalizeSearchText(item.label))).map((item) => ({ label: item.label, value: item.rawValue > 1 ? item.rawValue : item.rawValue * 100, help: item.help })).filter((row) => row.value > 0);
     const costRows = kpis.filter((item) => /(cpl|cpa|aquis|custo)/.test(normalizeSearchText(item.label))).map((item) => ({ label: item.label, value: item.rawValue, help: item.help })).filter((row) => row.value > 0);
     const visibleKpis = [...kpis, ...vspInvestment.items];
+    const serviceGroups = buildMarketingServiceGroups(kpis);
+    const hasServiceKpis = serviceGroups.some((group) => group.metrics.length);
     const ChartCard = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
+    const serviceHelp = (group) => `${group.label}: KPIs de performance paga deste serviço. Junta ROAS, CPL, CPA e média de investimento vindos das linhas 144 a 158 do ficheiro MKT PKE 2026, respeitando o período selecionado.`;
     return h("section", { className: "section-shell space-y-4", "data-help": "Performance paga: painel de leitura rápida para perceber como está o Marketing da PKE a comportar-se em ROAS, custo por lead, custo por aquisição e investimento por serviço. Os dados vêm das linhas 144 a 158 do MKT PKE 2026 e dos custos VSP da DATABASE PKE 2026, tab Visão VSP diária." },
       h("div", { className: "flex items-start justify-between gap-3 flex-wrap" },
         h("div", null,
@@ -5886,7 +5933,23 @@ input::placeholder { color: #7f93b3; }
         ),
         h(MetricBadge, { tone: visibleKpis.length ? "good" : "warn" }, visibleKpis.length ? "Dados lidos" : "A aguardar dados")
       ),
-      visibleKpis.length ? h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, visibleKpis.map((item) => h(DiagnosisTile, { key: item.label, item }))) : h(EmptyState, { text: "Ainda não encontrei linhas de ROAS, CPL, CPA ou investimento nas linhas 144 a 158." }),
+      hasServiceKpis ? h("div", { className: "grid lg:grid-cols-3 gap-4" }, serviceGroups.map((group) => h("div", { key: group.key, className: "diagnosis-tile space-y-4", "data-help": serviceHelp(group) },
+        h("div", { className: "flex items-center justify-between gap-3" },
+          h("div", { className: "flex items-center gap-2" },
+            h(LineDot, { line: group.key }),
+            h("h4", { className: "text-lg font-bold text-slate-100" }, group.label)
+          ),
+          h(MetricBadge, { tone: group.metrics.length ? "neutral" : "warn" }, `${group.metrics.length}/4 KPIs`)
+        ),
+        group.metrics.length ? h("div", { className: "space-y-3" }, group.metrics.map((item) => h("div", { key: item.label, ...helpAttrs(item.shortLabel, item.help), className: "rounded-xl border border-slate-700 bg-slate-950/30 p-3" },
+          h("div", { className: "flex items-baseline justify-between gap-3" },
+            h("span", { className: "text-xs font-semibold uppercase tracking-wide text-slate-400" }, item.shortLabel),
+            h("span", { className: "text-base font-bold text-slate-100 tabular-nums" }, item.value)
+          ),
+          h("div", { className: "mt-1 text-xs text-slate-500" }, item.label)
+        ))) : h(EmptyState, { text: "Sem KPIs para este serviço no período." })
+      ))) : h(EmptyState, { text: "Ainda não encontrei linhas de ROAS, CPL, CPA ou investimento nas linhas 144 a 158." }),
+      vspInvestment.items.length ? h("div", { className: "grid sm:grid-cols-2 gap-4" }, vspInvestment.items.map((item) => h(DiagnosisTile, { key: item.label, item }))) : null,
       (averageInvestmentRows.length || costRows.length || vspInvestment.chartRows.length) ? h("div", { className: "grid lg:grid-cols-3 gap-4" },
         averageInvestmentRows.length ? h(ChartCard, { title: "Média de investimento por serviço", subtitle: "Peso médio do investimento por linha: PS, FAP e AdBlue." }, h(CategoryBarChart, { data: averageInvestmentRows, unit: "percent" })) : null,
         costRows.length ? h(ChartCard, { title: "Custos por resultado", subtitle: "CPL, CPA e custos relacionados no período." }, h(CategoryBarChart, { data: costRows, unit: "currency" })) : null,
@@ -5919,17 +5982,7 @@ input::placeholder { color: #7f93b3; }
         h("h2", { className: "section-heading" }, "Performance paga e eficiência de investimento"),
         h("p", { className: "section-subtitle" }, "Aqui ficam ROAS, Custo por Lead, Custo por Aquisição e Média de Investimento por serviço. O período respeita o filtro no topo da página.")
       ),
-      h(MarketingPerformancePanel, { dashboardTable, vspTable: vspCostTable || vspLeadTable, vspPotentialTable: vspLeadTable, selectedMonths }),
-      h("section", { className: "section-shell space-y-3", "data-help": "Como ler este painel: ROAS acima de 4x tende a ser saudável; CPL e CPA devem ser lidos por serviço, porque PS, FAP e AdBlue podem ter valores médios e margens diferentes. A média de investimento mostra a distribuição do orçamento entre serviços." },
-        h("div", { className: "section-kicker" }, "COMO LER"),
-        h("h3", { className: "section-heading" }, "O que estes KPIs dizem"),
-        h("div", { className: "grid md:grid-cols-2 gap-3 text-sm text-slate-300" },
-          h("div", { className: "diagnosis-tile" }, h("strong", { className: "block text-slate-100 mb-1" }, "ROAS"), "Mostra quantas vezes o investimento regressa em faturação ou valor associado. Quanto maior, melhor."),
-          h("div", { className: "diagnosis-tile" }, h("strong", { className: "block text-slate-100 mb-1" }, "CPL"), "Mostra quanto custa gerar uma proposta/lead. Ajuda a perceber se o topo do funil está caro ou eficiente."),
-          h("div", { className: "diagnosis-tile" }, h("strong", { className: "block text-slate-100 mb-1" }, "CPA"), "Mostra quanto custa chegar a uma aquisição/encomenda. Aproxima mais a leitura do resultado comercial."),
-          h("div", { className: "diagnosis-tile" }, h("strong", { className: "block text-slate-100 mb-1" }, "Média de investimento"), "Mostra a percentagem média do orçamento por serviço, para perceber se PS, FAP e AdBlue estão equilibrados face ao retorno.")
-        )
-      )
+      h(MarketingPerformancePanel, { dashboardTable, vspTable: vspCostTable || vspLeadTable, vspPotentialTable: vspLeadTable, selectedMonths })
     );
   }
   function ResultadosVSPView({ selectedMonths }) {
