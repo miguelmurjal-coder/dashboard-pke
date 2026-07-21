@@ -1664,11 +1664,11 @@ input::placeholder { color: #7f93b3; }
   const SHEETS = [
     { name: "Dashboard MKT", label: "Marketing Control Panel" },
     { name: "KPIs Marketing", label: "KPIs Marketing" },
-    { name: "Resultados Totais", label: "Resultados Totais" },
     { name: "Aprofundar Dados", label: "Aprofundar Dados" },
     { name: "Ferramentas", label: "Ferramentas" }
   ];
   const DEEP_DIVE_PANELS = [
+    { name: "Resultados Totais", label: "Visão Global" },
     { name: "Resultados VSP", label: "Resultados VSP" },
     { name: "Resultados BO", label: "Resultados BO" },
     { name: "Ficheiro JM", label: "Ficheiro JM" },
@@ -1684,8 +1684,8 @@ input::placeholder { color: #7f93b3; }
     { title: "Faturação e objetivos", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Objetivo, faturação, delta, ritmo do mês e linhas PS/FAP/AdBlue.", keywords: ["faturacao", "faturação", "objetivo", "objetivos", "delta", "ritmo", "ps", "fap", "adblue", "receita"] },
     { title: "Funil global", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Desconhecido, Proposta, Encomenda, Faturação e valor capturado.", keywords: ["funil", "leads", "propostas", "vendas", "encomendas", "conversao", "conversão", "valor capturado"] },
     { title: "KPIs Marketing", location: "KPIs Marketing", target: "KPIs Marketing", description: "ROAS, CPL, CPA, média de investimento por serviço e custos VSP Meta/Google.", keywords: ["kpi", "kpis", "roas", "cpl", "cpa", "custo por lead", "custo por aquisicao", "custo por aquisição", "media investimento", "média investimento", "performance paga", "meta", "google", "custos vsp"] },
-    { title: "Resultados agregados", location: "Resultados Totais", target: "Resultados Totais", description: "Merge de VSP + BO, funil global, canais, campanhas, marcas e modelos.", keywords: ["resultados totais", "totais", "merge", "global", "vsp bo", "agregado", "agregados", "cruzado", "cruzamento"] },
-    { title: "Conversão VSP para encomendas", location: "Resultados Totais", target: "Resultados Totais", description: "Leads VSP encontrados mais tarde como encomendas no BackOffice.", keywords: ["vsp vendas", "vsp encomendas", "vsp para venda", "vsp para encomenda", "conversao vsp", "conversão vsp", "matches", "backoffice", "bo", "telefone", "email"] },
+    { title: "Resultados agregados", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Merge de VSP + BO, funil global, canais, campanhas, marcas e modelos.", keywords: ["resultados totais", "totais", "merge", "global", "vsp bo", "agregado", "agregados", "cruzado", "cruzamento"] },
+    { title: "Conversão VSP para encomendas", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Leads VSP encontrados mais tarde como encomendas no BackOffice.", keywords: ["vsp vendas", "vsp encomendas", "vsp para venda", "vsp para encomenda", "conversao vsp", "conversão vsp", "matches", "backoffice", "bo", "telefone", "email"] },
     { title: "UTMs das leads VSP", location: "Aprofundar Dados > Resultados VSP", target: "Resultados VSP", description: "Origem, campanha e tracking associados aos leads VSP/FAP.", keywords: ["utm vsp", "utms vsp", "utm de vsp", "utm da vsp", "tracking vsp", "source vsp", "campaign vsp", "campanha vsp"] },
     { title: "UTMs e tracking", location: "Resultados BO / VSP / UTM Creator", target: "UTM Creator", description: "Criar links UTM e encontrar cobertura de UTMs em BO/VSP.", keywords: ["utm", "utms", "tracking", "source", "medium", "campaign", "content", "mailerlite", "link", "url"] },
     { title: "Resultados VSP", location: "Aprofundar Dados", target: "Resultados VSP", description: "Leads VSP/FAP, scorecards, sintomas, marcas, campanhas e landing pages.", keywords: ["vsp", "scorecard", "sintomas", "landing", "landing page", "leads vsp", "fap", "gravidade", "urgencia", "urgência"] },
@@ -1695,8 +1695,8 @@ input::placeholder { color: #7f93b3; }
     { title: "UTM Creator", location: "Ferramentas", target: "UTM Creator", description: "Gerar links com utm_source, utm_medium, utm_campaign e utm_content.", keywords: ["utm creator", "criador utm", "gerar utm", "link utm", "source", "medium", "campaign", "content"] },
     { title: "Gerador de Relatórios", location: "Ferramentas", target: "Gerador de Relatórios", description: "Gerar relatório executivo em PDF com dados do Dashboard, VSP, BO, UTMs, funil e plano de ação.", keywords: ["relatorio", "relatório", "pdf", "gerador", "analise", "análise", "exportar", "imprimir"] },
     { title: "Log Tarefas", location: "Ferramentas", target: "Log Tarefas", description: "Registar horas, tarefas, categorias, estados e notas de trabalho.", keywords: ["log", "tarefas", "horas", "tempo", "registo", "categoria", "estado", "notas"] },
-    { title: "Campanhas", location: "Dashboard / Resultados", target: "Resultados Totais", description: "Campanhas com volume, valor, conversão e campanhas a rever.", keywords: ["campanha", "campanhas", "meta", "google", "ads", "qualidade campanha", "campanhas a rever"] },
-    { title: "Canais e origens", location: "Dashboard / Resultados", target: "Resultados Totais", description: "Canais que puxam valor, origens combinadas e origem dos leads/propostas.", keywords: ["canal", "canais", "origem", "origens", "source", "meta", "google", "organico", "orgânico"] }
+    { title: "Campanhas", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Campanhas com volume, valor, conversão e campanhas a rever.", keywords: ["campanha", "campanhas", "meta", "google", "ads", "qualidade campanha", "campanhas a rever"] },
+    { title: "Canais e origens", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Canais que puxam valor, origens combinadas e origem dos leads/propostas.", keywords: ["canal", "canais", "origem", "origens", "source", "meta", "google", "organico", "orgânico"] }
   ];
   const SHEET_GIDS = {
     "Ficheiro JM": "785129550",
@@ -4032,17 +4032,18 @@ input::placeholder { color: #7f93b3; }
       /* @__PURE__ */ React.createElement(ChevronDown, { className: `w-4 h-4 transition-transform ${open ? "rotate-180" : ""}` })
     ), open && /* @__PURE__ */ React.createElement("div", { className: "p-4 border-t border-slate-200" }, /* @__PURE__ */ React.createElement(GenericTable, { table })));
   }
-  function DetailDisclosure({ title, subtitle, defaultOpen = false, children }) {
+  function DetailDisclosure({ title, subtitle, defaultOpen = false, lockedOpen = false, children }) {
     const [open, setOpen] = useState(!!defaultOpen);
+    const isOpen = lockedOpen || open;
     return h("section", { className: "detail-disclosure" },
-      h("button", { type: "button", className: "detail-disclosure-btn", onClick: () => setOpen((value) => !value) },
+      h("button", { type: "button", className: "detail-disclosure-btn", onClick: () => !lockedOpen && setOpen((value) => !value), "aria-expanded": isOpen },
         h("div", null,
           h("div", { className: "detail-disclosure-title" }, title),
           subtitle && h("div", { className: "detail-disclosure-subtitle" }, subtitle)
         ),
-        h(ChevronDown, { className: `w-4 h-4 text-blue-200 transition-transform ${open ? "rotate-180" : ""}` })
+        !lockedOpen && h(ChevronDown, { className: `w-4 h-4 text-blue-200 transition-transform ${isOpen ? "rotate-180" : ""}` })
       ),
-      open && h("div", { className: "detail-disclosure-body" }, children)
+      isOpen && h("div", { className: "detail-disclosure-body" }, children)
     );
   }
   function BusinessLinesPanel({ data, selectedMonths, alertThreshold }) {
@@ -5588,7 +5589,7 @@ input::placeholder { color: #7f93b3; }
           h(KpiCard, { label: "VSP para Encomenda", numeric: vspRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspRate >= 0.04 ? "good" : vspRate > 0 ? "warn" : "neutral" })
         )
       ),
-      h(DetailDisclosure, { title: "Análise detalhada do Marketing Control Panel", subtitle: "Objetivos, faturação por linha, funil configurável, VMT e tabelas completas.", defaultOpen: false },
+      h(DetailDisclosure, { title: "Funil", subtitle: "Objetivos, faturação por linha, funil configurável e tabelas completas.", defaultOpen: true, lockedOpen: true },
         h(DashboardMKTView, { selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage })
       ),
       h("section", { className: "section-shell space-y-4" },
@@ -6088,7 +6089,7 @@ input::placeholder { color: #7f93b3; }
       gid: DASHBOARD_GID,
       headers: 0
     });
-    const [tab, setTab] = useState("propostasCIVA");
+    const [tab, setTab] = useState("propostasSIVA");
     const [section, setSection] = useState("funil");
     const model = useMemo(() => buildDashboardModel(table), [table]);
     const { table: leadsTable } = useSheetData("Leads Di\xE1rios", { gid: SHEET_GIDS["Leads Di\xE1rios"] });
@@ -6204,7 +6205,6 @@ input::placeholder { color: #7f93b3; }
       value: faturacaoReal.lines[key] && faturacaoReal.lines[key].value ? sumByMonths(faturacaoReal.lines[key].value.monthly, selectedMonths) : 0
     })).filter((d) => d.value > 0) : [];
     const tabs = [
-      { key: "propostasCIVA", label: "Propostas (C/ IVA)", data: model.propostasCIVA },
       { key: "propostasSIVA", label: "Propostas (S/ IVA)", data: model.propostasSIVA },
       { key: "encomendas", label: "Encomendas", data: model.encomendas },
       {
@@ -6256,7 +6256,7 @@ input::placeholder { color: #7f93b3; }
         kind: "risk",
         trend: deltaTrend
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-2" }, "Fatura\xE7\xE3o: objetivo vs real"), revenueChartData.length ? /* @__PURE__ */ React.createElement(MonthlyComparisonChart, { data: revenueChartData, nameA: "Objetivo", nameB: "Real", variant: "bar-line" }) : /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem meses selecionados." })), (lineMix.length > 0 || encomendaMix.length > 0 || faturacaoRealMix.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" }, lineMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Propostas reais (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: lineMix, unit: "currency" })), encomendaMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Encomendas reais (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: encomendaMix, unit: "currency" })), faturacaoRealMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Fatura\xE7\xE3o real (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: faturacaoRealMix, unit: "currency" })))), section === "funil" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2 mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700" }, "Funil de convers\xE3o (N\xBA) \u2014 ", fromStageDef.shortLabel, " \u2192 ", toStageDef.shortLabel), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("select", { value: fromStage, onChange: (e) => setFromStage(e.target.value), className: "funnel-select" }, /* @__PURE__ */ React.createElement(FunnelStageOptions, null)), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 text-sm" }, "\u2192"), /* @__PURE__ */ React.createElement("select", { value: toStage, onChange: (e) => setToStage(e.target.value), className: "funnel-select" }, /* @__PURE__ */ React.createElement(FunnelStageOptions, null)))), funnelTotal || funnelLines.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, funnelTotal && /* @__PURE__ */ React.createElement(FunnelChart, { title: "Total", stages: funnelTotal }), funnelLines.map((f) => /* @__PURE__ */ React.createElement(FunnelChart, { key: f.key, title: f.key, stages: f.stages }))) : /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para esta combina\xE7\xE3o de fases." })), vmtRows.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Calculadora VMT"), /* @__PURE__ */ React.createElement("div", { className: "overflow-auto" }, /* @__PURE__ */ React.createElement("table", { className: "min-w-full text-sm" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-left text-slate-400" }, /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs" }, "Linha"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "VMT"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "Convers\xE3o (\u20AC)"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "Perda (%)"))), /* @__PURE__ */ React.createElement("tbody", null, vmtRows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.key, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 font-semibold text-slate-800" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(LineDot, { line: r.key }), r.key)), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums" }, r.hasVmt ? fmtCurrency(r.vmt) : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums text-emerald-700 font-semibold" }, r.hasFunnel ? fmtPercent(r.conv) : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums text-red-600 font-semibold" }, r.hasPerda ? fmtPercent(r.perda) : "\u2014")))))))), section === "detalhe" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-px border-b border-slate-200" }, tabs.map((t) => /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-2" }, "Fatura\xE7\xE3o: objetivo vs real"), revenueChartData.length ? /* @__PURE__ */ React.createElement(MonthlyComparisonChart, { data: revenueChartData, nameA: "Objetivo", nameB: "Real", variant: "bar-line" }) : /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem meses selecionados." })), (lineMix.length > 0 || encomendaMix.length > 0 || faturacaoRealMix.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" }, lineMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Propostas reais (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: lineMix, unit: "currency" })), encomendaMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Encomendas reais (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: encomendaMix, unit: "currency" })), faturacaoRealMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Fatura\xE7\xE3o real (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: faturacaoRealMix, unit: "currency" })))), section === "funil" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2 mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700" }, "Funil de convers\xE3o (N\xBA) \u2014 ", fromStageDef.shortLabel, " \u2192 ", toStageDef.shortLabel), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("select", { value: fromStage, onChange: (e) => setFromStage(e.target.value), className: "funnel-select" }, /* @__PURE__ */ React.createElement(FunnelStageOptions, null)), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 text-sm" }, "\u2192"), /* @__PURE__ */ React.createElement("select", { value: toStage, onChange: (e) => setToStage(e.target.value), className: "funnel-select" }, /* @__PURE__ */ React.createElement(FunnelStageOptions, null)))), funnelTotal || funnelLines.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, funnelTotal && /* @__PURE__ */ React.createElement(FunnelChart, { title: "Total", stages: funnelTotal }), funnelLines.map((f) => /* @__PURE__ */ React.createElement(FunnelChart, { key: f.key, title: f.key, stages: f.stages }))) : /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para esta combina\xE7\xE3o de fases." }))), section === "detalhe" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-px border-b border-slate-200" }, tabs.map((t) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: t.key,
@@ -6309,12 +6309,13 @@ input::placeholder { color: #7f93b3; }
   }
   function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
     const current = DEEP_DIVE_PANELS.some((panel) => panel.name === activePanel) ? activePanel : DEEP_DIVE_PANELS[0].name;
+    const currentPanel = DEEP_DIVE_PANELS.find((panel) => panel.name === current) || DEEP_DIVE_PANELS[0];
     return h("div", { className: "space-y-6" },
       h("section", { className: "section-shell section-shell-hero space-y-4" },
         h("div", null,
           h("div", { className: "section-kicker" }, "APROFUNDAR DADOS"),
-          h("h2", { className: "section-heading" }, "Escolhe a fonte que queres analisar"),
-          h("p", { className: "section-subtitle" }, "Aqui ficam os painéis de detalhe: VSP, BO, Ficheiro JM e Leads Di\xE1rios.")
+          h("h2", { className: "section-heading" }, "Escolhe a vista que queres analisar"),
+          h("p", { className: "section-subtitle" }, "Começa pela Visão Global para ver o cruzamento VSP + BO. Depois entra nas fontes individuais quando precisares de detalhe.")
         ),
         h("div", { className: "deep-tabs" }, DEEP_DIVE_PANELS.map((panel) => h("button", {
           key: panel.name,
@@ -6323,11 +6324,17 @@ input::placeholder { color: #7f93b3; }
           onClick: () => setActivePanel(panel.name)
         }, panel.label)))
       ),
+      h("section", { className: "section-shell space-y-2" },
+        h("div", { className: "section-kicker" }, "VISTA ATIVA"),
+        h("h3", { className: "section-heading" }, currentPanel.label),
+        h("p", { className: "section-subtitle" }, current === "Resultados Totais" ? "Resumo cruzado para perceber o volume total, conversão VSP para encomenda e principais padrões agregados." : "Fonte individual para investigar a origem dos números que aparecem na visão global.")
+      ),
+      current === "Resultados Totais" ? h(ResultadosTotaisView, { selectedMonths }) :
       current === "Resultados VSP" ? h(ResultadosVSPView, { selectedMonths }) :
       current === "Resultados BO" ? h(ResultadosBOView, { selectedMonths }) :
       current === "Ficheiro JM" ? h(FicheiroJMView, { selectedMonths }) :
       current === "Leads Di\xE1rios" ? h(LeadsDiariosView, { selectedMonths }) :
-      h(ResultadosVSPView, { selectedMonths })
+      h(ResultadosTotaisView, { selectedMonths })
     );
   }
   function ReportGeneratorView({ selectedMonths }) {
@@ -6637,7 +6644,7 @@ input::placeholder { color: #7f93b3; }
   function App() {
     const [authenticated, setAuthenticated] = useState(false);
     const [selected, setSelected] = useState("Dashboard MKT");
-    const [activeDeepPanel, setActiveDeepPanel] = useState("Resultados VSP");
+    const [activeDeepPanel, setActiveDeepPanel] = useState("Resultados Totais");
     const [activeToolPanel, setActiveToolPanel] = useState("UTM Creator");
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [selectedMonths, setSelectedMonths] = useState(new Set(ALL_MONTHS));
@@ -6897,7 +6904,7 @@ input::placeholder { color: #7f93b3; }
         setToStage,
         onNavigate: navigateDashboard
       }
-    ) : selected === "KPIs Marketing" ? /* @__PURE__ */ React.createElement(MarketingPerformanceView, { selectedMonths }) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "KPIs Marketing" ? /* @__PURE__ */ React.createElement(MarketingPerformanceView, { selectedMonths }) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
