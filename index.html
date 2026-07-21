@@ -2100,6 +2100,74 @@ input::placeholder { color: #7f93b3; }
       total: parseNum(cellVal(row, totalColIdx))
     };
   }
+  const MARKETING_KPI_START_ROW = 144;
+  const MARKETING_KPI_END_ROW = 158;
+  function selectedMonthValuesFromRow(row, selectedMonths) {
+    return MONTH_COLS.map((col, month) => selectedMonths.has(month) ? numericValue(row, col) : null).filter((v) => v !== null && Number.isFinite(v));
+  }
+  function avgNumbers(values) {
+    const valid = values.filter((v) => Number.isFinite(v));
+    return valid.length ? valid.reduce((s, v) => s + v, 0) / valid.length : 0;
+  }
+  function metricFormatForLabel(label) {
+    const lower = normalizeSearchText(label);
+    if (lower.includes("roas")) return "roas";
+    if (lower.includes("cpl") || lower.includes("lead") || lower.includes("cpa") || lower.includes("aquis") || lower.includes("custo") || lower.includes("invest")) return "currency";
+    return lower.includes("%") ? "percent" : "number";
+  }
+  function formatMarketingKpiValue(value, format) {
+    if (format === "roas") {
+      const normalized = value > 20 ? value / 100 : value;
+      return `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(normalized || 0)}x`;
+    }
+    if (format === "currency") return fmtCurrency(value);
+    if (format === "percent") return fmtPercent(value > 1 ? value / 100 : value);
+    return fmtNumber(value);
+  }
+  function marketingKpiTone(label, value, format) {
+    const lower = normalizeSearchText(label);
+    const normalizedRoas = format === "roas" && value > 20 ? value / 100 : value;
+    if (format === "roas") return normalizedRoas >= 4 ? "good" : normalizedRoas >= 2 ? "warn" : "bad";
+    if (lower.includes("custo") || lower.includes("cpl") || lower.includes("cpa")) return value > 0 ? "neutral" : "warn";
+    if (lower.includes("invest")) return value > 0 ? "good" : "neutral";
+    return "neutral";
+  }
+  function buildMarketingPerformanceKpis(table, selectedMonths) {
+    const allRows = table && table.rows ? table.rows : [];
+    const lineRows = allRows.slice(MARKETING_KPI_START_ROW - 1, MARKETING_KPI_END_ROW);
+    const toItem = (row, displayLine) => {
+      const label = rowLabel(row);
+      if (!label) return null;
+      const lower = normalizeSearchText(label);
+      if (!/(roas|cpl|cpa|aquis|invest|custo)/.test(lower)) return null;
+      const values = selectedMonthValuesFromRow(row, selectedMonths);
+      const isAverageMetric = /(roas|cpl|cpa|lead|aquis|media|média|custo)/.test(lower);
+      const rawValue = isAverageMetric ? avgNumbers(values) : values.reduce((s, v) => s + v, 0);
+      const format = metricFormatForLabel(label);
+      return {
+        label,
+        rawValue,
+        value: formatMarketingKpiValue(rawValue, format),
+        detail: `${periodFilterLabel(selectedMonths)} · ${displayLine}`,
+        tone: marketingKpiTone(label, rawValue, format),
+        format,
+        help: `${label}: KPI vindo das linhas 144 a 158 do ficheiro MKT PKE 2026. Respeita o período selecionado no topo. ROAS mostra retorno sobre investimento; CPL mostra custo por lead; CPA mostra custo por aquisição/encomenda; investimento médio mostra quanto está a ser investido por serviço.`
+      };
+    };
+    let items = lineRows.map((row, index) => toItem(row, `linha ${MARKETING_KPI_START_ROW + index}`)).filter(Boolean);
+    if (!items.length) {
+      items = allRows.map((row, index) => toItem(row, `linha encontrada ${index + 1}`)).filter(Boolean);
+    }
+    const priority = (label) => {
+      const lower = normalizeSearchText(label);
+      if (lower.includes("roas")) return 0;
+      if (lower.includes("cpl") || lower.includes("lead")) return 1;
+      if (lower.includes("cpa") || lower.includes("aquis")) return 2;
+      if (lower.includes("invest")) return 3;
+      return 4;
+    };
+    return items.sort((a, b) => priority(a.label) - priority(b.label));
+  }
   function findAll(block, label) {
     return block.filter((r) => rowLabel(r) === label);
   }
@@ -2711,7 +2779,7 @@ input::placeholder { color: #7f93b3; }
   function sourceLinksForHelp(text) {
     const lower = normalizeSearchText(text || "");
     const sources = [];
-    if (lower.includes("dashboard mkt") || lower.includes("marketing control panel") || lower.includes("objetivo") || lower.includes("faturacao") || lower.includes("faturação") || lower.includes("meta") || lower.includes("ritmo")) sources.push(DATA_SOURCE_LINKS.dashboard);
+    if (lower.includes("dashboard mkt") || lower.includes("marketing control panel") || lower.includes("mkt pke") || lower.includes("objetivo") || lower.includes("faturacao") || lower.includes("faturação") || lower.includes("meta") || lower.includes("ritmo")) sources.push(DATA_SOURCE_LINKS.dashboard);
     if (lower.includes("vsp") || lower.includes("fap") || lower.includes("scorecard") || lower.includes("sintoma") || lower.includes("landing")) sources.push(DATA_SOURCE_LINKS.vsp);
     if (lower.includes("bo") || lower.includes("backoffice") || lower.includes("proposta")) sources.push(DATA_SOURCE_LINKS.bo);
     if (lower.includes("encomenda")) sources.push(DATA_SOURCE_LINKS.encomendas);
@@ -4433,9 +4501,58 @@ input::placeholder { color: #7f93b3; }
   const VSP_SEVERITY_COL = 20;
   const VSP_TREND_COL = 21;
   const VSP_URGENCY_COL = 22;
+  const VSP_META_COST_FALLBACK_COL = 30;
+  const VSP_GOOGLE_COST_FALLBACK_COL = 31;
   function textValue(row, idx) {
     const v = cellVal(row, idx);
     return v === null || v === void 0 ? "" : String(v).trim();
+  }
+  function tableColumnText(table, colIdx) {
+    const parts = [];
+    if (table && table.cols && table.cols[colIdx]) parts.push(table.cols[colIdx]);
+    (table && table.rows || []).slice(0, 5).forEach((row) => {
+      const value = textValue(row, colIdx);
+      if (value) parts.push(value);
+    });
+    return normalizeSearchText(parts.join(" "));
+  }
+  function findCostColumn(table, provider, fallbackCol) {
+    const sampledRows = (table && table.rows || []).slice(0, 10);
+    const rowColCount = sampledRows.reduce((max, row) => Math.max(max, row.length || 0), 0);
+    const colCount = Math.max(table && table.cols ? table.cols.length : 0, rowColCount, fallbackCol + 1);
+    const providerText = normalizeSearchText(provider);
+    for (let i = 0; i < colCount; i++) {
+      const text = tableColumnText(table, i);
+      if (text.includes(providerText) && /(custo|cost|invest|spend|gasto)/.test(text)) return i;
+    }
+    return fallbackCol < colCount ? fallbackCol : Math.max(0, colCount - (providerText.includes("meta") ? 2 : 1));
+  }
+  function buildVspInvestmentKpis(table, selectedMonths) {
+    if (!table) return { items: [], chartRows: [] };
+    const metaCol = findCostColumn(table, "meta", VSP_META_COST_FALLBACK_COL);
+    const googleCol = findCostColumn(table, "google", VSP_GOOGLE_COST_FALLBACK_COL);
+    const rows = (table.rows || []).filter((row) => {
+      const date = parseRowDate(row, VSP_DATE_COL);
+      return date && selectedMonths.has(date.getMonth());
+    });
+    const metaCost = rows.reduce((sum, row) => sum + numericValue(row, metaCol), 0);
+    const googleCost = rows.reduce((sum, row) => sum + numericValue(row, googleCol), 0);
+    const totalCost = metaCost + googleCost;
+    const potential = rows.reduce((sum, row) => sum + Math.max(numericValue(row, VSP_CLEAN_PRICE_COL), numericValue(row, VSP_REPLACE_PRICE_COL)), 0);
+    const leads = rows.length;
+    const cpl = leads ? totalCost / leads : 0;
+    const roasPotential = totalCost ? potential / totalCost : 0;
+    return {
+      chartRows: [
+        { label: "Meta VSP", value: metaCost },
+        { label: "Google VSP", value: googleCost }
+      ].filter((row) => row.value > 0),
+      items: [
+        { label: "Investimento VSP", value: fmtCurrency(totalCost), detail: `${fmtCurrency(metaCost)} Meta · ${fmtCurrency(googleCost)} Google`, tone: totalCost ? "good" : "neutral", help: "Investimento VSP: soma dos custos de Meta e Google registados nas novas colunas da folha Resultados VSP. Respeita o período selecionado." },
+        { label: "CPL VSP", value: fmtCurrency(cpl), detail: `${fmtNumber(leads)} leads VSP/FAP no período`, tone: cpl ? "neutral" : "warn", help: "CPL VSP: custo por lead das VSP. Fórmula: investimento Meta + Google das VSP dividido pelo número de leads VSP no período." },
+        { label: "ROAS potencial VSP", value: `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(roasPotential)}x`, detail: `${fmtCurrency(potential)} potencial estimado`, tone: roasPotential >= 4 ? "good" : roasPotential >= 2 ? "warn" : roasPotential > 0 ? "bad" : "neutral", help: "ROAS potencial VSP: compara o potencial estimado das leads VSP com o investimento Meta e Google associado. É uma leitura de potencial, não faturação confirmada." }
+      ]
+    };
   }
   function compactLabel(value, fallback = "Sem origem") {
     const s = String(value || "").trim();
@@ -5409,6 +5526,7 @@ input::placeholder { color: #7f93b3; }
           h(KpiCard, { label: "VSP para Encomenda", numeric: vspRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspRate >= 0.04 ? "good" : vspRate > 0 ? "warn" : "neutral" })
         )
       ),
+      h(MarketingPerformancePanel, { dashboardTable, vspTable, selectedMonths }),
       h("section", { className: "section-shell space-y-4" },
         h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
           h("div", null,
@@ -5736,6 +5854,30 @@ input::placeholder { color: #7f93b3; }
       )
     );
   }
+  function MarketingPerformancePanel({ dashboardTable, vspTable, selectedMonths }) {
+    const kpis = buildMarketingPerformanceKpis(dashboardTable, selectedMonths);
+    const vspInvestment = buildVspInvestmentKpis(vspTable, selectedMonths);
+    const investmentRows = kpis.filter((item) => /invest/.test(normalizeSearchText(item.label))).map((item) => ({ label: item.label, value: item.rawValue, help: item.help })).filter((row) => row.value > 0);
+    const costRows = kpis.filter((item) => /(cpl|cpa|aquis|custo)/.test(normalizeSearchText(item.label))).map((item) => ({ label: item.label, value: item.rawValue, help: item.help })).filter((row) => row.value > 0);
+    const visibleKpis = [...kpis, ...vspInvestment.items];
+    const ChartCard = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
+    return h("section", { className: "section-shell space-y-4", "data-help": "Performance paga: painel de leitura rápida para perceber como está o Marketing da PKE a comportar-se em ROAS, custo por lead, custo por aquisição e investimento por serviço. Os dados vêm das linhas 144 a 158 do MKT PKE 2026 e das novas colunas de custos das VSP." },
+      h("div", { className: "flex items-start justify-between gap-3 flex-wrap" },
+        h("div", null,
+          h("div", { className: "section-kicker" }, "PERFORMANCE PAGA"),
+          h("h3", { className: "section-heading" }, "Como está o Marketing da PKE a comportar-se?"),
+          h("p", { className: "section-subtitle" }, `ROAS, CPL, CPA e investimento por serviço · ${periodFilterLabel(selectedMonths)}`)
+        ),
+        h(MetricBadge, { tone: visibleKpis.length ? "good" : "warn" }, visibleKpis.length ? "Dados lidos" : "A aguardar dados")
+      ),
+      visibleKpis.length ? h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, visibleKpis.map((item) => h(DiagnosisTile, { key: item.label, item }))) : h(EmptyState, { text: "Ainda não encontrei linhas de ROAS, CPL, CPA ou investimento nas linhas 144 a 158." }),
+      (investmentRows.length || costRows.length || vspInvestment.chartRows.length) ? h("div", { className: "grid lg:grid-cols-3 gap-4" },
+        investmentRows.length ? h(ChartCard, { title: "Investimento médio por serviço", subtitle: "Linhas 144 a 158 do MKT PKE 2026." }, h(CategoryBarChart, { data: investmentRows, unit: "currency" })) : null,
+        costRows.length ? h(ChartCard, { title: "Custos por resultado", subtitle: "CPL, CPA e custos relacionados no período." }, h(CategoryBarChart, { data: costRows, unit: "currency" })) : null,
+        vspInvestment.chartRows.length ? h(ChartCard, { title: "Custos VSP por canal", subtitle: "Novas colunas Meta e Google em Resultados VSP." }, h(CategoryBarChart, { data: vspInvestment.chartRows, unit: "currency" })) : null
+      ) : null
+    );
+  }
   function ResultadosVSPView({ selectedMonths }) {
     const fetchOpts = useMemo(() => {
       return { spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true };
@@ -5764,6 +5906,7 @@ input::placeholder { color: #7f93b3; }
     const totalCleanPotential = sumValue(filteredRows, VSP_CLEAN_PRICE_COL);
     const totalReplacePotential = sumValue(filteredRows, VSP_REPLACE_PRICE_COL);
     const avgLeadPotential = avgFromValues(filteredRows.map((r) => Math.max(numericValue(r, VSP_CLEAN_PRICE_COL), numericValue(r, VSP_REPLACE_PRICE_COL))));
+    const vspInvestment = buildVspInvestmentKpis(table, selectedMonths);
     const replacementIntentRows = filteredRows.filter(isReplacementIntent);
     const noSymptomsRows = scorecardRows.filter((r) => symptomList(r).some((s) => s.toLowerCase().includes("n\xE3o noto nada")));
     const trackedRows = filteredRows.filter((r) => textValue(r, 16) || textValue(r, 17) || textValue(r, VSP_UTM_SOURCE_COL) || textValue(r, VSP_UTM_CAMPAIGN_COL));
@@ -5794,6 +5937,8 @@ input::placeholder { color: #7f93b3; }
         h(KpiCard, { label: "Sem sintomas especiais", numeric: scorecardRows.length ? noSymptomsRows.length / scorecardRows.length : 0, format: "percent", icon: Target, kind: "ratio" }),
         h(KpiCard, { label: "Leads com tracking", numeric: totalLeads ? trackedRows.length / totalLeads : 0, format: "percent", tone: trackedRows.length === totalLeads ? "good" : "warn", gauge: true, icon: TrendingUp, kind: "ratio" })
       ),
+      h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" }, vspInvestment.items.map((item) => h(DiagnosisTile, { key: item.label, item }))),
+      vspInvestment.chartRows.length ? h(Card, { title: "Investimento VSP por canal", subtitle: "Custos Meta e Google vindos das novas colunas da folha Resultados VSP." }, h(CategoryBarChart, { data: vspInvestment.chartRows, unit: "currency" })) : null,
       h(Card, { title: "Landing pages com mais leads", subtitle: "Ranking por volume de leads registados no ficheiro VSP. A percentagem mostra o peso de cada landing page no per\xEDodo filtrado." },
         h(VspDataTable, {
           rows: rankedLanding,
