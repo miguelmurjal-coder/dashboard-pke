@@ -1660,6 +1660,7 @@ input::placeholder { color: #7f93b3; }
   };
   const SHEETS = [
     { name: "Dashboard MKT", label: "Marketing Control Panel" },
+    { name: "KPIs Marketing", label: "KPIs Marketing" },
     { name: "Resultados Totais", label: "Resultados Totais" },
     { name: "Aprofundar Dados", label: "Aprofundar Dados" },
     { name: "Ferramentas", label: "Ferramentas" }
@@ -1679,6 +1680,7 @@ input::placeholder { color: #7f93b3; }
     { title: "Cockpit principal", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Estado geral, alertas, funil global, faturação e próximas ações.", keywords: ["dashboard", "marketing control panel", "cockpit", "resumo", "estado", "alertas", "acoes", "ações", "diagnostico", "diagnóstico"] },
     { title: "Faturação e objetivos", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Objetivo, faturação, delta, ritmo do mês e linhas PS/FAP/AdBlue.", keywords: ["faturacao", "faturação", "objetivo", "objetivos", "delta", "ritmo", "ps", "fap", "adblue", "receita"] },
     { title: "Funil global", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Desconhecido, Proposta, Encomenda, Faturação e valor capturado.", keywords: ["funil", "leads", "propostas", "vendas", "encomendas", "conversao", "conversão", "valor capturado"] },
+    { title: "KPIs Marketing", location: "KPIs Marketing", target: "KPIs Marketing", description: "ROAS, CPL, CPA, média de investimento por serviço e custos VSP Meta/Google.", keywords: ["kpi", "kpis", "roas", "cpl", "cpa", "custo por lead", "custo por aquisicao", "custo por aquisição", "media investimento", "média investimento", "performance paga", "meta", "google", "custos vsp"] },
     { title: "Resultados agregados", location: "Resultados Totais", target: "Resultados Totais", description: "Merge de VSP + BO, funil global, canais, campanhas, marcas e modelos.", keywords: ["resultados totais", "totais", "merge", "global", "vsp bo", "agregado", "agregados", "cruzado", "cruzamento"] },
     { title: "Conversão VSP para encomendas", location: "Resultados Totais", target: "Resultados Totais", description: "Leads VSP encontrados mais tarde como encomendas no BackOffice.", keywords: ["vsp vendas", "vsp encomendas", "vsp para venda", "vsp para encomenda", "conversao vsp", "conversão vsp", "matches", "backoffice", "bo", "telefone", "email"] },
     { title: "UTMs das leads VSP", location: "Aprofundar Dados > Resultados VSP", target: "Resultados VSP", description: "Origem, campanha e tracking associados aos leads VSP/FAP.", keywords: ["utm vsp", "utms vsp", "utm de vsp", "utm da vsp", "tracking vsp", "source vsp", "campaign vsp", "campanha vsp"] },
@@ -2112,6 +2114,7 @@ input::placeholder { color: #7f93b3; }
   function metricFormatForLabel(label) {
     const lower = normalizeSearchText(label);
     if (lower.includes("roas")) return "roas";
+    if (lower.includes("media investimento") || lower.includes("média investimento")) return "percent";
     if (lower.includes("cpl") || lower.includes("lead") || lower.includes("cpa") || lower.includes("aquis") || lower.includes("custo") || lower.includes("invest")) return "currency";
     return lower.includes("%") ? "percent" : "number";
   }
@@ -2129,6 +2132,7 @@ input::placeholder { color: #7f93b3; }
     const normalizedRoas = format === "roas" && value > 20 ? value / 100 : value;
     if (format === "roas") return normalizedRoas >= 4 ? "good" : normalizedRoas >= 2 ? "warn" : "bad";
     if (lower.includes("custo") || lower.includes("cpl") || lower.includes("cpa")) return value > 0 ? "neutral" : "warn";
+    if (format === "percent" && lower.includes("invest")) return value > 0 ? "neutral" : "warn";
     if (lower.includes("invest")) return value > 0 ? "good" : "neutral";
     return "neutral";
   }
@@ -4516,31 +4520,50 @@ input::placeholder { color: #7f93b3; }
     });
     return normalizeSearchText(parts.join(" "));
   }
-  function findCostColumn(table, provider, fallbackCol) {
+  function tableColumnCount(table, minCount = 0) {
     const sampledRows = (table && table.rows || []).slice(0, 10);
     const rowColCount = sampledRows.reduce((max, row) => Math.max(max, row.length || 0), 0);
-    const colCount = Math.max(table && table.cols ? table.cols.length : 0, rowColCount, fallbackCol + 1);
+    return Math.max(table && table.cols ? table.cols.length : 0, rowColCount, minCount);
+  }
+  function findCostColumns(table, provider, fallbackCol) {
+    const colCount = tableColumnCount(table, fallbackCol + 1);
     const providerText = normalizeSearchText(provider);
+    const matches = [];
     for (let i = 0; i < colCount; i++) {
       const text = tableColumnText(table, i);
-      if (text.includes(providerText) && /(custo|cost|invest|spend|gasto)/.test(text)) return i;
+      if (text.includes(providerText) && /(custo|cost|investimento|invest|spend|gasto)/.test(text) && !/cpl|lead/.test(text)) matches.push(i);
     }
-    return fallbackCol < colCount ? fallbackCol : Math.max(0, colCount - (providerText.includes("meta") ? 2 : 1));
+    if (matches.length) return [...new Set(matches)];
+    return [fallbackCol < colCount ? fallbackCol : Math.max(0, colCount - (providerText.includes("meta") ? 2 : 1))];
+  }
+  function findColumnByText(table, predicate) {
+    const colCount = tableColumnCount(table);
+    for (let i = 0; i < colCount; i++) {
+      if (predicate(tableColumnText(table, i), i)) return i;
+    }
+    return -1;
+  }
+  function sumColumns(rows, columns) {
+    return rows.reduce((sum, row) => sum + columns.reduce((colSum, col) => colSum + numericValue(row, col), 0), 0);
   }
   function buildVspInvestmentKpis(table, selectedMonths) {
     if (!table) return { items: [], chartRows: [] };
-    const metaCol = findCostColumn(table, "meta", VSP_META_COST_FALLBACK_COL);
-    const googleCol = findCostColumn(table, "google", VSP_GOOGLE_COST_FALLBACK_COL);
+    const metaCols = findCostColumns(table, "meta", VSP_META_COST_FALLBACK_COL);
+    const googleCols = findCostColumns(table, "google", VSP_GOOGLE_COST_FALLBACK_COL);
+    const totalCol = findColumnByText(table, (text) => text.includes("investimento fap total") || text.includes("fap total"));
+    const cplCol = findColumnByText(table, (text) => text.includes("cpl fap"));
     const rows = (table.rows || []).filter((row) => {
       const date = parseRowDate(row, VSP_DATE_COL);
       return date && selectedMonths.has(date.getMonth());
     });
-    const metaCost = rows.reduce((sum, row) => sum + numericValue(row, metaCol), 0);
-    const googleCost = rows.reduce((sum, row) => sum + numericValue(row, googleCol), 0);
-    const totalCost = metaCost + googleCost;
+    const metaCost = sumColumns(rows, metaCols);
+    const googleCost = sumColumns(rows, googleCols);
+    const explicitTotalCost = totalCol >= 0 ? rows.reduce((sum, row) => sum + numericValue(row, totalCol), 0) : 0;
+    const totalCost = explicitTotalCost || metaCost + googleCost;
     const potential = rows.reduce((sum, row) => sum + Math.max(numericValue(row, VSP_CLEAN_PRICE_COL), numericValue(row, VSP_REPLACE_PRICE_COL)), 0);
     const leads = rows.length;
-    const cpl = leads ? totalCost / leads : 0;
+    const cplValues = cplCol >= 0 ? rows.map((row) => numericValue(row, cplCol)).filter((value) => value > 0) : [];
+    const cpl = cplValues.length ? avgNumbers(cplValues) : leads ? totalCost / leads : 0;
     const roasPotential = totalCost ? potential / totalCost : 0;
     return {
       chartRows: [
@@ -4548,8 +4571,8 @@ input::placeholder { color: #7f93b3; }
         { label: "Google VSP", value: googleCost }
       ].filter((row) => row.value > 0),
       items: [
-        { label: "Investimento VSP", value: fmtCurrency(totalCost), detail: `${fmtCurrency(metaCost)} Meta · ${fmtCurrency(googleCost)} Google`, tone: totalCost ? "good" : "neutral", help: "Investimento VSP: soma dos custos de Meta e Google registados nas novas colunas da folha Resultados VSP. Respeita o período selecionado." },
-        { label: "CPL VSP", value: fmtCurrency(cpl), detail: `${fmtNumber(leads)} leads VSP/FAP no período`, tone: cpl ? "neutral" : "warn", help: "CPL VSP: custo por lead das VSP. Fórmula: investimento Meta + Google das VSP dividido pelo número de leads VSP no período." },
+        { label: "Investimento VSP", value: fmtCurrency(totalCost), detail: `${fmtCurrency(metaCost)} Meta · ${fmtCurrency(googleCost)} Google`, tone: totalCost ? "good" : "neutral", help: "Investimento VSP: soma dos custos de Meta e Google registados nas novas colunas da folha Resultados VSP. Quando existe uma coluna de Investimento FAP Total, essa coluna é usada como total principal. Respeita o período selecionado." },
+        { label: "CPL VSP", value: fmtCurrency(cpl), detail: `${fmtNumber(leads)} leads VSP/FAP no período`, tone: cpl ? "neutral" : "warn", help: "CPL VSP: custo por lead das VSP. Se existir a coluna CPL FAP, usa a média dessa coluna; caso contrário calcula investimento Meta + Google das VSP dividido pelo número de leads VSP no período." },
         { label: "ROAS potencial VSP", value: `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(roasPotential)}x`, detail: `${fmtCurrency(potential)} potencial estimado`, tone: roasPotential >= 4 ? "good" : roasPotential >= 2 ? "warn" : roasPotential > 0 ? "bad" : "neutral", help: "ROAS potencial VSP: compara o potencial estimado das leads VSP com o investimento Meta e Google associado. É uma leitura de potencial, não faturação confirmada." }
       ]
     };
@@ -5526,7 +5549,6 @@ input::placeholder { color: #7f93b3; }
           h(KpiCard, { label: "VSP para Encomenda", numeric: vspRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: vspRate >= 0.04 ? "good" : vspRate > 0 ? "warn" : "neutral" })
         )
       ),
-      h(MarketingPerformancePanel, { dashboardTable, vspTable, selectedMonths }),
       h("section", { className: "section-shell space-y-4" },
         h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
           h("div", null,
@@ -5857,7 +5879,7 @@ input::placeholder { color: #7f93b3; }
   function MarketingPerformancePanel({ dashboardTable, vspTable, selectedMonths }) {
     const kpis = buildMarketingPerformanceKpis(dashboardTable, selectedMonths);
     const vspInvestment = buildVspInvestmentKpis(vspTable, selectedMonths);
-    const investmentRows = kpis.filter((item) => /invest/.test(normalizeSearchText(item.label))).map((item) => ({ label: item.label, value: item.rawValue, help: item.help })).filter((row) => row.value > 0);
+    const averageInvestmentRows = kpis.filter((item) => /invest/.test(normalizeSearchText(item.label))).map((item) => ({ label: item.label, value: item.rawValue > 1 ? item.rawValue : item.rawValue * 100, help: item.help })).filter((row) => row.value > 0);
     const costRows = kpis.filter((item) => /(cpl|cpa|aquis|custo)/.test(normalizeSearchText(item.label))).map((item) => ({ label: item.label, value: item.rawValue, help: item.help })).filter((row) => row.value > 0);
     const visibleKpis = [...kpis, ...vspInvestment.items];
     const ChartCard = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
@@ -5871,11 +5893,46 @@ input::placeholder { color: #7f93b3; }
         h(MetricBadge, { tone: visibleKpis.length ? "good" : "warn" }, visibleKpis.length ? "Dados lidos" : "A aguardar dados")
       ),
       visibleKpis.length ? h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, visibleKpis.map((item) => h(DiagnosisTile, { key: item.label, item }))) : h(EmptyState, { text: "Ainda não encontrei linhas de ROAS, CPL, CPA ou investimento nas linhas 144 a 158." }),
-      (investmentRows.length || costRows.length || vspInvestment.chartRows.length) ? h("div", { className: "grid lg:grid-cols-3 gap-4" },
-        investmentRows.length ? h(ChartCard, { title: "Investimento médio por serviço", subtitle: "Linhas 144 a 158 do MKT PKE 2026." }, h(CategoryBarChart, { data: investmentRows, unit: "currency" })) : null,
+      (averageInvestmentRows.length || costRows.length || vspInvestment.chartRows.length) ? h("div", { className: "grid lg:grid-cols-3 gap-4" },
+        averageInvestmentRows.length ? h(ChartCard, { title: "Média de investimento por serviço", subtitle: "Peso médio do investimento por linha: PS, FAP e AdBlue." }, h(CategoryBarChart, { data: averageInvestmentRows, unit: "percent" })) : null,
         costRows.length ? h(ChartCard, { title: "Custos por resultado", subtitle: "CPL, CPA e custos relacionados no período." }, h(CategoryBarChart, { data: costRows, unit: "currency" })) : null,
         vspInvestment.chartRows.length ? h(ChartCard, { title: "Custos VSP por canal", subtitle: "Novas colunas Meta e Google em Resultados VSP." }, h(CategoryBarChart, { data: vspInvestment.chartRows, unit: "currency" })) : null
       ) : null
+    );
+  }
+  function MarketingPerformanceView({ selectedMonths }) {
+    const dashboardFetchOpts = useMemo(() => ({ gid: DASHBOARD_GID, headers: 0 }), []);
+    const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const { table: dashboardTable, loading: dashboardLoading, error: dashboardError, updatedAt: dashboardUpdatedAt, reload: reloadDashboard } = useSheetData("Dashboard MKT", dashboardFetchOpts);
+    const { table: vspTable, loading: vspLoading, error: vspError, updatedAt: vspUpdatedAt, reload: reloadVsp } = useSheetData("Resultados VSP", vspFetchOpts);
+    const loading = dashboardLoading || vspLoading;
+    const error = dashboardError || vspError;
+    const updatedAt = [dashboardUpdatedAt, vspUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
+    const reload = () => {
+      reloadDashboard();
+      reloadVsp();
+    };
+    if (loading && !dashboardTable && !vspTable) return h(LoadingState, null);
+    if (error && !dashboardTable && !vspTable) return h(ErrorState, { message: error, onRetry: reload, sheetName: "KPIs Marketing" });
+    return h("div", { className: "space-y-6" },
+      h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
+      error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Uma das fontes não carregou totalmente: ", error),
+      h("section", { className: "section-shell section-shell-hero space-y-3", "data-help": "KPIs Marketing: painel dedicado aos indicadores de performance paga. Serve para perceber rapidamente se o dinheiro investido em Meta Ads, Google Ads e VSP está a gerar retorno, leads e encomendas a um custo aceitável." },
+        h("div", { className: "section-kicker" }, "KPIS MARKETING"),
+        h("h2", { className: "section-heading" }, "Performance paga e eficiência de investimento"),
+        h("p", { className: "section-subtitle" }, "Aqui ficam ROAS, Custo por Lead, Custo por Aquisição e Média de Investimento por serviço. O período respeita o filtro no topo da página.")
+      ),
+      h(MarketingPerformancePanel, { dashboardTable, vspTable, selectedMonths }),
+      h("section", { className: "section-shell space-y-3", "data-help": "Como ler este painel: ROAS acima de 4x tende a ser saudável; CPL e CPA devem ser lidos por serviço, porque PS, FAP e AdBlue podem ter valores médios e margens diferentes. A média de investimento mostra a distribuição do orçamento entre serviços." },
+        h("div", { className: "section-kicker" }, "COMO LER"),
+        h("h3", { className: "section-heading" }, "O que estes KPIs dizem"),
+        h("div", { className: "grid md:grid-cols-2 gap-3 text-sm text-slate-300" },
+          h("div", { className: "diagnosis-tile" }, h("strong", { className: "block text-slate-100 mb-1" }, "ROAS"), "Mostra quantas vezes o investimento regressa em faturação ou valor associado. Quanto maior, melhor."),
+          h("div", { className: "diagnosis-tile" }, h("strong", { className: "block text-slate-100 mb-1" }, "CPL"), "Mostra quanto custa gerar uma proposta/lead. Ajuda a perceber se o topo do funil está caro ou eficiente."),
+          h("div", { className: "diagnosis-tile" }, h("strong", { className: "block text-slate-100 mb-1" }, "CPA"), "Mostra quanto custa chegar a uma aquisição/encomenda. Aproxima mais a leitura do resultado comercial."),
+          h("div", { className: "diagnosis-tile" }, h("strong", { className: "block text-slate-100 mb-1" }, "Média de investimento"), "Mostra a percentagem média do orçamento por serviço, para perceber se PS, FAP e AdBlue estão equilibrados face ao retorno.")
+        )
+      )
     );
   }
   function ResultadosVSPView({ selectedMonths }) {
@@ -6821,7 +6878,7 @@ input::placeholder { color: #7f93b3; }
         setToStage,
         onNavigate: navigateDashboard
       }
-    ) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "KPIs Marketing" ? /* @__PURE__ */ React.createElement(MarketingPerformanceView, { selectedMonths }) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : selected === "Resultados Totais" ? /* @__PURE__ */ React.createElement(ResultadosTotaisView, { selectedMonths }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
