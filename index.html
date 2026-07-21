@@ -6445,6 +6445,14 @@ input::placeholder { color: #7f93b3; }
       localStorage.setItem(TASK_LOG_STORAGE_KEY, JSON.stringify(taskEntries));
     }, [taskEntries]);
     useEffect(() => {
+      if (!helpMode || typeof window === "undefined") return void 0;
+      const closeHelpOnEscape = (event) => {
+        if (event.key === "Escape") setHelpMode(false);
+      };
+      window.addEventListener("keydown", closeHelpOnEscape);
+      return () => window.removeEventListener("keydown", closeHelpOnEscape);
+    }, [helpMode]);
+    useEffect(() => {
       if (typeof localStorage === "undefined") return void 0;
       const ensureNextReminder = () => {
         const current = Number(localStorage.getItem(TASK_LOG_REMINDER_KEY) || 0);
