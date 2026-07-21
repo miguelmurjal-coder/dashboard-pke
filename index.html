@@ -1647,11 +1647,14 @@ input::placeholder { color: #7f93b3; }
   const SHEET_ID = "1NdCeyxLExmZtGmdQ6m63Iv2XCzzWiUnadWj4UOwmJjM";
   const VSP_RESULTS_SHEET_ID = "1uEZW2WNYacxLNfb9isMrgvwCng6bHDUZPxfNqgakcZo";
   const BO_RESULTS_SHEET_ID = "1wkshQPJMKs3VuQXXzAm9tZnS_5DCfeAbpsuW79Xwap4";
+  const DATABASE_PKE_SHEET_ID = "1H7y7ereb81CeBBTa95mYDRepIpnaDxp7q2Rca17A2Wo";
   const DASHBOARD_GID = "1179921659";
+  const DATABASE_VSP_DAILY_GID = "1881326090";
   const SPREADSHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
   const DATA_SOURCE_LINKS = {
     dashboard: { label: "Marketing Control Panel", url: `${SPREADSHEET_URL}#gid=${DASHBOARD_GID}` },
     vsp: { label: "PKE Leads FAP", url: `https://docs.google.com/spreadsheets/d/${VSP_RESULTS_SHEET_ID}/edit` },
+    vspCosts: { label: "DATABASE PKE 2026 · Visão VSP diária", url: `https://docs.google.com/spreadsheets/d/${DATABASE_PKE_SHEET_ID}/edit#gid=${DATABASE_VSP_DAILY_GID}` },
     bo: { label: "BackOffice PKE", url: `https://docs.google.com/spreadsheets/d/${BO_RESULTS_SHEET_ID}/edit` },
     encomendas: { label: "BackOffice PKE · Encomendas", url: `https://docs.google.com/spreadsheets/d/${BO_RESULTS_SHEET_ID}/edit` },
     leads: { label: "Marketing Control Panel · Leads Diários", url: `${SPREADSHEET_URL}#gid=1508480304` },
@@ -2785,6 +2788,7 @@ input::placeholder { color: #7f93b3; }
     const sources = [];
     if (lower.includes("dashboard mkt") || lower.includes("marketing control panel") || lower.includes("mkt pke") || lower.includes("objetivo") || lower.includes("faturacao") || lower.includes("faturação") || lower.includes("meta") || lower.includes("ritmo")) sources.push(DATA_SOURCE_LINKS.dashboard);
     if (lower.includes("vsp") || lower.includes("fap") || lower.includes("scorecard") || lower.includes("sintoma") || lower.includes("landing")) sources.push(DATA_SOURCE_LINKS.vsp);
+    if ((lower.includes("vsp") || lower.includes("fap")) && (lower.includes("investimento") || lower.includes("custo") || lower.includes("cpl") || lower.includes("roas") || lower.includes("google") || lower.includes("meta"))) sources.push(DATA_SOURCE_LINKS.vspCosts);
     if (lower.includes("bo") || lower.includes("backoffice") || lower.includes("proposta")) sources.push(DATA_SOURCE_LINKS.bo);
     if (lower.includes("encomenda")) sources.push(DATA_SOURCE_LINKS.encomendas);
     if (lower.includes("leads diarios") || lower.includes("leads diários")) sources.push(DATA_SOURCE_LINKS.leads);
@@ -4513,12 +4517,23 @@ input::placeholder { color: #7f93b3; }
   }
   function tableColumnText(table, colIdx) {
     const parts = [];
-    if (table && table.cols && table.cols[colIdx]) parts.push(table.cols[colIdx]);
+    if (table && table.cols && table.cols[colIdx]) {
+      const col = table.cols[colIdx];
+      if (typeof col === "string") parts.push(col);
+      else parts.push(col.label || col.id || "");
+    }
     (table && table.rows || []).slice(0, 5).forEach((row) => {
       const value = textValue(row, colIdx);
       if (value) parts.push(value);
     });
     return normalizeSearchText(parts.join(" "));
+  }
+  function tableColumnLabel(table, colIdx) {
+    const col = table && table.cols && table.cols[colIdx];
+    if (typeof col === "string" && col.trim()) return col.trim();
+    if (col && typeof col === "object" && (col.label || col.id)) return String(col.label || col.id).trim();
+    const sample = (table && table.rows || []).slice(0, 3).map((row) => textValue(row, colIdx)).find(Boolean);
+    return sample || `Coluna ${colIdx + 1}`;
   }
   function tableColumnCount(table, minCount = 0) {
     const sampledRows = (table && table.rows || []).slice(0, 10);
@@ -4543,35 +4558,88 @@ input::placeholder { color: #7f93b3; }
     }
     return -1;
   }
+  function findVspInvestmentDateColumn(table) {
+    const byLabel = findColumnByText(table, (text) => /\bdia\b|data|date/.test(text));
+    return byLabel >= 0 ? byLabel : VSP_DATE_COL;
+  }
+  function friendlyVspInvestmentLabel(rawLabel) {
+    const lower = normalizeSearchText(rawLabel);
+    if (lower.includes("scorecardfap")) return "Scorecard FAP";
+    if (lower.includes("faporcamento")) return "FAP Orçamento";
+    if (lower.includes("fapemergencia")) return "FAP Emergência";
+    if (lower.includes("fapluz")) return "FAP Luz";
+    if (lower.includes("solucaofap") || lower.includes("solucoesfap") || lower.includes("solucoes fap")) return "Solução FAP";
+    const clean = String(rawLabel || "").replace(/investimento/ig, "").replace(/google|meta|fap/ig, "").trim();
+    return clean || "VSP FAP";
+  }
+  function vspInvestmentPageColumns(table, provider) {
+    const colCount = tableColumnCount(table);
+    const providerText = normalizeSearchText(provider);
+    const cols = [];
+    for (let i = 0; i < colCount; i++) {
+      const text = tableColumnText(table, i);
+      if (!text.includes(providerText)) continue;
+      if (!/(investimento|invest|custo|cost|spend|gasto)/.test(text)) continue;
+      if (/cpl|lead|fap meta|fap google|fap total/.test(text)) continue;
+      cols.push({ index: i, page: friendlyVspInvestmentLabel(tableColumnLabel(table, i)), provider });
+    }
+    return cols;
+  }
   function sumColumns(rows, columns) {
     return rows.reduce((sum, row) => sum + columns.reduce((colSum, col) => colSum + numericValue(row, col), 0), 0);
   }
-  function buildVspInvestmentKpis(table, selectedMonths) {
-    if (!table) return { items: [], chartRows: [] };
-    const metaCols = findCostColumns(table, "meta", VSP_META_COST_FALLBACK_COL);
-    const googleCols = findCostColumns(table, "google", VSP_GOOGLE_COST_FALLBACK_COL);
+  function groupVspInvestmentByPage(rows, pageColumns) {
+    const map = new Map();
+    pageColumns.forEach((col) => {
+      const value = rows.reduce((sum, row) => sum + numericValue(row, col.index), 0);
+      if (!value) return;
+      const current = map.get(col.page) || { label: col.page, value: 0, meta: 0, google: 0 };
+      current.value += value;
+      if (normalizeSearchText(col.provider).includes("meta")) current.meta += value;
+      if (normalizeSearchText(col.provider).includes("google")) current.google += value;
+      current.help = `${col.page}: investimento agregado desta VSP/página FAP na DATABASE PKE 2026, tab Visão VSP diária. Soma os valores Meta e Google dessa VSP no período selecionado.`;
+      map.set(col.page, current);
+    });
+    return Array.from(map.values()).sort((a, b) => b.value - a.value);
+  }
+  function buildVspInvestmentKpis(table, selectedMonths, potentialTable) {
+    if (!table) return { items: [], chartRows: [], pageRows: [] };
+    const metaTotalCol = findColumnByText(table, (text) => text.includes("investimento fap meta"));
+    const googleTotalCol = findColumnByText(table, (text) => text.includes("investimento fap google"));
+    const pageColumns = [...vspInvestmentPageColumns(table, "meta"), ...vspInvestmentPageColumns(table, "google")];
+    const metaPageCols = vspInvestmentPageColumns(table, "meta").map((col) => col.index);
+    const googlePageCols = vspInvestmentPageColumns(table, "google").map((col) => col.index);
+    const metaCols = metaTotalCol >= 0 ? [metaTotalCol] : metaPageCols.length ? metaPageCols : findCostColumns(table, "meta", VSP_META_COST_FALLBACK_COL);
+    const googleCols = googleTotalCol >= 0 ? [googleTotalCol] : googlePageCols.length ? googlePageCols : findCostColumns(table, "google", VSP_GOOGLE_COST_FALLBACK_COL);
     const totalCol = findColumnByText(table, (text) => text.includes("investimento fap total") || text.includes("fap total"));
     const cplCol = findColumnByText(table, (text) => text.includes("cpl fap"));
+    const dateCol = findVspInvestmentDateColumn(table);
     const rows = (table.rows || []).filter((row) => {
-      const date = parseRowDate(row, VSP_DATE_COL);
+      const date = parseRowDate(row, dateCol);
       return date && selectedMonths.has(date.getMonth());
     });
     const metaCost = sumColumns(rows, metaCols);
     const googleCost = sumColumns(rows, googleCols);
     const explicitTotalCost = totalCol >= 0 ? rows.reduce((sum, row) => sum + numericValue(row, totalCol), 0) : 0;
     const totalCost = explicitTotalCost || metaCost + googleCost;
-    const potential = rows.reduce((sum, row) => sum + Math.max(numericValue(row, VSP_CLEAN_PRICE_COL), numericValue(row, VSP_REPLACE_PRICE_COL)), 0);
+    const potentialSourceRows = (potentialTable && potentialTable.rows || table.rows || []).filter((row) => {
+      const date = parseRowDate(row, VSP_DATE_COL);
+      return date && selectedMonths.has(date.getMonth());
+    });
+    const potential = potentialSourceRows.reduce((sum, row) => sum + Math.max(numericValue(row, VSP_CLEAN_PRICE_COL), numericValue(row, VSP_REPLACE_PRICE_COL)), 0);
     const leads = rows.length;
     const cplValues = cplCol >= 0 ? rows.map((row) => numericValue(row, cplCol)).filter((value) => value > 0) : [];
     const cpl = cplValues.length ? avgNumbers(cplValues) : leads ? totalCost / leads : 0;
     const roasPotential = totalCost ? potential / totalCost : 0;
+    const pageRows = groupVspInvestmentByPage(rows, pageColumns);
     return {
       chartRows: [
-        { label: "Meta VSP", value: metaCost },
-        { label: "Google VSP", value: googleCost }
+        { label: "Meta VSP", value: metaCost, help: "Meta VSP: investimento total em Meta Ads associado às VSP/FAP na DATABASE PKE 2026, tab Visão VSP diária, respeitando o período selecionado." },
+        { label: "Google VSP", value: googleCost, help: "Google VSP: investimento total em Google Ads associado às VSP/FAP na DATABASE PKE 2026, tab Visão VSP diária, respeitando o período selecionado." }
       ].filter((row) => row.value > 0),
+      pageRows,
       items: [
-        { label: "Investimento VSP", value: fmtCurrency(totalCost), detail: `${fmtCurrency(metaCost)} Meta · ${fmtCurrency(googleCost)} Google`, tone: totalCost ? "good" : "neutral", help: "Investimento VSP: soma dos custos de Meta e Google registados nas novas colunas da folha Resultados VSP. Quando existe uma coluna de Investimento FAP Total, essa coluna é usada como total principal. Respeita o período selecionado." },
+        { label: "Investimento VSP", value: fmtCurrency(totalCost), detail: `${fmtCurrency(metaCost)} Meta · ${fmtCurrency(googleCost)} Google`, tone: totalCost ? "good" : "neutral", help: "Investimento VSP: soma dos custos de Meta e Google registados na DATABASE PKE 2026, tab Visão VSP diária. Quando existe uma coluna de Investimento FAP Total, essa coluna é usada como total principal. Respeita o período selecionado." },
         { label: "CPL VSP", value: fmtCurrency(cpl), detail: `${fmtNumber(leads)} leads VSP/FAP no período`, tone: cpl ? "neutral" : "warn", help: "CPL VSP: custo por lead das VSP. Se existir a coluna CPL FAP, usa a média dessa coluna; caso contrário calcula investimento Meta + Google das VSP dividido pelo número de leads VSP no período." },
         { label: "ROAS potencial VSP", value: `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(roasPotential)}x`, detail: `${fmtCurrency(potential)} potencial estimado`, tone: roasPotential >= 4 ? "good" : roasPotential >= 2 ? "warn" : roasPotential > 0 ? "bad" : "neutral", help: "ROAS potencial VSP: compara o potencial estimado das leads VSP com o investimento Meta e Google associado. É uma leitura de potencial, não faturação confirmada." }
       ]
@@ -5876,14 +5944,14 @@ input::placeholder { color: #7f93b3; }
       )
     );
   }
-  function MarketingPerformancePanel({ dashboardTable, vspTable, selectedMonths }) {
+  function MarketingPerformancePanel({ dashboardTable, vspTable, vspPotentialTable, selectedMonths }) {
     const kpis = buildMarketingPerformanceKpis(dashboardTable, selectedMonths);
-    const vspInvestment = buildVspInvestmentKpis(vspTable, selectedMonths);
+    const vspInvestment = buildVspInvestmentKpis(vspTable, selectedMonths, vspPotentialTable);
     const averageInvestmentRows = kpis.filter((item) => /invest/.test(normalizeSearchText(item.label))).map((item) => ({ label: item.label, value: item.rawValue > 1 ? item.rawValue : item.rawValue * 100, help: item.help })).filter((row) => row.value > 0);
     const costRows = kpis.filter((item) => /(cpl|cpa|aquis|custo)/.test(normalizeSearchText(item.label))).map((item) => ({ label: item.label, value: item.rawValue, help: item.help })).filter((row) => row.value > 0);
     const visibleKpis = [...kpis, ...vspInvestment.items];
     const ChartCard = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
-    return h("section", { className: "section-shell space-y-4", "data-help": "Performance paga: painel de leitura rápida para perceber como está o Marketing da PKE a comportar-se em ROAS, custo por lead, custo por aquisição e investimento por serviço. Os dados vêm das linhas 144 a 158 do MKT PKE 2026 e das novas colunas de custos das VSP." },
+    return h("section", { className: "section-shell space-y-4", "data-help": "Performance paga: painel de leitura rápida para perceber como está o Marketing da PKE a comportar-se em ROAS, custo por lead, custo por aquisição e investimento por serviço. Os dados vêm das linhas 144 a 158 do MKT PKE 2026 e dos custos VSP da DATABASE PKE 2026, tab Visão VSP diária." },
       h("div", { className: "flex items-start justify-between gap-3 flex-wrap" },
         h("div", null,
           h("div", { className: "section-kicker" }, "PERFORMANCE PAGA"),
@@ -5896,24 +5964,27 @@ input::placeholder { color: #7f93b3; }
       (averageInvestmentRows.length || costRows.length || vspInvestment.chartRows.length) ? h("div", { className: "grid lg:grid-cols-3 gap-4" },
         averageInvestmentRows.length ? h(ChartCard, { title: "Média de investimento por serviço", subtitle: "Peso médio do investimento por linha: PS, FAP e AdBlue." }, h(CategoryBarChart, { data: averageInvestmentRows, unit: "percent" })) : null,
         costRows.length ? h(ChartCard, { title: "Custos por resultado", subtitle: "CPL, CPA e custos relacionados no período." }, h(CategoryBarChart, { data: costRows, unit: "currency" })) : null,
-        vspInvestment.chartRows.length ? h(ChartCard, { title: "Custos VSP por canal", subtitle: "Novas colunas Meta e Google em Resultados VSP." }, h(CategoryBarChart, { data: vspInvestment.chartRows, unit: "currency" })) : null
+        vspInvestment.chartRows.length ? h(ChartCard, { title: "Custos VSP por canal", subtitle: "DATABASE PKE 2026 · Visão VSP diária." }, h(CategoryBarChart, { data: vspInvestment.chartRows, unit: "currency" })) : null
       ) : null
     );
   }
   function MarketingPerformanceView({ selectedMonths }) {
     const dashboardFetchOpts = useMemo(() => ({ gid: DASHBOARD_GID, headers: 0 }), []);
-    const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const vspLeadFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
+    const vspCostFetchOpts = useMemo(() => ({ spreadsheetId: DATABASE_PKE_SHEET_ID, gid: DATABASE_VSP_DAILY_GID, headers: 1 }), []);
     const { table: dashboardTable, loading: dashboardLoading, error: dashboardError, updatedAt: dashboardUpdatedAt, reload: reloadDashboard } = useSheetData("Dashboard MKT", dashboardFetchOpts);
-    const { table: vspTable, loading: vspLoading, error: vspError, updatedAt: vspUpdatedAt, reload: reloadVsp } = useSheetData("Resultados VSP", vspFetchOpts);
-    const loading = dashboardLoading || vspLoading;
-    const error = dashboardError || vspError;
-    const updatedAt = [dashboardUpdatedAt, vspUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
+    const { table: vspLeadTable, loading: vspLeadLoading, error: vspLeadError, updatedAt: vspLeadUpdatedAt, reload: reloadVspLead } = useSheetData("Resultados VSP", vspLeadFetchOpts);
+    const { table: vspCostTable, loading: vspCostLoading, error: vspCostError, updatedAt: vspCostUpdatedAt, reload: reloadVspCost } = useSheetData("Visão VSP diária", vspCostFetchOpts);
+    const loading = dashboardLoading || vspLeadLoading || vspCostLoading;
+    const error = dashboardError || vspLeadError || vspCostError;
+    const updatedAt = [dashboardUpdatedAt, vspLeadUpdatedAt, vspCostUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
     const reload = () => {
       reloadDashboard();
-      reloadVsp();
+      reloadVspLead();
+      reloadVspCost();
     };
-    if (loading && !dashboardTable && !vspTable) return h(LoadingState, null);
-    if (error && !dashboardTable && !vspTable) return h(ErrorState, { message: error, onRetry: reload, sheetName: "KPIs Marketing" });
+    if (loading && !dashboardTable && !vspLeadTable && !vspCostTable) return h(LoadingState, null);
+    if (error && !dashboardTable && !vspLeadTable && !vspCostTable) return h(ErrorState, { message: error, onRetry: reload, sheetName: "KPIs Marketing" });
     return h("div", { className: "space-y-6" },
       h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Uma das fontes não carregou totalmente: ", error),
@@ -5922,7 +5993,7 @@ input::placeholder { color: #7f93b3; }
         h("h2", { className: "section-heading" }, "Performance paga e eficiência de investimento"),
         h("p", { className: "section-subtitle" }, "Aqui ficam ROAS, Custo por Lead, Custo por Aquisição e Média de Investimento por serviço. O período respeita o filtro no topo da página.")
       ),
-      h(MarketingPerformancePanel, { dashboardTable, vspTable, selectedMonths }),
+      h(MarketingPerformancePanel, { dashboardTable, vspTable: vspCostTable || vspLeadTable, vspPotentialTable: vspLeadTable, selectedMonths }),
       h("section", { className: "section-shell space-y-3", "data-help": "Como ler este painel: ROAS acima de 4x tende a ser saudável; CPL e CPA devem ser lidos por serviço, porque PS, FAP e AdBlue podem ter valores médios e margens diferentes. A média de investimento mostra a distribuição do orçamento entre serviços." },
         h("div", { className: "section-kicker" }, "COMO LER"),
         h("h3", { className: "section-heading" }, "O que estes KPIs dizem"),
@@ -5939,7 +6010,17 @@ input::placeholder { color: #7f93b3; }
     const fetchOpts = useMemo(() => {
       return { spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true };
     }, []);
+    const costFetchOpts = useMemo(() => {
+      return { spreadsheetId: DATABASE_PKE_SHEET_ID, gid: DATABASE_VSP_DAILY_GID, headers: 1 };
+    }, []);
     const { table, loading, error, updatedAt, reload } = useSheetData("Resultados VSP", fetchOpts);
+    const { table: costTable, loading: costLoading, error: costError, updatedAt: costUpdatedAt, reload: reloadCosts } = useSheetData("Visão VSP diária", costFetchOpts);
+    const combinedLoading = loading || costLoading;
+    const combinedUpdatedAt = [updatedAt, costUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
+    const reloadAll = () => {
+      reload();
+      reloadCosts();
+    };
     if (loading && !table) return /* @__PURE__ */ React.createElement(LoadingState, null);
     if (error) return /* @__PURE__ */ React.createElement(ErrorState, { message: error, onRetry: reload, sheetName: "Resultados VSP" });
     if (!table) return /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para mostrar." });
@@ -5963,7 +6044,7 @@ input::placeholder { color: #7f93b3; }
     const totalCleanPotential = sumValue(filteredRows, VSP_CLEAN_PRICE_COL);
     const totalReplacePotential = sumValue(filteredRows, VSP_REPLACE_PRICE_COL);
     const avgLeadPotential = avgFromValues(filteredRows.map((r) => Math.max(numericValue(r, VSP_CLEAN_PRICE_COL), numericValue(r, VSP_REPLACE_PRICE_COL))));
-    const vspInvestment = buildVspInvestmentKpis(table, selectedMonths);
+    const vspInvestment = buildVspInvestmentKpis(costTable || table, selectedMonths, table);
     const replacementIntentRows = filteredRows.filter(isReplacementIntent);
     const noSymptomsRows = scorecardRows.filter((r) => symptomList(r).some((s) => s.toLowerCase().includes("n\xE3o noto nada")));
     const trackedRows = filteredRows.filter((r) => textValue(r, 16) || textValue(r, 17) || textValue(r, VSP_UTM_SOURCE_COL) || textValue(r, VSP_UTM_CAMPAIGN_COL));
@@ -5978,7 +6059,8 @@ input::placeholder { color: #7f93b3; }
     const Card = ({ title, subtitle, children }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
     const fmtSmallNumber = (v) => v ? fmtNumber(v) : "\u2014";
     return h("div", { className: "space-y-6" },
-      h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
+      h(SheetTopBar, { updatedAt: combinedUpdatedAt, loading: combinedLoading, onRefresh: reloadAll }),
+      costError && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Os leads VSP carregaram, mas os custos da DATABASE PKE 2026 não carregaram: ", costError),
       h("p", { className: "text-xs text-slate-400" }, "VSP/FAP \xB7 leads individuais \xB7 ", periodFilterLabel(selectedMonths), " \xB7 ", totalLeads, " ", totalLeads === 1 ? "lead" : "leads"),
       h(DateParseWarning, { count: unparsedCount }),
       !filteredRows.length ? h(EmptyState, { text: "Sem dados para o per\xEDodo selecionado." }) : h(React.Fragment, null,
@@ -5995,7 +6077,22 @@ input::placeholder { color: #7f93b3; }
         h(KpiCard, { label: "Leads com tracking", numeric: totalLeads ? trackedRows.length / totalLeads : 0, format: "percent", tone: trackedRows.length === totalLeads ? "good" : "warn", gauge: true, icon: TrendingUp, kind: "ratio" })
       ),
       h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" }, vspInvestment.items.map((item) => h(DiagnosisTile, { key: item.label, item }))),
-      vspInvestment.chartRows.length ? h(Card, { title: "Investimento VSP por canal", subtitle: "Custos Meta e Google vindos das novas colunas da folha Resultados VSP." }, h(CategoryBarChart, { data: vspInvestment.chartRows, unit: "currency" })) : null,
+      h("div", { className: "grid lg:grid-cols-2 gap-4" },
+        vspInvestment.chartRows.length ? h(Card, { title: "Investimento VSP por canal", subtitle: "Custos totais Meta e Google vindos da DATABASE PKE 2026 · Visão VSP diária." }, h(CategoryBarChart, { data: vspInvestment.chartRows, unit: "currency" })) : null,
+        vspInvestment.pageRows.length ? h(Card, { title: "Investimento por VSP", subtitle: "Soma Meta + Google por cada VSP/página FAP." }, h(CategoryBarChart, { data: vspInvestment.pageRows, unit: "currency" })) : null
+      ),
+      vspInvestment.pageRows.length ? h(Card, { title: "Detalhe de investimento por VSP", subtitle: "Permite perceber que VSP está a consumir orçamento e de que canal vem esse custo." },
+        h(VspDataTable, {
+          rows: vspInvestment.pageRows,
+          rowKey: (row) => row.label,
+          columns: [
+            { key: "label", label: "VSP", className: "font-semibold text-slate-800" },
+            { key: "value", label: "Total", align: "right", className: "font-semibold", render: (row) => fmtCurrency(row.value) },
+            { key: "meta", label: "Meta", align: "right", render: (row) => fmtCurrency(row.meta) },
+            { key: "google", label: "Google", align: "right", render: (row) => fmtCurrency(row.google) }
+          ]
+        })
+      ) : null,
       h(Card, { title: "Landing pages com mais leads", subtitle: "Ranking por volume de leads registados no ficheiro VSP. A percentagem mostra o peso de cada landing page no per\xEDodo filtrado." },
         h(VspDataTable, {
           rows: rankedLanding,
