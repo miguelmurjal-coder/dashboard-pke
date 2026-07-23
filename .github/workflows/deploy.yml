@@ -16,6 +16,11 @@ jobs:
       - name: Obter ficheiros
         uses: actions/checkout@v4
 
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Atualizar estatisticas MailerLite
         env:
           MAILERLITE_API_KEY: ${{ secrets.MAILERLITE_API_KEY || secrets.API_MAILERLITE || secrets.MAILERLITE_API || secrets.API_MAILERLITE_KEY }}
