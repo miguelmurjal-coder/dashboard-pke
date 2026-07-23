@@ -901,6 +901,12 @@ table { border-collapse: collapse; }
   flex-wrap: wrap;
   gap: 0.45rem;
 }
+.call-browser-updated {
+  color: rgba(255,255,255,0.42);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
 .call-browser-select,
 .call-browser-date,
 .call-browser-period {
@@ -912,6 +918,11 @@ table { border-collapse: collapse; }
   padding: 0 0.75rem;
   font-size: 0.72rem;
   font-weight: 650;
+}
+.call-browser-refresh {
+  color: #06110f;
+  background: #0ea5e9;
+  border-color: #0ea5e9;
 }
 .call-browser-period-active {
   color: #06110f;
@@ -6800,6 +6811,8 @@ input::placeholder { color: #7f93b3; }
       { key: "week", label: "Week" },
       { key: "month", label: "Month" }
     ];
+    const callUpdatedLabel = updatedAt ? `Atualizado ${updatedAt.toLocaleDateString("pt-PT")} às ${updatedAt.toLocaleTimeString("pt-PT")}` : loading ? "A atualizar..." : "Sem atualização";
+    const revenueUpdatedLabel = summary.manualRevenue && summary.manualRevenue.updated_at ? `Faturação ${summary.manualRevenue.updated_at.substring(11)}` : "";
     return h("div", { className: "space-y-4" },
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Call Analytics: ", error),
       data && data.stale && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Estes dados podem estar em snapshot: o endpoint local não ficou acessível na última atualização automática."),
@@ -6809,14 +6822,15 @@ input::placeholder { color: #7f93b3; }
             h("div", { className: "call-browser-logo" }, "📞"),
             h("div", null,
               h("div", { className: "call-browser-title" }, "PKE Call Analytics"),
-              h("div", { className: "call-browser-subtitle" }, `${fmtNumber(summary.stats.total_records || 0)} records · ${Object.keys(summary.config.agents || {}).length || summary.agents.length} agents`)
+              h("div", { className: "call-browser-subtitle" }, `${fmtNumber(summary.stats.total_records || 0)} records · ${Object.keys(summary.config.agents || {}).length || summary.agents.length} agents · ${callUpdatedLabel}${revenueUpdatedLabel ? ` · ${revenueUpdatedLabel}` : ""}`)
             )
           ),
           h("div", { className: "call-browser-controls" },
+            h("span", { className: "call-browser-updated", "data-help": "Última atualização do Call Analytics: hora em que o runner local gerou o snapshot publicado no MCP. O botão Atualizar volta a buscar o ficheiro publicado mais recente; a geração automática acontece de 15 em 15 minutos no Mac da rede PKE." }, callUpdatedLabel),
             h("select", { className: "call-browser-select", value: "", onChange: () => {} }, h("option", { value: "" }, "All Agents")),
             h("input", { className: "call-browser-date", type: "text", readOnly: true, value: "dd/mm/yyyy" }),
             periodButtons.map((item) => h("button", { key: item.key, className: `call-browser-period ${callPeriod === item.key ? "call-browser-period-active" : ""}`, onClick: () => setCallPeriod(item.key) }, item.label)),
-            h("button", { className: "call-browser-period", onClick: reload, disabled: loading }, loading ? "..." : "↻")
+            h("button", { className: "call-browser-period call-browser-refresh", onClick: reload, disabled: loading, "data-help": "Atualizar dados: volta a pedir ao MCP o snapshot Call Analytics mais recente já publicado. Se o runner ainda não gerou um snapshot novo, os números mantêm-se iguais até à próxima atualização automática." }, loading ? "A atualizar..." : "Atualizar dados")
           )
         ),
         h("div", { className: "call-browser-tabs" }, browserTabs.map((tab) => h("div", { key: tab, className: `call-browser-tab ${tab.includes("Analytics") ? "call-browser-tab-active" : ""}` }, tab))),
