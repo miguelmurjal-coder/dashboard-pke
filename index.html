@@ -1806,6 +1806,7 @@ input::placeholder { color: #7f93b3; }
   const SHEETS = [
     { name: "Dashboard MKT", label: "Marketing Control Panel" },
     { name: "KPIs Marketing", label: "KPIs Marketing" },
+    { name: "Newsletters", label: "Newsletters" },
     { name: "Aprofundar Dados", label: "Aprofundar Dados" },
     { name: "Ferramentas", label: "Ferramentas" }
   ];
@@ -1826,6 +1827,7 @@ input::placeholder { color: #7f93b3; }
     { title: "Faturação e objetivos", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Objetivo, faturação, delta, ritmo do mês e linhas PS/FAP/AdBlue.", keywords: ["faturacao", "faturação", "objetivo", "objetivos", "delta", "ritmo", "ps", "fap", "adblue", "receita"] },
     { title: "Funil global", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Desconhecido, Proposta, Encomenda, Faturação e valor capturado.", keywords: ["funil", "leads", "propostas", "vendas", "encomendas", "conversao", "conversão", "valor capturado"] },
     { title: "KPIs Marketing", location: "KPIs Marketing", target: "KPIs Marketing", description: "ROAS, CPL, CPA, média de investimento por serviço e custos VSP Meta/Google.", keywords: ["kpi", "kpis", "roas", "cpl", "cpa", "custo por lead", "custo por aquisicao", "custo por aquisição", "media investimento", "média investimento", "performance paga", "meta", "google", "custos vsp"] },
+    { title: "Newsletters MailerLite", location: "Newsletters", target: "Newsletters", description: "Campanhas enviadas, aberturas, cliques, unsubscribes e bounces da MailerLite.", keywords: ["newsletter", "newsletters", "mailerlite", "email", "emails", "abertura", "aberturas", "click", "clique", "cliques", "unsubscribe", "unsubscribes", "bounce", "bounces"] },
     { title: "Resultados agregados", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Merge de VSP + BO, funil global, canais, campanhas, marcas e modelos.", keywords: ["resultados totais", "totais", "merge", "global", "vsp bo", "agregado", "agregados", "cruzado", "cruzamento"] },
     { title: "Conversão VSP para encomendas", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Leads VSP encontrados mais tarde como encomendas no BackOffice.", keywords: ["vsp vendas", "vsp encomendas", "vsp para venda", "vsp para encomenda", "conversao vsp", "conversão vsp", "matches", "backoffice", "bo", "telefone", "email"] },
     { title: "UTMs das leads VSP", location: "Aprofundar Dados > Resultados VSP", target: "Resultados VSP", description: "Origem, campanha e tracking associados aos leads VSP/FAP.", keywords: ["utm vsp", "utms vsp", "utm de vsp", "utm da vsp", "tracking vsp", "source vsp", "campaign vsp", "campanha vsp"] },
@@ -6240,7 +6242,6 @@ input::placeholder { color: #7f93b3; }
     const { table: dashboardTable, loading: dashboardLoading, error: dashboardError, updatedAt: dashboardUpdatedAt, reload: reloadDashboard } = useSheetData("Dashboard MKT", dashboardFetchOpts);
     const { table: vspLeadTable, loading: vspLeadLoading, error: vspLeadError, updatedAt: vspLeadUpdatedAt, reload: reloadVspLead } = useSheetData("Resultados VSP", vspLeadFetchOpts);
     const { table: vspCostTable, loading: vspCostLoading, error: vspCostError, updatedAt: vspCostUpdatedAt, reload: reloadVspCost } = useSheetData("Visão VSP diária", vspCostFetchOpts);
-    const { data: mailerLiteData, loading: mailerLiteLoading, error: mailerLiteError, updatedAt: mailerLiteUpdatedAt, reload: reloadMailerLite } = useStaticJson("assets/mailerlite-newsletters.json");
     const loading = dashboardLoading || vspLeadLoading || vspCostLoading;
     const error = dashboardError || vspLeadError || vspCostError;
     const updatedAt = [dashboardUpdatedAt, vspLeadUpdatedAt, vspCostUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
@@ -6259,8 +6260,18 @@ input::placeholder { color: #7f93b3; }
         h("h2", { className: "section-heading" }, "Performance paga e eficiência de investimento"),
         h("p", { className: "section-subtitle" }, "Aqui ficam ROAS, Custo por Lead, Custo por Aquisição e Média de Investimento por serviço. O período respeita o filtro no topo da página.")
       ),
-      h(MarketingPerformancePanel, { dashboardTable, vspTable: vspCostTable || vspLeadTable, vspPotentialTable: vspLeadTable, selectedMonths }),
-      h(MailerLiteNewslettersPanel, { payload: mailerLiteData, loading: mailerLiteLoading, error: mailerLiteError, updatedAt: mailerLiteUpdatedAt, onRefresh: reloadMailerLite, selectedMonths })
+      h(MarketingPerformancePanel, { dashboardTable, vspTable: vspCostTable || vspLeadTable, vspPotentialTable: vspLeadTable, selectedMonths })
+    );
+  }
+  function NewslettersView({ selectedMonths }) {
+    const { data, loading, error, updatedAt, reload } = useStaticJson("assets/mailerlite-newsletters.json");
+    return h("div", { className: "space-y-6" },
+      h("section", { className: "section-shell section-shell-hero space-y-3", "data-help": "Newsletters: painel dedicado aos emails enviados pelo MailerLite. Mostra campanhas enviadas, aberturas, cliques, cancelamentos de subscrição e bounces, respeitando o período selecionado no topo." },
+        h("div", { className: "section-kicker" }, "NEWSLETTERS"),
+        h("h2", { className: "section-heading" }, "Email marketing e MailerLite"),
+        h("p", { className: "section-subtitle" }, "Aqui ficam as estatísticas das newsletters enviadas: volume, envolvimento, tráfego gerado e sinais de qualidade da base.")
+      ),
+      h(MailerLiteNewslettersPanel, { payload: data, loading, error, updatedAt, onRefresh: reload, selectedMonths })
     );
   }
   function ResultadosVSPView({ selectedMonths }) {
@@ -7262,7 +7273,7 @@ input::placeholder { color: #7f93b3; }
         setToStage,
         onNavigate: navigateDashboard
       }
-    ) : selected === "KPIs Marketing" ? /* @__PURE__ */ React.createElement(MarketingPerformanceView, { selectedMonths }) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "KPIs Marketing" ? /* @__PURE__ */ React.createElement(MarketingPerformanceView, { selectedMonths }) : selected === "Newsletters" ? /* @__PURE__ */ React.createElement(NewslettersView, { selectedMonths }) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);

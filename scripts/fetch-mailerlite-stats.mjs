@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 
 const API_KEY = process.env.MAILERLITE_API_KEY || process.env.API_MAILERLITE || process.env.MAILERLITE_API || process.env.API_MAILERLITE_KEY || "";
 const OUT_FILE = "assets/mailerlite-newsletters.json";
-const BASE_URL = "https://connect.mailerlite.com/api";
+const BASE_URL = "https://api.mailerlite.com/api/v2";
 
 function num(value) {
   const n = Number(value);
@@ -10,12 +10,12 @@ function num(value) {
 }
 
 function rateValue(value) {
-  if (value && typeof value === "object") return num(value.float);
-  return num(value);
+  const raw = value && typeof value === "object" ? num(value.float) : num(value);
+  return raw > 1 ? raw / 100 : raw;
 }
 
 function campaignDate(campaign) {
-  return campaign.sent_at || campaign.finished_at || campaign.send_after || campaign.updated_at || campaign.created_at || null;
+  return campaign.date_send || campaign.sent_at || campaign.finished_at || campaign.send_after || campaign.updated_at || campaign.created_at || campaign.date_created || null;
 }
 
 function campaignSubject(campaign) {
@@ -25,6 +25,11 @@ function campaignSubject(campaign) {
 
 function normalizeCampaign(campaign) {
   const stats = campaign.stats || {};
+  const opened = campaign.opened || {};
+  const clicked = campaign.clicked || {};
+  const recipients = campaign.recipients || campaign.total_recipients || stats.sent || 0;
+  const openRate = opened.rate ?? stats.open_rate;
+  const clickRate = clicked.rate ?? stats.click_rate;
   return {
     id: String(campaign.id || ""),
     name: campaign.name || campaignSubject(campaign),
@@ -32,13 +37,13 @@ function normalizeCampaign(campaign) {
     type: campaign.type || "",
     status: campaign.status || "",
     date: campaignDate(campaign),
-    sent: num(stats.sent),
-    opens: num(stats.opens_count),
-    uniqueOpens: num(stats.unique_opens_count),
-    openRate: rateValue(stats.open_rate),
-    clicks: num(stats.clicks_count),
-    uniqueClicks: num(stats.unique_clicks_count),
-    clickRate: rateValue(stats.click_rate),
+    sent: num(recipients),
+    opens: num(opened.count ?? stats.opens_count),
+    uniqueOpens: num(opened.count ?? stats.unique_opens_count ?? stats.opens_count),
+    openRate: rateValue(openRate),
+    clicks: num(clicked.count ?? stats.clicks_count),
+    uniqueClicks: num(clicked.count ?? stats.unique_clicks_count ?? stats.clicks_count),
+    clickRate: rateValue(clickRate),
     unsubscribes: num(stats.unsubscribes_count),
     unsubscribeRate: rateValue(stats.unsubscribe_rate),
     spam: num(stats.spam_count),
@@ -48,14 +53,14 @@ function normalizeCampaign(campaign) {
     softBounceRate: rateValue(stats.soft_bounce_rate),
     forwards: num(stats.forwards_count),
     trackOpens: Boolean(campaign.track_opens),
-    previewUrl: campaign.preview_url || null
+    previewUrl: campaign.preview_url || campaign.link || null
   };
 }
 
 function emptyPayload(error = "") {
   return {
     generatedAt: new Date().toISOString(),
-    source: "MailerLite",
+    source: "MailerLite Classic",
     error,
     campaigns: []
   };
@@ -64,7 +69,7 @@ function emptyPayload(error = "") {
 async function requestJson(path) {
   const response = await fetch(`${BASE_URL}${path}`, {
     headers: {
-      Authorization: `Bearer ${API_KEY}`,
+      "X-MailerLite-ApiKey": API_KEY,
       Accept: "application/json"
     }
   });
@@ -78,7 +83,7 @@ async function requestJson(path) {
   }
 
   if (!response.ok) {
-    const message = data?.message || `MailerLite API respondeu ${response.status}`;
+    const message = data?.message || data?.error?.message || `MailerLite Classic API respondeu ${response.status}`;
     throw new Error(message);
   }
   return data;
@@ -86,15 +91,16 @@ async function requestJson(path) {
 
 async function fetchSentCampaigns() {
   const campaigns = [];
-  let page = 1;
-  let lastPage = 1;
+  const limit = 100;
+  let offset = 0;
 
   do {
-    const data = await requestJson(`/campaigns?filter[status]=sent&limit=100&page=${page}`);
-    campaigns.push(...(data.data || []));
-    lastPage = num(data.meta?.last_page) || page;
-    page += 1;
-  } while (page <= lastPage && page <= 10);
+    const data = await requestJson(`/campaigns/sent?limit=${limit}&offset=${offset}&order=desc`);
+    const pageCampaigns = Array.isArray(data) ? data : data.data || [];
+    campaigns.push(...pageCampaigns);
+    if (pageCampaigns.length < limit) break;
+    offset += limit;
+  } while (offset < 1000);
 
   return campaigns.map(normalizeCampaign).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
 }
@@ -112,7 +118,7 @@ async function main() {
     const campaigns = await fetchSentCampaigns();
     await writeFile(OUT_FILE, JSON.stringify({
       generatedAt: new Date().toISOString(),
-      source: "MailerLite",
+      source: "MailerLite Classic",
       campaigns
     }, null, 2));
     console.log(`Wrote ${campaigns.length} MailerLite campaigns to ${OUT_FILE}`);
