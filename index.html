@@ -706,6 +706,24 @@ table { border-collapse: collapse; }
   font-weight: 700;
   box-shadow: inset 1px 1px #1084d0, inset -1px -1px #000040;
 }
+.tiago-prank-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: grid;
+  place-items: center;
+  background: #000;
+  color: #fff;
+  font-size: clamp(7rem, 26vw, 24rem);
+  line-height: 1;
+  animation: tiagoPrankPop 2.8s ease both;
+}
+@keyframes tiagoPrankPop {
+  0% { opacity: 0; transform: scale(0.88); }
+  12% { opacity: 1; transform: scale(1); }
+  82% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.06); }
+}
 .funnel-steps {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -7777,6 +7795,7 @@ input::placeholder { color: #7f93b3; }
     const [toStage, setToStage] = useState("fatReal");
     const [helpMode, setHelpMode] = useState(false);
     const [win98Mode, setWin98Mode] = useState(false);
+    const [tiagoPrank, setTiagoPrank] = useState(false);
     const [taskEntries, setTaskEntries] = useState(() => {
       if (typeof localStorage === "undefined") return [];
       try {
@@ -7809,25 +7828,34 @@ input::placeholder { color: #7f93b3; }
       if (typeof window === "undefined") return void 0;
       let sequence = "";
       let sequenceTimer = null;
+      let prankTimer = null;
       const toggleWindows98Mode = (event) => {
         const targetTag = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : "";
         const isTyping = ["input", "textarea", "select"].includes(targetTag) || event.target && event.target.isContentEditable;
         if (isTyping) return;
         if (!event.key || event.key.length !== 1 || event.metaKey || event.ctrlKey || event.altKey) return;
-        sequence = `${sequence}${event.key.toLowerCase()}`.slice(-3);
+        sequence = `${sequence}${event.key.toLowerCase()}`.slice(-5);
         if (sequenceTimer) window.clearTimeout(sequenceTimer);
         sequenceTimer = window.setTimeout(() => {
           sequence = "";
         }, 1200);
-        if (sequence === "mcp") {
+        if (sequence.endsWith("mcp")) {
           sequence = "";
           if (sequenceTimer) window.clearTimeout(sequenceTimer);
           setWin98Mode((value) => !value);
+        }
+        if (sequence === "tiago") {
+          sequence = "";
+          if (sequenceTimer) window.clearTimeout(sequenceTimer);
+          if (prankTimer) window.clearTimeout(prankTimer);
+          setTiagoPrank(true);
+          prankTimer = window.setTimeout(() => setTiagoPrank(false), 2800);
         }
       };
       window.addEventListener("keydown", toggleWindows98Mode);
       return () => {
         if (sequenceTimer) window.clearTimeout(sequenceTimer);
+        if (prankTimer) window.clearTimeout(prankTimer);
         window.removeEventListener("keydown", toggleWindows98Mode);
       };
     }, []);
@@ -8065,7 +8093,7 @@ input::placeholder { color: #7f93b3; }
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
       scheduleTaskReminder(15 * 60 * 1000);
-    } }), /* @__PURE__ */ React.createElement(UniversalHelpLens, { active: helpMode }), helpMode && /* @__PURE__ */ React.createElement("div", { className: "help-mode-hint" }, "Modo Dúvidas ativo: passa o cursor por qualquer informação, gráfico, tabela, botão ou filtro. O dashboard explica de forma simples o que é, de onde vem e como ler."), /* @__PURE__ */ React.createElement("button", { type: "button", className: `help-floating-btn ${helpMode ? "help-floating-btn-active" : ""}`, onClick: () => setHelpMode((value) => !value), "aria-pressed": helpMode }, helpMode ? "Fechar dúvidas" : "Dúvidas?"), /* @__PURE__ */ React.createElement(TaskReminderToast, { notice: taskReminderNotice, notificationPermission, onOpen: openTaskReminderPrompt, onSnooze: snoozeTaskReminder, onDismiss: dismissTaskReminder, onEnableNotifications: enableBrowserNotifications }));
+    } }), /* @__PURE__ */ React.createElement(UniversalHelpLens, { active: helpMode }), helpMode && /* @__PURE__ */ React.createElement("div", { className: "help-mode-hint" }, "Modo Dúvidas ativo: passa o cursor por qualquer informação, gráfico, tabela, botão ou filtro. O dashboard explica de forma simples o que é, de onde vem e como ler."), /* @__PURE__ */ React.createElement("button", { type: "button", className: `help-floating-btn ${helpMode ? "help-floating-btn-active" : ""}`, onClick: () => setHelpMode((value) => !value), "aria-pressed": helpMode }, helpMode ? "Fechar dúvidas" : "Dúvidas?"), /* @__PURE__ */ React.createElement(TaskReminderToast, { notice: taskReminderNotice, notificationPermission, onOpen: openTaskReminderPrompt, onSnooze: snoozeTaskReminder, onDismiss: dismissTaskReminder, onEnableNotifications: enableBrowserNotifications }), tiagoPrank && /* @__PURE__ */ React.createElement("div", { className: "tiago-prank-overlay", "aria-hidden": "true" }, "🖕🏻"));
   }
   const __root = ReactDOM.createRoot(document.getElementById("root"));
   __root.render(React.createElement(App));
