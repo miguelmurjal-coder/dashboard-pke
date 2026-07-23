@@ -18,6 +18,7 @@ jobs:
         run: |
           mkdir -p public
           cp index.html public/index.html
+          cp -R assets public/assets
 
       - name: Publicar no Neocities
         uses: bcomnes/deploy-to-neocities@v3
