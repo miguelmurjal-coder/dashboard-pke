@@ -568,6 +568,144 @@ table { border-collapse: collapse; }
 .alert-chip-good { border-color: #1f6f4a; color: #86efac; }
 .alert-chip-warn { border-color: #8a6724; color: #fbbf24; }
 .alert-chip-bad { border-color: #7a313f; color: #fca5a5; }
+
+.win98-mode,
+.win98-mode * {
+  font-family: "MS Sans Serif", Tahoma, Geneva, sans-serif !important;
+}
+.win98-mode {
+  color: #000 !important;
+  background: #008080 !important;
+  background-image: none !important;
+}
+.win98-mode.app-shell {
+  background: #008080 !important;
+}
+.win98-mode .app-sidebar {
+  background: #c0c0c0 !important;
+  border-right: 2px solid #404040 !important;
+  box-shadow: inset -2px 0 #808080, inset 2px 0 #ffffff !important;
+}
+.win98-mode .app-header {
+  background: #c0c0c0 !important;
+  border-bottom: 2px solid #404040 !important;
+  box-shadow: inset 0 -2px #808080, inset 0 2px #ffffff !important;
+  backdrop-filter: none !important;
+}
+.win98-mode .brand-panel,
+.win98-mode .section-shell,
+.win98-mode .detail-disclosure,
+.win98-mode .diagnosis-tile,
+.win98-mode .kpi-card,
+.win98-mode .bg-white,
+.win98-mode .task-modal,
+.win98-mode .task-log-command-card,
+.win98-mode .task-sidebar-card,
+.win98-mode .task-sidebar-section,
+.win98-mode .task-agenda-card,
+.win98-mode .page-title-pill,
+.win98-mode .period-filter-panel,
+.win98-mode .global-search-results,
+.win98-mode .chart-tooltip {
+  background: #c0c0c0 !important;
+  background-image: none !important;
+  color: #000 !important;
+  border-radius: 0 !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+  border-color: #ffffff #404040 #404040 #ffffff !important;
+  box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080 !important;
+}
+.win98-mode .section-shell-hero {
+  background: #c0c0c0 !important;
+}
+.win98-mode .section-heading,
+.win98-mode .section-subtitle,
+.win98-mode .section-kicker,
+.win98-mode .brand-title,
+.win98-mode .brand-subtitle,
+.win98-mode .text-slate-100,
+.win98-mode .text-slate-300,
+.win98-mode .text-slate-400,
+.win98-mode .text-slate-500,
+.win98-mode .text-slate-700,
+.win98-mode .text-slate-800,
+.win98-mode .text-slate-900,
+.win98-mode .page-title-pill .text-slate-900,
+.win98-mode .app-header .text-slate-700,
+.win98-mode .app-header .text-slate-500 {
+  color: #000 !important;
+}
+.win98-mode .section-kicker,
+.win98-mode .brand-title {
+  text-transform: none !important;
+}
+.win98-mode .nav-item,
+.win98-mode button,
+.win98-mode select,
+.win98-mode input,
+.win98-mode textarea,
+.win98-mode .deep-tab,
+.win98-mode .task-primary-btn,
+.win98-mode .task-secondary-btn,
+.win98-mode .task-header-btn,
+.win98-mode .help-floating-btn {
+  border-radius: 0 !important;
+  border: 2px solid !important;
+  border-color: #ffffff #404040 #404040 #ffffff !important;
+  background: #c0c0c0 !important;
+  color: #000 !important;
+  box-shadow: inset 1px 1px #dfdfdf, inset -1px -1px #808080 !important;
+}
+.win98-mode .nav-item-active,
+.win98-mode .deep-tab-active,
+.win98-mode .help-floating-btn-active {
+  background: #000080 !important;
+  color: #fff !important;
+  border-color: #404040 #ffffff #ffffff #404040 !important;
+  box-shadow: inset 1px 1px #000040, inset -1px -1px #dfdfdf !important;
+}
+.win98-mode .nav-active-bar,
+.win98-mode .legend-dot,
+.win98-mode .metric-badge,
+.win98-mode .rounded-full,
+.win98-mode .rounded-lg,
+.win98-mode .rounded-xl {
+  border-radius: 0 !important;
+}
+.win98-mode .metric-badge {
+  background: #ffffcc !important;
+  color: #000 !important;
+  border: 1px solid #808080 !important;
+}
+.win98-mode table th {
+  background: #000080 !important;
+  color: #fff !important;
+}
+.win98-mode table td,
+.win98-mode table th {
+  border-color: #808080 !important;
+}
+.win98-mode .chart-svg text,
+.win98-mode .chart-svg-sm text {
+  fill: #000 !important;
+}
+.win98-mode .windows98-ribbon {
+  display: inline-flex;
+}
+.windows98-ribbon {
+  display: none;
+  align-items: center;
+  gap: 0.45rem;
+  background: #000080;
+  color: #fff;
+  border: 2px solid;
+  border-color: #ffffff #404040 #404040 #ffffff;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: inset 1px 1px #1084d0, inset -1px -1px #000040;
+}
 .funnel-steps {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -6706,6 +6844,7 @@ input::placeholder { color: #7f93b3; }
     const [fromStage, setFromStage] = useState("encReal");
     const [toStage, setToStage] = useState("fatReal");
     const [helpMode, setHelpMode] = useState(false);
+    const [win98Mode, setWin98Mode] = useState(false);
     const [taskEntries, setTaskEntries] = useState(() => {
       if (typeof localStorage === "undefined") return [];
       try {
@@ -6734,6 +6873,20 @@ input::placeholder { color: #7f93b3; }
       window.addEventListener("keydown", closeHelpOnEscape);
       return () => window.removeEventListener("keydown", closeHelpOnEscape);
     }, [helpMode]);
+    useEffect(() => {
+      if (typeof window === "undefined") return void 0;
+      const toggleWindows98Mode = (event) => {
+        const targetTag = event.target && event.target.tagName ? event.target.tagName.toLowerCase() : "";
+        const isTyping = ["input", "textarea", "select"].includes(targetTag) || event.target && event.target.isContentEditable;
+        if (isTyping) return;
+        if (event.ctrlKey && event.altKey && event.key && event.key.toLowerCase() === "w") {
+          event.preventDefault();
+          setWin98Mode((value) => !value);
+        }
+      };
+      window.addEventListener("keydown", toggleWindows98Mode);
+      return () => window.removeEventListener("keydown", toggleWindows98Mode);
+    }, []);
     useEffect(() => {
       if (typeof localStorage === "undefined") return void 0;
       const ensureNextReminder = () => {
@@ -6886,7 +7039,7 @@ input::placeholder { color: #7f93b3; }
       return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true) });
     }
     const showPeriodFilter = selected !== "Ferramentas" || activeToolPanel === "Gerador de Relatórios";
-    return /* @__PURE__ */ React.createElement("div", { className: `min-h-screen bg-slate-100 flex app-shell ${helpMode ? "help-mode-on" : ""}`, style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: `min-h-screen bg-slate-100 flex app-shell ${helpMode ? "help-mode-on" : ""} ${win98Mode ? "win98-mode" : ""}`, style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
       "aside",
       {
         className: `app-sidebar fixed md:static z-30 inset-y-0 left-0 w-64 flex flex-col transform ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform`,
@@ -6937,7 +7090,7 @@ input::placeholder { color: #7f93b3; }
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "page-title-pill min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "page-title-pill min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · Ctrl+Alt+W"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
