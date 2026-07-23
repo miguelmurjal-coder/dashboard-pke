@@ -1807,6 +1807,7 @@ input::placeholder { color: #7f93b3; }
     { name: "Dashboard MKT", label: "Marketing Control Panel" },
     { name: "KPIs Marketing", label: "KPIs Marketing" },
     { name: "Newsletters", label: "Newsletters" },
+    { name: "Call Analytics", label: "Call Analytics" },
     { name: "Aprofundar Dados", label: "Aprofundar Dados" },
     { name: "Ferramentas", label: "Ferramentas" }
   ];
@@ -1828,6 +1829,7 @@ input::placeholder { color: #7f93b3; }
     { title: "Funil global", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Desconhecido, Proposta, Encomenda, Faturação e valor capturado.", keywords: ["funil", "leads", "propostas", "vendas", "encomendas", "conversao", "conversão", "valor capturado"] },
     { title: "KPIs Marketing", location: "KPIs Marketing", target: "KPIs Marketing", description: "ROAS, CPL, CPA, média de investimento por serviço e custos VSP Meta/Google.", keywords: ["kpi", "kpis", "roas", "cpl", "cpa", "custo por lead", "custo por aquisicao", "custo por aquisição", "media investimento", "média investimento", "performance paga", "meta", "google", "custos vsp"] },
     { title: "Newsletters MailerLite", location: "Newsletters", target: "Newsletters", description: "Campanhas enviadas, aberturas, cliques, unsubscribes e bounces da MailerLite.", keywords: ["newsletter", "newsletters", "mailerlite", "email", "emails", "abertura", "aberturas", "click", "clique", "cliques", "unsubscribe", "unsubscribes", "bounce", "bounces"] },
+    { title: "Call Analytics", location: "Call Analytics", target: "Call Analytics", description: "Analytics comercial: chamadas, leads contactadas, conversão, funil, vendedores e score AI.", keywords: ["call analytics", "chamadas", "telefonemas", "contactados", "vendedores", "comercial", "analytics", "score ai", "funil comercial", "taxa contacto", "taxa conversao"] },
     { title: "Resultados agregados", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Merge de VSP + BO, funil global, canais, campanhas, marcas e modelos.", keywords: ["resultados totais", "totais", "merge", "global", "vsp bo", "agregado", "agregados", "cruzado", "cruzamento"] },
     { title: "Conversão VSP para encomendas", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Leads VSP encontrados mais tarde como encomendas no BackOffice.", keywords: ["vsp vendas", "vsp encomendas", "vsp para venda", "vsp para encomenda", "conversao vsp", "conversão vsp", "matches", "backoffice", "bo", "telefone", "email"] },
     { title: "UTMs das leads VSP", location: "Aprofundar Dados > Resultados VSP", target: "Resultados VSP", description: "Origem, campanha e tracking associados aos leads VSP/FAP.", keywords: ["utm vsp", "utms vsp", "utm de vsp", "utm da vsp", "tracking vsp", "source vsp", "campaign vsp", "campanha vsp"] },
@@ -2423,6 +2425,72 @@ input::placeholder { color: #7f93b3; }
     const d = value ? new Date(value) : null;
     if (!d || isNaN(d.getTime())) return "Sem data";
     return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
+  }
+  function callAnalyticsPeriodKey(selectedMonths) {
+    const currentMonth = (/* @__PURE__ */ new Date()).getMonth();
+    if (selectedMonths.size === 1 && selectedMonths.has(currentMonth)) return "month";
+    return "month";
+  }
+  function asFractionPercent(value) {
+    const n = Number(value || 0);
+    return n > 1 ? n / 100 : n;
+  }
+  function callAnalyticsDisplayDate(value) {
+    const d = value ? new Date(value) : null;
+    if (!d || isNaN(d.getTime())) return "Sem data";
+    return d.toLocaleString("pt-PT");
+  }
+  function latestCallAnalyticsLeadRow(payload) {
+    const rows = payload && payload.leadsPanel && payload.leadsPanel.rows || [];
+    return rows[rows.length - 1] || null;
+  }
+  function buildCallAnalyticsSummary(payload, selectedMonths) {
+    const period = callAnalyticsPeriodKey(selectedMonths);
+    const analytics = payload && payload.analytics && payload.analytics[period] || {};
+    const funnel = payload && payload.funnel && payload.funnel[period] || {};
+    const agentsMap = payload && payload.agents && payload.agents[period] || {};
+    const agents = Object.values(agentsMap || {}).sort((a, b) => (b.effective || 0) - (a.effective || 0));
+    const leadsRows = payload && payload.leadsPanel && payload.leadsPanel.rows || [];
+    const latestLead = latestCallAnalyticsLeadRow(payload) || {};
+    const hourlyRows = (analytics.hourly || []).filter((row) => (row.total || 0) > 0).map((row) => ({
+      label: `${String(row.hour).padStart(2, "0")}h`,
+      value: row.effective || row.answered || row.total || 0,
+      help: `Hora ${row.hour}h: ${fmtNumber(row.total || 0)} chamadas totais, ${fmtNumber(row.answered || 0)} atendidas e ${fmtNumber(row.effective || 0)} efetivas. Origem dos dados: PKE Call Analytics, tab Analytics.`
+    }));
+    const leadRows = leadsRows.map((row) => ({
+      label: row.label,
+      value: row.leads || 0,
+      contacted: row.contacted || 0,
+      converted: row.converted || 0,
+      contactRate: asFractionPercent(row.contact_rate),
+      convRate: asFractionPercent(row.conv_rate),
+      uncalled: row.uncalled || 0
+    }));
+    const topServices = (analytics.top_services || []).slice(0, 8).map((row) => ({
+      label: row.name || "Serviço",
+      value: row.count || 0,
+      help: `Serviço mais frequente nas marcações/chamadas analisadas pelo PKE Call Analytics: ${row.name || "Serviço"} com ${fmtNumber(row.count || 0)} ocorrências.`
+    }));
+    const utmRows = (analytics.utm_attribution || []).slice(0, 8).map((row) => ({
+      label: row.source || "Sem origem",
+      value: row.converted || row.leads || 0,
+      help: `Origem UTM ${row.source || "Sem origem"}: ${fmtNumber(row.leads || 0)} leads e ${fmtNumber(row.converted || 0)} conversões no PKE Call Analytics.`
+    }));
+    const scoreTrend = (analytics.score_trend || []).slice(-12);
+    return {
+      period,
+      analytics,
+      funnel,
+      agents,
+      leadsRows: leadRows,
+      latestLead,
+      hourlyRows,
+      topServices,
+      utmRows,
+      scoreTrend,
+      stats: payload && payload.stats || {},
+      config: payload && payload.config || {}
+    };
   }
   function findAll(block, label) {
     return block.filter((r) => rowLabel(r) === label);
@@ -6274,6 +6342,119 @@ input::placeholder { color: #7f93b3; }
       h(MailerLiteNewslettersPanel, { payload: data, loading, error, updatedAt, onRefresh: reload, selectedMonths })
     );
   }
+  function CallAnalyticsView({ selectedMonths }) {
+    const { data, loading, error, updatedAt, reload } = useStaticJson("assets/call-analytics.json");
+    const summary = buildCallAnalyticsSummary(data, selectedMonths);
+    const funnel = summary.funnel || {};
+    const analytics = summary.analytics || {};
+    const latestLead = summary.latestLead || {};
+    const Card = ({ title, subtitle, children, help }) => h("div", { className: "bg-white rounded-xl border border-slate-200 p-4", "data-help": help || `${title}: dados vindos do PKE Call Analytics.` }, h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
+    const agentRows = summary.agents.map((agent) => ({
+      label: agent.name,
+      value: agent.effective || 0,
+      help: `${agent.name}: ${fmtNumber(agent.total || 0)} chamadas totais, ${fmtNumber(agent.effective || 0)} efetivas, ${fmtNumber(agent.bookings_finalized || 0)} encomendas finalizadas e score AI médio ${agent.avg_ai_score || 0}. Origem dos dados: PKE Call Analytics.`
+    }));
+    const contactRows = summary.leadsRows.map((row) => ({
+      label: row.label,
+      value: row.contacted || 0,
+      help: `${row.label}: ${fmtNumber(row.leads)} leads, ${fmtNumber(row.contacted)} contactadas, ${fmtNumber(row.uncalled)} por contactar e ${fmtPercent(row.contactRate)} de taxa de contacto.`
+    }));
+    const conversionRows = summary.leadsRows.map((row) => ({
+      label: row.label,
+      value: row.converted || 0,
+      help: `${row.label}: ${fmtNumber(row.converted)} conversões em ${fmtNumber(row.leads)} leads, equivalente a ${fmtPercent(row.convRate)} de conversão.`
+    }));
+    const scoreRows = summary.scoreTrend.map((row) => ({
+      label: row.date ? new Date(row.date).toLocaleDateString("pt-PT", { day: "2-digit", month: "short" }) : "Sem data",
+      value: row.avg || 0,
+      count: row.count || 0
+    }));
+    return h("div", { className: "space-y-6" },
+      h("section", { className: "section-shell section-shell-hero space-y-3", "data-help": "Call Analytics: painel separado com dados do dashboard PKE Call Analytics. A prioridade é a tab Analytics, cruzando volume de chamadas, contacto, conversão, vendedores, serviços e UTMs." },
+        h("div", { className: "flex items-start justify-between gap-3 flex-wrap" },
+          h("div", null,
+            h("div", { className: "section-kicker" }, "CALL ANALYTICS"),
+            h("h2", { className: "section-heading" }, "Performance comercial depois da lead"),
+            h("p", { className: "section-subtitle" }, "Mostra o que acontece depois de Marketing gerar procura: contacto, chamadas efetivas, conversão, marcações e qualidade das interações.")
+          ),
+          h("div", { className: "flex items-center gap-2 flex-wrap" },
+            updatedAt && h("span", { className: "text-xs text-slate-400" }, `Atualizado ${callAnalyticsDisplayDate(updatedAt)}`),
+            h("button", { className: "task-secondary-btn", onClick: reload, disabled: loading }, loading ? "A atualizar..." : "Atualizar")
+          )
+        )
+      ),
+      error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Call Analytics: ", error),
+      data && data.stale && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Estes dados podem estar em snapshot: o endpoint local não ficou acessível na última atualização automática."),
+      loading && !data ? h(LoadingState, null) : data ? h(React.Fragment, null,
+        h("section", { className: "section-shell space-y-4", "data-help": "Resumo executivo do Call Analytics: lê rapidamente se há leads suficientes, se estão a ser contactadas, se geram conversões e se a faturação projetada acompanha o objetivo." },
+          h("div", { className: "flex items-start justify-between gap-3 flex-wrap" },
+            h("div", null,
+              h("div", { className: "section-kicker" }, "ANALYTICS"),
+              h("h3", { className: "section-heading" }, "Estado comercial do mês"),
+              h("p", { className: "section-subtitle" }, "Dados vindos da tab Analytics do PKE Call Analytics, com apoio do funil e do painel de leads.")
+            ),
+            h(MetricBadge, { tone: summary.stats.total_records ? "good" : "warn" }, `${fmtNumber(summary.stats.total_records || 0)} registos`)
+          ),
+          h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+            h(KpiCard, { label: "Leads do mês", numeric: latestLead.leads || funnel.leads_month || 0, format: "number", icon: Target, kind: "volume", help: "Leads do mês no PKE Call Analytics. Este número ajuda a perceber o volume que chega à equipa comercial depois do esforço de marketing." }),
+            h(KpiCard, { label: "Taxa de contacto", numeric: asFractionPercent(latestLead.contact_rate), format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: asFractionPercent(latestLead.contact_rate) >= 0.6 ? "good" : asFractionPercent(latestLead.contact_rate) >= 0.4 ? "warn" : "bad", help: "Taxa de contacto: percentagem de leads que já tiveram contacto identificado. Se baixa, o problema pode estar no seguimento comercial, não no volume de marketing." }),
+            h(KpiCard, { label: "Taxa de conversão", numeric: asFractionPercent(latestLead.conv_rate || analytics.funnel && analytics.funnel.conversion_rate), format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: asFractionPercent(latestLead.conv_rate) >= 0.04 ? "good" : asFractionPercent(latestLead.conv_rate) >= 0.025 ? "warn" : "bad", help: "Taxa de conversão: leads que avançaram para conversão/marcação no PKE Call Analytics. Ajuda a separar quantidade de qualidade." }),
+            h(KpiCard, { label: "Faturação projetada", numeric: funnel.revenue_projected || analytics.projection && analytics.projection.projected_revenue || 0, format: "currency", icon: TrendingUp, kind: "money", tone: (funnel.revenue_projected || 0) >= (funnel.target_revenue || 1) ? "good" : "warn", help: "Faturação projetada: projeção do PKE Call Analytics com base no ritmo atual de marcações/faturação." })
+          ),
+          h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+            h(DiagnosisTile, { item: { label: "Chamadas efetivas", value: fmtNumber(funnel.calls_effective || 0), detail: `${fmtNumber(funnel.calls_total || 0)} chamadas totais`, tone: "neutral" } }),
+            h(DiagnosisTile, { item: { label: "Encomendas finalizadas", value: fmtNumber(funnel.bookings_finalized || 0), detail: `${fmtNumber(funnel.bookings_total || 0)} marcações totais`, tone: funnel.bookings_finalized ? "good" : "neutral" } }),
+            h(DiagnosisTile, { item: { label: "Cancelamentos", value: fmtPercent(asFractionPercent(funnel.cancellation_rate)), detail: `${fmtNumber(funnel.bookings_cancelled || 0)} canceladas`, tone: asFractionPercent(funnel.cancellation_rate) > 0.2 ? "warn" : "good" } }),
+            h(DiagnosisTile, { item: { label: "Score AI médio", value: `${summary.stats.avg_score || 0}`, detail: `${fmtNumber(summary.stats.scored_calls || 0)} chamadas avaliadas`, tone: summary.stats.avg_score >= 6 ? "good" : summary.stats.avg_score >= 4 ? "warn" : "bad" } })
+          )
+        ),
+        h("div", { className: "grid lg:grid-cols-2 gap-4" },
+          summary.hourlyRows.length ? h(Card, { title: "Horas com mais chamadas efetivas", subtitle: "Tab Analytics · distribuição por hora.", help: "Horas com mais chamadas efetivas: mostra em que momentos do dia a equipa consegue mais conversas úteis. Origem dos dados: PKE Call Analytics, tab Analytics." }, h(CategoryBarChart, { data: summary.hourlyRows, unit: "number" })) : null,
+          contactRows.length ? h(Card, { title: "Leads contactadas por mês", subtitle: "Histórico do painel de leads.", help: "Leads contactadas por mês: compara volume gerado com capacidade de contacto comercial. Origem dos dados: PKE Call Analytics, endpoint leads-panel." }, h(CategoryBarChart, { data: contactRows, unit: "number" })) : null,
+          conversionRows.length ? h(Card, { title: "Conversões por mês", subtitle: "Leads que avançaram no funil comercial.", help: "Conversões por mês: mostra quantas leads viraram conversão/marcação segundo o PKE Call Analytics." }, h(CategoryBarChart, { data: conversionRows, unit: "number" })) : null,
+          summary.topServices.length ? h(Card, { title: "Serviços mais pedidos", subtitle: "Procura identificada nas chamadas/marcações.", help: "Serviços mais pedidos: ajuda Marketing a perceber que temas e serviços estão a puxar procura real depois do contacto comercial." }, h(CategoryBarChart, { data: summary.topServices, unit: "number" })) : null,
+          summary.utmRows.length ? h(Card, { title: "UTMs que aparecem em conversão", subtitle: "Atribuição por origem no Call Analytics.", help: "UTMs que aparecem em conversão: leitura operacional das origens que surgem associadas a leads convertidas no PKE Call Analytics." }, h(CategoryBarChart, { data: summary.utmRows, unit: "number" })) : null,
+          agentRows.length ? h(Card, { title: "Chamadas efetivas por vendedor", subtitle: "Resumo do mês por agente.", help: "Chamadas efetivas por vendedor: mostra quem está a conseguir mais conversas úteis no período analisado." }, h(CategoryBarChart, { data: agentRows, unit: "number" })) : null
+        ),
+        h("section", { className: "section-shell space-y-4", "data-help": "Detalhe por vendedor: transforma chamadas e atividade comercial em leitura de capacidade de seguimento das leads." },
+          h("div", null,
+            h("div", { className: "section-kicker" }, "EQUIPA"),
+            h("h3", { className: "section-heading" }, "Resumo por vendedor"),
+            h("p", { className: "section-subtitle" }, "Chamadas, eficácia, tempo de conversa, encomendas e score AI.")
+          ),
+          summary.agents.length ? h("div", { className: "overflow-auto" },
+            h("table", { className: "min-w-full text-sm" },
+              h("thead", null, h("tr", { className: "text-left text-slate-400" },
+                h("th", { className: "px-3 py-1.5 text-xs" }, "Vendedor"),
+                h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Chamadas"),
+                h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Efetivas"),
+                h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Taxa efetiva"),
+                h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Tempo"),
+                h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Encomendas"),
+                h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Score AI")
+              )),
+              h("tbody", null, summary.agents.map((agent) => h("tr", { key: agent.ext || agent.name, className: "border-t border-slate-200", "data-help": `${agent.name}: resumo comercial mensal vindo do PKE Call Analytics. Mostra volume de chamadas, chamadas efetivas, tempo em chamada, encomendas finalizadas e score AI.` },
+                h("td", { className: "px-3 py-1.5 font-semibold text-slate-800" }, agent.name),
+                h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtNumber(agent.total || 0)),
+                h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtNumber(agent.effective || 0)),
+                h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtPercent(asFractionPercent(agent.effective_rate))),
+                h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, `${fmtNumber(agent.talk_min || 0)} min`),
+                h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtNumber(agent.bookings_finalized || 0)),
+                h("td", { className: "px-3 py-1.5 text-right tabular-nums font-semibold" }, agent.avg_ai_score || "—")
+              )))
+            )
+          ) : h(EmptyState, { text: "Sem resumo por vendedor." })
+        ),
+        scoreRows.length ? h(Card, { title: "Score AI recente", subtitle: "Últimos dias avaliados na tab Analytics.", help: "Score AI recente: média diária das chamadas avaliadas por AI no PKE Call Analytics. Serve para perceber tendência de qualidade de atendimento." },
+          h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-3" }, scoreRows.map((row) => h("div", { key: row.label, className: "diagnosis-tile", "data-help": `${row.label}: score AI médio ${row.value} em ${fmtNumber(row.count)} chamadas avaliadas.` },
+            h("div", { className: "text-xs text-slate-400" }, row.label),
+            h("div", { className: "text-xl font-bold text-slate-100" }, row.value.toFixed ? row.value.toFixed(1) : row.value),
+            h("div", { className: "text-xs text-slate-500 mt-1" }, `${fmtNumber(row.count)} chamadas`)
+          )))
+        ) : null
+      ) : h(EmptyState, { text: "Ainda não existem dados do PKE Call Analytics." })
+    );
+  }
   function ResultadosVSPView({ selectedMonths }) {
     const fetchOpts = useMemo(() => {
       return { spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true };
@@ -7252,7 +7433,7 @@ input::placeholder { color: #7f93b3; }
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "page-title-pill min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · escreve mcp"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), selected !== "Ferramentas" && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "page-title-pill min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · escreve mcp"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), !["Ferramentas", "Newsletters", "Call Analytics"].includes(selected) && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
@@ -7273,7 +7454,7 @@ input::placeholder { color: #7f93b3; }
         setToStage,
         onNavigate: navigateDashboard
       }
-    ) : selected === "KPIs Marketing" ? /* @__PURE__ */ React.createElement(MarketingPerformanceView, { selectedMonths }) : selected === "Newsletters" ? /* @__PURE__ */ React.createElement(NewslettersView, { selectedMonths }) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "KPIs Marketing" ? /* @__PURE__ */ React.createElement(MarketingPerformanceView, { selectedMonths }) : selected === "Newsletters" ? /* @__PURE__ */ React.createElement(NewslettersView, { selectedMonths }) : selected === "Call Analytics" ? /* @__PURE__ */ React.createElement(CallAnalyticsView, { selectedMonths }) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);

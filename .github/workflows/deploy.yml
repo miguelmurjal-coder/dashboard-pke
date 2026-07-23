@@ -21,6 +21,11 @@ jobs:
           MAILERLITE_API_KEY: ${{ secrets.MAILERLITE_API_KEY || secrets.API_MAILERLITE || secrets.MAILERLITE_API || secrets.API_MAILERLITE_KEY }}
         run: node scripts/fetch-mailerlite-stats.mjs
 
+      - name: Atualizar PKE Call Analytics
+        env:
+          CALL_ANALYTICS_BASE_URL: ${{ secrets.CALL_ANALYTICS_BASE_URL || 'http://192.168.1.13:3000' }}
+        run: node scripts/fetch-call-analytics.mjs
+
       - name: Preparar publicacao
         run: |
           mkdir -p public
