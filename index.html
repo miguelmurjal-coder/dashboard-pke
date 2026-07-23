@@ -1777,6 +1777,9 @@ input::placeholder { color: #7f93b3; }
   function Euro({ className }) {
     return /* @__PURE__ */ React.createElement(Icon, { className }, /* @__PURE__ */ React.createElement("path", { d: "M4 10h12" }), /* @__PURE__ */ React.createElement("path", { d: "M4 14h9" }), /* @__PURE__ */ React.createElement("path", { d: "M17.5 5.5a7 7 0 1 0 0 13" }));
   }
+  function Mail({ className }) {
+    return /* @__PURE__ */ React.createElement(Icon, { className }, /* @__PURE__ */ React.createElement("rect", { width: "20", height: "16", x: "2", y: "4", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "m22 7-10 6L2 7" }));
+  }
   function Menu({ className }) {
     return /* @__PURE__ */ React.createElement(Icon, { className }, /* @__PURE__ */ React.createElement("line", { x1: "4", x2: "20", y1: "6", y2: "6" }), /* @__PURE__ */ React.createElement("line", { x1: "4", x2: "20", y1: "12", y2: "12" }), /* @__PURE__ */ React.createElement("line", { x1: "4", x2: "20", y1: "18", y2: "18" }));
   }
@@ -2221,6 +2224,24 @@ input::placeholder { color: #7f93b3; }
     }, [load, sheetName]);
     return { ...state, reload: load };
   }
+  function useStaticJson(path) {
+    const [state, setState] = useState({ data: null, loading: true, error: null, updatedAt: null });
+    const load = useCallback(async () => {
+      setState((s) => ({ ...s, loading: true, error: null }));
+      try {
+        const response = await fetch(`${path}?t=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Não foi possível carregar ${path}.`);
+        const data = await response.json();
+        setState({ data, loading: false, error: data && data.error || null, updatedAt: data && data.generatedAt ? new Date(data.generatedAt) : /* @__PURE__ */ new Date() });
+      } catch (e) {
+        setState((s) => ({ ...s, loading: false, error: e && e.message || "Erro ao carregar dados." }));
+      }
+    }, [path]);
+    useEffect(() => {
+      load();
+    }, [load]);
+    return { ...state, reload: load };
+  }
   function rowLabel(row) {
     return String(cellVal(row, 0) ?? "").trim();
   }
@@ -2357,6 +2378,49 @@ input::placeholder { color: #7f93b3; }
       ...group,
       metrics: group.metrics.sort((a, b) => (priority[a.type] || 4) - (priority[b.type] || 4))
     }));
+  }
+  function mailerLiteCampaignDate(campaign) {
+    const d = campaign && campaign.date ? new Date(campaign.date) : null;
+    return d && !isNaN(d.getTime()) ? d : null;
+  }
+  function filterMailerLiteCampaigns(campaigns, selectedMonths) {
+    return (campaigns || []).filter((campaign) => {
+      const d = mailerLiteCampaignDate(campaign);
+      return d ? selectedMonths.has(d.getMonth()) : selectedMonths.size === 12;
+    });
+  }
+  function avgRateFromTotals(numerator, denominator) {
+    return denominator ? numerator / denominator : 0;
+  }
+  function buildMailerLiteSummary(payload, selectedMonths) {
+    const campaigns = filterMailerLiteCampaigns(payload && payload.campaigns || [], selectedMonths);
+    const totals = campaigns.reduce((acc, campaign) => {
+      acc.sent += campaign.sent || 0;
+      acc.uniqueOpens += campaign.uniqueOpens || 0;
+      acc.uniqueClicks += campaign.uniqueClicks || 0;
+      acc.unsubscribes += campaign.unsubscribes || 0;
+      acc.bounces += (campaign.hardBounces || 0) + (campaign.softBounces || 0);
+      return acc;
+    }, { sent: 0, uniqueOpens: 0, uniqueClicks: 0, unsubscribes: 0, bounces: 0 });
+    const bestOpen = campaigns.slice().sort((a, b) => (b.openRate || 0) - (a.openRate || 0))[0] || null;
+    const bestClick = campaigns.slice().sort((a, b) => (b.clickRate || 0) - (a.clickRate || 0))[0] || null;
+    const latest = campaigns.slice().sort((a, b) => (mailerLiteCampaignDate(b) || 0) - (mailerLiteCampaignDate(a) || 0)).slice(0, 8);
+    return {
+      campaigns,
+      latest,
+      totals,
+      openRate: avgRateFromTotals(totals.uniqueOpens, totals.sent),
+      clickRate: avgRateFromTotals(totals.uniqueClicks, totals.sent),
+      unsubscribeRate: avgRateFromTotals(totals.unsubscribes, totals.sent),
+      bounceRate: avgRateFromTotals(totals.bounces, totals.sent),
+      bestOpen,
+      bestClick
+    };
+  }
+  function mailerLiteDisplayDate(value) {
+    const d = value ? new Date(value) : null;
+    if (!d || isNaN(d.getTime())) return "Sem data";
+    return d.toLocaleDateString("pt-PT", { day: "2-digit", month: "short", year: "numeric" });
   }
   function findAll(block, label) {
     return block.filter((r) => rowLabel(r) === label);
@@ -6096,6 +6160,79 @@ input::placeholder { color: #7f93b3; }
       ) : null
     );
   }
+  function MailerLiteNewslettersPanel({ payload, loading, error, updatedAt, onRefresh, selectedMonths }) {
+    const summary = buildMailerLiteSummary(payload, selectedMonths);
+    const clickRows = summary.campaigns.slice().sort((a, b) => (b.uniqueClicks || 0) - (a.uniqueClicks || 0)).slice(0, 6).map((campaign) => ({
+      label: campaign.subject || campaign.name || "Newsletter",
+      value: campaign.uniqueClicks || 0,
+      help: `Newsletter MailerLite "${campaign.subject || campaign.name}": enviada em ${mailerLiteDisplayDate(campaign.date)} para ${fmtNumber(campaign.sent || 0)} destinatários. Teve ${fmtNumber(campaign.uniqueClicks || 0)} cliques únicos.`
+    }));
+    return h("section", { className: "section-shell space-y-4", "data-help": "Newsletters MailerLite: estatísticas vindas da API da MailerLite. A API key fica guardada nos GitHub Secrets e o browser só lê um ficheiro JSON já preparado, sem credenciais." },
+      h("div", { className: "flex items-start justify-between gap-3 flex-wrap" },
+        h("div", null,
+          h("div", { className: "section-kicker" }, "MAILERLITE"),
+          h("h3", { className: "section-heading" }, "Newsletters e email marketing"),
+          h("p", { className: "section-subtitle" }, `Campanhas enviadas, aberturas, cliques e qualidade da base · ${periodFilterLabel(selectedMonths)}`)
+        ),
+        h("div", { className: "flex items-center gap-2 flex-wrap" },
+          updatedAt && h("span", { className: "text-xs text-slate-400" }, `Atualizado ${updatedAt.toLocaleString("pt-PT")}`),
+          h("button", { className: "task-secondary-btn", onClick: onRefresh, disabled: loading }, loading ? "A atualizar..." : "Atualizar")
+        )
+      ),
+      error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "MailerLite: ", error),
+      loading && !payload ? h(LoadingState, null) :
+      summary.campaigns.length ? h(React.Fragment, null,
+        h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+          h(KpiCard, { label: "Newsletters enviadas", numeric: summary.campaigns.length, format: "number", icon: Mail, kind: "ratio", tone: "neutral", help: "Número de campanhas MailerLite com estado enviado no período selecionado." }),
+          h(KpiCard, { label: "Taxa de abertura", numeric: summary.openRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: summary.openRate >= 0.35 ? "good" : summary.openRate >= 0.2 ? "warn" : "bad", help: "Taxa de abertura: aberturas únicas divididas pelos emails enviados no período." }),
+          h(KpiCard, { label: "Taxa de clique", numeric: summary.clickRate, format: "percent", gauge: true, icon: TrendingUp, kind: "ratio", tone: summary.clickRate >= 0.04 ? "good" : summary.clickRate >= 0.015 ? "warn" : "bad", help: "Taxa de clique: cliques únicos divididos pelos emails enviados no período." }),
+          h(KpiCard, { label: "Unsubscribes", numeric: summary.totals.unsubscribes, format: "number", icon: TrendingDown, kind: "risk", tone: summary.unsubscribeRate > 0.01 ? "bad" : summary.totals.unsubscribes ? "warn" : "good", help: "Unsubscribes: contactos que saíram da lista depois de receberem newsletters no período." })
+        ),
+        h("div", { className: "grid lg:grid-cols-3 gap-4" },
+          h("div", { className: "diagnosis-tile", "data-help": "Melhor abertura: newsletter com maior percentagem de destinatários que abriram o email." },
+            h("div", { className: "text-xs font-semibold text-slate-400 mb-1" }, "Melhor abertura"),
+            h("div", { className: "text-lg font-bold text-slate-100 truncate" }, summary.bestOpen ? summary.bestOpen.subject : "Sem dados"),
+            h("div", { className: "text-xs text-slate-400 mt-2" }, summary.bestOpen ? `${fmtPercent(summary.bestOpen.openRate || 0)} · ${mailerLiteDisplayDate(summary.bestOpen.date)}` : "Sem campanhas no período")
+          ),
+          h("div", { className: "diagnosis-tile", "data-help": "Melhor clique: newsletter com maior percentagem de destinatários que clicaram num link." },
+            h("div", { className: "text-xs font-semibold text-slate-400 mb-1" }, "Melhor clique"),
+            h("div", { className: "text-lg font-bold text-slate-100 truncate" }, summary.bestClick ? summary.bestClick.subject : "Sem dados"),
+            h("div", { className: "text-xs text-slate-400 mt-2" }, summary.bestClick ? `${fmtPercent(summary.bestClick.clickRate || 0)} · ${mailerLiteDisplayDate(summary.bestClick.date)}` : "Sem campanhas no período")
+          ),
+          h("div", { className: "diagnosis-tile", "data-help": "Qualidade técnica da base: bounces são emails que não foram entregues. Se este valor subir, convém limpar a lista." },
+            h("div", { className: "text-xs font-semibold text-slate-400 mb-1" }, "Bounces"),
+            h("div", { className: "text-lg font-bold text-slate-100" }, fmtNumber(summary.totals.bounces)),
+            h("div", { className: "text-xs text-slate-400 mt-2" }, `${fmtPercent(summary.bounceRate)} dos emails enviados`)
+          )
+        ),
+        clickRows.length ? h("div", { className: "bg-white rounded-xl border border-slate-200 p-4" },
+          h("h4", { className: "text-sm font-semibold text-slate-700 mb-1" }, "Newsletters com mais cliques"),
+          h("p", { className: "text-xs text-slate-400 mb-3" }, "Leitura rápida das campanhas que mais puxaram tráfego a partir do email."),
+          h(CategoryBarChart, { data: clickRows, unit: "number" })
+        ) : null,
+        h("div", { className: "overflow-auto" },
+          h("table", { className: "min-w-full text-sm" },
+            h("thead", null, h("tr", { className: "text-left text-slate-400" },
+              h("th", { className: "px-3 py-1.5 text-xs" }, "Newsletter"),
+              h("th", { className: "px-3 py-1.5 text-xs" }, "Data"),
+              h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Enviados"),
+              h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Abertura"),
+              h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Clique"),
+              h("th", { className: "px-3 py-1.5 text-xs text-right" }, "Unsubs.")
+            )),
+            h("tbody", null, summary.latest.map((campaign) => h("tr", { key: campaign.id, className: "border-t border-slate-200", "data-help": `Newsletter MailerLite "${campaign.subject}". Enviada em ${mailerLiteDisplayDate(campaign.date)}. Enviados: ${fmtNumber(campaign.sent || 0)}. Abertura: ${fmtPercent(campaign.openRate || 0)}. Clique: ${fmtPercent(campaign.clickRate || 0)}.` },
+              h("td", { className: "px-3 py-1.5 font-semibold text-slate-800 max-w-xs truncate" }, campaign.subject || campaign.name),
+              h("td", { className: "px-3 py-1.5 text-slate-400" }, mailerLiteDisplayDate(campaign.date)),
+              h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtNumber(campaign.sent || 0)),
+              h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtPercent(campaign.openRate || 0)),
+              h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtPercent(campaign.clickRate || 0)),
+              h("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtNumber(campaign.unsubscribes || 0))
+            )))
+          )
+        )
+      ) : h(EmptyState, { text: "Ainda não existem newsletters MailerLite para o período selecionado." })
+    );
+  }
   function MarketingPerformanceView({ selectedMonths }) {
     const dashboardFetchOpts = useMemo(() => ({ gid: DASHBOARD_GID, headers: 0 }), []);
     const vspLeadFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
@@ -6103,6 +6240,7 @@ input::placeholder { color: #7f93b3; }
     const { table: dashboardTable, loading: dashboardLoading, error: dashboardError, updatedAt: dashboardUpdatedAt, reload: reloadDashboard } = useSheetData("Dashboard MKT", dashboardFetchOpts);
     const { table: vspLeadTable, loading: vspLeadLoading, error: vspLeadError, updatedAt: vspLeadUpdatedAt, reload: reloadVspLead } = useSheetData("Resultados VSP", vspLeadFetchOpts);
     const { table: vspCostTable, loading: vspCostLoading, error: vspCostError, updatedAt: vspCostUpdatedAt, reload: reloadVspCost } = useSheetData("Visão VSP diária", vspCostFetchOpts);
+    const { data: mailerLiteData, loading: mailerLiteLoading, error: mailerLiteError, updatedAt: mailerLiteUpdatedAt, reload: reloadMailerLite } = useStaticJson("assets/mailerlite-newsletters.json");
     const loading = dashboardLoading || vspLeadLoading || vspCostLoading;
     const error = dashboardError || vspLeadError || vspCostError;
     const updatedAt = [dashboardUpdatedAt, vspLeadUpdatedAt, vspCostUpdatedAt].filter(Boolean).sort((a, b) => b - a)[0] || null;
@@ -6121,7 +6259,8 @@ input::placeholder { color: #7f93b3; }
         h("h2", { className: "section-heading" }, "Performance paga e eficiência de investimento"),
         h("p", { className: "section-subtitle" }, "Aqui ficam ROAS, Custo por Lead, Custo por Aquisição e Média de Investimento por serviço. O período respeita o filtro no topo da página.")
       ),
-      h(MarketingPerformancePanel, { dashboardTable, vspTable: vspCostTable || vspLeadTable, vspPotentialTable: vspLeadTable, selectedMonths })
+      h(MarketingPerformancePanel, { dashboardTable, vspTable: vspCostTable || vspLeadTable, vspPotentialTable: vspLeadTable, selectedMonths }),
+      h(MailerLiteNewslettersPanel, { payload: mailerLiteData, loading: mailerLiteLoading, error: mailerLiteError, updatedAt: mailerLiteUpdatedAt, onRefresh: reloadMailerLite, selectedMonths })
     );
   }
   function ResultadosVSPView({ selectedMonths }) {

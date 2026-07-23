@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "15 6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -13,6 +15,11 @@ jobs:
     steps:
       - name: Obter ficheiros
         uses: actions/checkout@v4
+
+      - name: Atualizar estatisticas MailerLite
+        env:
+          MAILERLITE_API_KEY: ${{ secrets.MAILERLITE_API_KEY || secrets.API_MAILERLITE || secrets.MAILERLITE_API || secrets.API_MAILERLITE_KEY }}
+        run: node scripts/fetch-mailerlite-stats.mjs
 
       - name: Preparar publicacao
         run: |
