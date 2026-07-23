@@ -57,6 +57,7 @@ async function fetchCallAnalytics() {
     ["stats", "/api/stats"],
     ["config", "/api/config"],
     ["leadsPanel", "/api/leads-panel?range=month"],
+    ["manualRevenue", "/api/manual-revenue"],
     ...PERIODS.flatMap((period) => [
       [`analytics:${period}`, `/api/analytics?period=${period}`],
       [`funnel:${period}`, `/api/funnel?period=${period}`],
@@ -85,6 +86,7 @@ async function fetchCallAnalytics() {
     analytics,
     funnel,
     agents,
+    manualRevenue: unwrap(resolved.manualRevenue),
     leadsPanel: unwrap(resolved.leadsPanel),
     errors: collectErrors(resolved)
   };
