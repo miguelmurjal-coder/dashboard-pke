@@ -5,12 +5,12 @@ on:
     branches:
       - main
   schedule:
-    - cron: "15 6 * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, macOS, ARM64]
 
     steps:
       - name: Obter ficheiros
