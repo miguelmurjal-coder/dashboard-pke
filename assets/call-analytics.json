@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-23T16:06:35.363Z",
+  "generatedAt": "2026-07-23T16:26:43.058Z",
   "source": "http://192.168.1.13:3000",
   "stats": {
-    "total_records": 57245,
-    "scored_calls": 2943,
+    "total_records": 57252,
+    "scored_calls": 2945,
     "avg_score": 4.4
   },
   "config": {
@@ -74,15 +74,15 @@
         },
         {
           "hour": 16,
-          "total": 10,
-          "effective": 3,
-          "answered": 3
+          "total": 12,
+          "effective": 4,
+          "answered": 5
         },
         {
           "hour": 17,
-          "total": 0,
-          "effective": 0,
-          "answered": 0
+          "total": 3,
+          "effective": 1,
+          "answered": 1
         },
         {
           "hour": 18,
@@ -139,8 +139,8 @@
               "effective": 0
             },
             "Thu": {
-              "total": 6,
-              "effective": 1
+              "total": 9,
+              "effective": 2
             },
             "Fri": {
               "total": 0,
@@ -164,8 +164,8 @@
               "effective": 0
             },
             "Thu": {
-              "total": 46,
-              "effective": 28
+              "total": 48,
+              "effective": 29
             },
             "Fri": {
               "total": 0,
@@ -178,26 +178,31 @@
         {
           "date": "2026-07-23",
           "by_agent": {
+            "105": {
+              "name": "Flávio Patinha",
+              "avg": 3,
+              "count": 1
+            },
             "106": {
               "name": "Nelson Dias",
               "avg": 3.6,
-              "count": 14
+              "count": 15
             }
           },
           "avg": 3.6,
-          "count": 14
+          "count": 16
         }
       ],
       "funnel": {
-        "leads_month": 1311,
-        "calls_total": 1380,
-        "calls_effective": 830,
+        "leads_month": 1312,
+        "calls_total": 1385,
+        "calls_effective": 832,
         "bookings_total": 272,
         "bookings_finalized": 194,
         "bookings_cancelled": 57,
         "bookings_pending": 21,
         "revenue_actual": 79572,
-        "revenue_projected": 108357,
+        "revenue_projected": 108101,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 194,
@@ -205,8 +210,8 @@
         "conversions": 59,
         "conversion_rate": 7.1,
         "cancellation_rate": 21,
-        "days_elapsed": 16.89,
-        "days_remaining": 6.109999999999999,
+        "days_elapsed": 16.93,
+        "days_remaining": 6.07,
         "daily_rate_effective": 49.1,
         "vendor_bookings": {
           "102": {
@@ -417,11 +422,11 @@
       },
       "projection": {
         "projected_cars": 264,
-        "projected_revenue": 108357,
+        "projected_revenue": 108101,
         "revenue_actual": 79572,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -3.9
+        "gap_cars_per_day": -4
       }
     },
     "week": {
@@ -476,15 +481,15 @@
         },
         {
           "hour": 16,
-          "total": 39,
-          "effective": 22,
-          "answered": 22
+          "total": 41,
+          "effective": 23,
+          "answered": 24
         },
         {
           "hour": 17,
-          "total": 23,
-          "effective": 16,
-          "answered": 17
+          "total": 26,
+          "effective": 17,
+          "answered": 18
         },
         {
           "hour": 18,
@@ -541,8 +546,8 @@
               "effective": 14
             },
             "Thu": {
-              "total": 6,
-              "effective": 1
+              "total": 9,
+              "effective": 2
             },
             "Fri": {
               "total": 0,
@@ -566,8 +571,8 @@
               "effective": 17
             },
             "Thu": {
-              "total": 46,
-              "effective": 28
+              "total": 48,
+              "effective": 29
             },
             "Fri": {
               "total": 0,
@@ -641,26 +646,31 @@
         {
           "date": "2026-07-23",
           "by_agent": {
+            "105": {
+              "name": "Flávio Patinha",
+              "avg": 3,
+              "count": 1
+            },
             "106": {
               "name": "Nelson Dias",
               "avg": 3.6,
-              "count": 14
+              "count": 15
             }
           },
           "avg": 3.6,
-          "count": 14
+          "count": 16
         }
       ],
       "funnel": {
-        "leads_month": 1311,
-        "calls_total": 1380,
-        "calls_effective": 830,
+        "leads_month": 1312,
+        "calls_total": 1385,
+        "calls_effective": 832,
         "bookings_total": 272,
         "bookings_finalized": 194,
         "bookings_cancelled": 57,
         "bookings_pending": 21,
         "revenue_actual": 79572,
-        "revenue_projected": 108357,
+        "revenue_projected": 108101,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 194,
@@ -668,8 +678,8 @@
         "conversions": 59,
         "conversion_rate": 7.1,
         "cancellation_rate": 21,
-        "days_elapsed": 16.89,
-        "days_remaining": 6.109999999999999,
+        "days_elapsed": 16.93,
+        "days_remaining": 6.07,
         "daily_rate_effective": 49.1,
         "vendor_bookings": {
           "102": {
@@ -880,11 +890,11 @@
       },
       "projection": {
         "projected_cars": 264,
-        "projected_revenue": 108357,
+        "projected_revenue": 108101,
         "revenue_actual": 79572,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -3.9
+        "gap_cars_per_day": -4
       }
     },
     "month": {
@@ -939,15 +949,15 @@
         },
         {
           "hour": 16,
-          "total": 186,
-          "effective": 103,
-          "answered": 106
+          "total": 188,
+          "effective": 104,
+          "answered": 108
         },
         {
           "hour": 17,
-          "total": 173,
-          "effective": 86,
-          "answered": 89
+          "total": 176,
+          "effective": 87,
+          "answered": 90
         },
         {
           "hour": 18,
@@ -1004,8 +1014,8 @@
               "effective": 46
             },
             "Thu": {
-              "total": 126,
-              "effective": 57
+              "total": 129,
+              "effective": 58
             },
             "Fri": {
               "total": 100,
@@ -1029,8 +1039,8 @@
               "effective": 98
             },
             "Thu": {
-              "total": 136,
-              "effective": 86
+              "total": 138,
+              "effective": 87
             },
             "Fri": {
               "total": 118,
@@ -1355,26 +1365,31 @@
         {
           "date": "2026-07-23",
           "by_agent": {
+            "105": {
+              "name": "Flávio Patinha",
+              "avg": 3,
+              "count": 1
+            },
             "106": {
               "name": "Nelson Dias",
               "avg": 3.6,
-              "count": 14
+              "count": 15
             }
           },
           "avg": 3.6,
-          "count": 14
+          "count": 16
         }
       ],
       "funnel": {
-        "leads_month": 1311,
-        "calls_total": 1380,
-        "calls_effective": 830,
+        "leads_month": 1312,
+        "calls_total": 1385,
+        "calls_effective": 832,
         "bookings_total": 272,
         "bookings_finalized": 194,
         "bookings_cancelled": 57,
         "bookings_pending": 21,
         "revenue_actual": 79572,
-        "revenue_projected": 108357,
+        "revenue_projected": 108101,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 194,
@@ -1382,8 +1397,8 @@
         "conversions": 59,
         "conversion_rate": 7.1,
         "cancellation_rate": 21,
-        "days_elapsed": 16.89,
-        "days_remaining": 6.109999999999999,
+        "days_elapsed": 16.93,
+        "days_remaining": 6.07,
         "daily_rate_effective": 49.1,
         "vendor_bookings": {
           "102": {
@@ -1594,11 +1609,11 @@
       },
       "projection": {
         "projected_cars": 264,
-        "projected_revenue": 108357,
+        "projected_revenue": 108101,
         "revenue_actual": 79572,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -3.9
+        "gap_cars_per_day": -4
       }
     }
   },
@@ -1611,9 +1626,9 @@
       "leads": 54,
       "conv_started": 54,
       "responded": 22,
-      "alex_bookings": 4,
+      "alex_bookings": 5,
       "connected": 0,
-      "total_calls_3min": 14,
+      "total_calls_3min": 16,
       "conversions": 0,
       "conversions_total": 0,
       "conversions_unique": 0,
@@ -1627,9 +1642,9 @@
       "leads": 248,
       "conv_started": 248,
       "responded": 139,
-      "alex_bookings": 4,
+      "alex_bookings": 5,
       "connected": 0,
-      "total_calls_3min": 105,
+      "total_calls_3min": 107,
       "conversions": 0,
       "conversions_total": 13,
       "conversions_unique": 13,
@@ -1664,9 +1679,9 @@
       "leads": 1590,
       "conv_started": 1590,
       "responded": 1010,
-      "alex_bookings": 4,
+      "alex_bookings": 5,
       "connected": 0,
-      "total_calls_3min": 517,
+      "total_calls_3min": 519,
       "conversions": 0,
       "conversions_total": 59,
       "conversions_unique": 59,
@@ -1724,44 +1739,44 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 6,
-        "outbound": 6,
-        "inbound": 0,
-        "outbound_unique": 6,
-        "answered": 1,
+        "total": 9,
+        "outbound": 8,
+        "inbound": 1,
+        "outbound_unique": 7,
+        "answered": 2,
         "effective": 1,
-        "talk_sec": 49,
-        "talk_min": 1,
-        "answer_rate": 17,
-        "effective_rate": 17,
-        "inbound_answered": 0,
-        "outbound_rate": 17,
+        "talk_sec": 295,
+        "talk_min": 5,
+        "answer_rate": 22,
+        "effective_rate": 22,
+        "inbound_answered": 1,
+        "outbound_rate": 14,
         "bookings_finalized": 0,
         "bookings_pending": 0,
         "bookings_cancelled": 0,
-        "avg_ai_score": null,
-        "scored_calls": 0
+        "avg_ai_score": 3,
+        "scored_calls": 1
       },
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 46,
-        "outbound": 37,
+        "total": 48,
+        "outbound": 39,
         "inbound": 9,
-        "outbound_unique": 25,
-        "answered": 28,
-        "effective": 19,
-        "talk_sec": 6546,
-        "talk_min": 109,
-        "answer_rate": 61,
-        "effective_rate": 61,
+        "outbound_unique": 27,
+        "answered": 30,
+        "effective": 20,
+        "talk_sec": 6938,
+        "talk_min": 116,
+        "answer_rate": 62,
+        "effective_rate": 60,
         "inbound_answered": 9,
-        "outbound_rate": 60,
+        "outbound_rate": 59,
         "bookings_finalized": 0,
         "bookings_pending": 4,
         "bookings_cancelled": 0,
         "avg_ai_score": 3.6,
-        "scored_calls": 14
+        "scored_calls": 15
       }
     },
     "week": {
@@ -1789,44 +1804,44 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 92,
-        "outbound": 80,
-        "inbound": 12,
-        "outbound_unique": 64,
-        "answered": 55,
+        "total": 95,
+        "outbound": 82,
+        "inbound": 13,
+        "outbound_unique": 65,
+        "answered": 56,
         "effective": 41,
-        "talk_sec": 22487,
-        "talk_min": 375,
-        "answer_rate": 60,
-        "effective_rate": 58,
-        "inbound_answered": 12,
-        "outbound_rate": 50,
+        "talk_sec": 22733,
+        "talk_min": 379,
+        "answer_rate": 59,
+        "effective_rate": 57,
+        "inbound_answered": 13,
+        "outbound_rate": 49,
         "bookings_finalized": 45,
         "bookings_pending": 5,
         "bookings_cancelled": 17,
         "avg_ai_score": 5.4,
-        "scored_calls": 37
+        "scored_calls": 38
       },
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 143,
-        "outbound": 108,
+        "total": 145,
+        "outbound": 110,
         "inbound": 35,
-        "outbound_unique": 79,
-        "answered": 102,
-        "effective": 66,
-        "talk_sec": 36693,
-        "talk_min": 612,
-        "answer_rate": 71,
-        "effective_rate": 71,
+        "outbound_unique": 81,
+        "answered": 104,
+        "effective": 67,
+        "talk_sec": 37085,
+        "talk_min": 618,
+        "answer_rate": 72,
+        "effective_rate": 70,
         "inbound_answered": 35,
         "outbound_rate": 63,
         "bookings_finalized": 41,
         "bookings_pending": 7,
         "bookings_cancelled": 14,
         "avg_ai_score": 3.8,
-        "scored_calls": 53
+        "scored_calls": 54
       }
     },
     "month": {
@@ -1854,35 +1869,35 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 443,
-        "outbound": 363,
-        "inbound": 80,
-        "outbound_unique": 276,
-        "answered": 260,
+        "total": 446,
+        "outbound": 365,
+        "inbound": 81,
+        "outbound_unique": 277,
+        "answered": 261,
         "effective": 176,
-        "talk_sec": 94750,
-        "talk_min": 1579,
+        "talk_sec": 94996,
+        "talk_min": 1583,
         "answer_rate": 59,
         "effective_rate": 57,
-        "inbound_answered": 80,
+        "inbound_answered": 81,
         "outbound_rate": 49,
         "bookings_finalized": 45,
         "bookings_pending": 5,
         "bookings_cancelled": 17,
         "avg_ai_score": 5.1,
-        "scored_calls": 163
+        "scored_calls": 164
       },
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 711,
-        "outbound": 579,
+        "total": 713,
+        "outbound": 581,
         "inbound": 132,
-        "outbound_unique": 442,
-        "answered": 450,
-        "effective": 311,
-        "talk_sec": 147172,
-        "talk_min": 2453,
+        "outbound_unique": 444,
+        "answered": 452,
+        "effective": 312,
+        "talk_sec": 147564,
+        "talk_min": 2459,
         "answer_rate": 63,
         "effective_rate": 62,
         "inbound_answered": 132,
@@ -1891,18 +1906,18 @@
         "bookings_pending": 7,
         "bookings_cancelled": 14,
         "avg_ai_score": 3.8,
-        "scored_calls": 258
+        "scored_calls": 259
       }
     }
   },
   "dashboard": {
     "today": {
-      "total": 170,
-      "effective": 29,
-      "talk_sec": 6595,
-      "talk_min": 110,
+      "total": 177,
+      "effective": 31,
+      "talk_sec": 7233,
+      "talk_min": 121,
       "missed_count": 4,
-      "unanswered_count": 10,
+      "unanswered_count": 11,
       "hourly": [
         {
           "hour": 9,
@@ -1941,18 +1956,23 @@
         },
         {
           "hour": 16,
-          "total": 16,
-          "effective": 3
+          "total": 20,
+          "effective": 4
+        },
+        {
+          "hour": 17,
+          "total": 3,
+          "effective": 1
         }
       ]
     },
     "week": {
-      "total": 733,
-      "effective": 167,
-      "talk_sec": 64863,
-      "talk_min": 1081,
+      "total": 740,
+      "effective": 169,
+      "talk_sec": 65501,
+      "talk_min": 1092,
       "missed_count": 13,
-      "unanswered_count": 43,
+      "unanswered_count": 44,
       "hourly": [
         {
           "hour": 8,
@@ -1996,13 +2016,13 @@
         },
         {
           "hour": 16,
-          "total": 93,
-          "effective": 22
+          "total": 97,
+          "effective": 23
         },
         {
           "hour": 17,
-          "total": 80,
-          "effective": 16
+          "total": 83,
+          "effective": 17
         },
         {
           "hour": 18,
@@ -2012,12 +2032,12 @@
       ]
     },
     "month": {
-      "total": 3116,
-      "effective": 830,
-      "talk_sec": 289308,
-      "talk_min": 4822,
+      "total": 3123,
+      "effective": 832,
+      "talk_sec": 289946,
+      "talk_min": 4832,
       "missed_count": 29,
-      "unanswered_count": 299,
+      "unanswered_count": 300,
       "hourly": [
         {
           "hour": 5,
@@ -2066,18 +2086,2048 @@
         },
         {
           "hour": 16,
-          "total": 402,
-          "effective": 103
+          "total": 406,
+          "effective": 104
         },
         {
           "hour": 17,
-          "total": 339,
-          "effective": 86
+          "total": 342,
+          "effective": 87
         },
         {
           "hour": 18,
           "total": 17,
           "effective": 5
+        }
+      ]
+    }
+  },
+  "cockpit": {
+    "sellers": [
+      {
+        "ext": "102",
+        "name": "Tiago",
+        "perf": {
+          "seller": "102",
+          "calls": 43,
+          "answered": 0,
+          "conversoes": 0,
+          "nao_atribuido": 0,
+          "avg_gap_sec": 615
+        },
+        "next": {
+          "assignment": "sticky",
+          "seller": "102",
+          "seller_name": "Tiago",
+          "lead": {
+            "id": "lead-1",
+            "name": "Lead 1",
+            "theme": "Indefinido",
+            "ano": "",
+            "stage": "Lead",
+            "status": "pending",
+            "p": 2,
+            "score": 0.4783,
+            "value": 500,
+            "owner_ext": "",
+            "owner_name": "",
+            "age_hours": 6.2,
+            "age_label": "6h",
+            "is_fresh": false,
+            "has_phone": false,
+            "has_vehicle": false
+          }
+        },
+        "agenda": {
+          "count": 0,
+          "byStatus": {},
+          "byType": {},
+          "preview": []
+        }
+      },
+      {
+        "ext": "105",
+        "name": "Flávio",
+        "perf": {
+          "seller": "105",
+          "calls": 51,
+          "answered": 2,
+          "conversoes": 0,
+          "nao_atribuido": 0,
+          "avg_gap_sec": 533
+        },
+        "next": {
+          "assignment": "sticky",
+          "seller": "105",
+          "seller_name": "Flávio",
+          "lead": {
+            "id": "lead-2",
+            "name": "Lead 2",
+            "theme": "AdBlue",
+            "ano": "09/2017 a 2021 (Ph3)",
+            "stage": "Lead",
+            "status": "pending",
+            "p": 3,
+            "score": 0.6122,
+            "value": 500,
+            "owner_ext": "105",
+            "owner_name": "Flávio",
+            "age_hours": 3.5,
+            "age_label": "4h",
+            "is_fresh": false,
+            "has_phone": true,
+            "has_vehicle": true
+          }
+        },
+        "agenda": {
+          "count": 6,
+          "byStatus": {
+            "confirmed": 4,
+            "noshow": 2
+          },
+          "byType": {
+            "Alex": 6
+          },
+          "preview": [
+            {
+              "time": "",
+              "lead": "Lead 1",
+              "tipo": "Alex",
+              "status": "confirmed",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 2",
+              "tipo": "Alex",
+              "status": "noshow",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 3",
+              "tipo": "Alex",
+              "status": "confirmed",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 4",
+              "tipo": "Alex",
+              "status": "confirmed",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 5",
+              "tipo": "Alex",
+              "status": "noshow",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 6",
+              "tipo": "Alex",
+              "status": "confirmed",
+              "has_context": false,
+              "call_time": ""
+            }
+          ]
+        }
+      },
+      {
+        "ext": "106",
+        "name": "Nelson",
+        "perf": {
+          "seller": "106",
+          "calls": 83,
+          "answered": 29,
+          "conversoes": 0,
+          "nao_atribuido": 0,
+          "avg_gap_sec": 320
+        },
+        "next": {
+          "assignment": "sticky",
+          "seller": "106",
+          "seller_name": "Nelson",
+          "lead": {
+            "id": "lead-3",
+            "name": "Lead 3",
+            "theme": "FAP",
+            "ano": "",
+            "stage": "Não Atendeu 1",
+            "status": "connected",
+            "p": 3,
+            "score": 0.647,
+            "value": 500,
+            "owner_ext": "106",
+            "owner_name": "Nelson",
+            "age_hours": 4.9,
+            "age_label": "5h",
+            "is_fresh": false,
+            "has_phone": true,
+            "has_vehicle": false
+          }
+        },
+        "agenda": {
+          "count": 8,
+          "byStatus": {
+            "noshow": 6,
+            "confirmed": 2
+          },
+          "byType": {
+            "Alex": 8
+          },
+          "preview": [
+            {
+              "time": "",
+              "lead": "Lead 1",
+              "tipo": "Alex",
+              "status": "noshow",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 2",
+              "tipo": "Alex",
+              "status": "noshow",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 3",
+              "tipo": "Alex",
+              "status": "noshow",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 4",
+              "tipo": "Alex",
+              "status": "noshow",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 5",
+              "tipo": "Alex",
+              "status": "noshow",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 6",
+              "tipo": "Alex",
+              "status": "noshow",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 7",
+              "tipo": "Alex",
+              "status": "confirmed",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 8",
+              "tipo": "Alex",
+              "status": "confirmed",
+              "has_context": false,
+              "call_time": ""
+            }
+          ]
+        }
+      }
+    ],
+    "pipeline": {
+      "fresh": 1579,
+      "na1": 373,
+      "na2": 5,
+      "falou_aberto": 0,
+      "fu_pendentes": 0,
+      "fu_hoje": 0,
+      "novos_7d": 517,
+      "nutrir_7d": 14,
+      "prontos_agora": 1916,
+      "leads_30d": 2155,
+      "taxa_contacto_30d": 19.4,
+      "convertidos_30d": 50,
+      "conv_30d": 2.3,
+      "speed_to_lead_min": 713
+    },
+    "adoption": {
+      "sellers": [
+        {
+          "ext": "102",
+          "name": "Tiago",
+          "dials_cockpit": 0,
+          "outbound_total": 0,
+          "fora_cockpit": 0,
+          "pct_cockpit": 0,
+          "despachos": 0,
+          "ultimo_dial": null
+        },
+        {
+          "ext": "105",
+          "name": "Flávio",
+          "dials_cockpit": 0,
+          "outbound_total": 8,
+          "fora_cockpit": 8,
+          "pct_cockpit": 0,
+          "despachos": 1,
+          "ultimo_dial": null
+        },
+        {
+          "ext": "106",
+          "name": "Nelson",
+          "dials_cockpit": 0,
+          "outbound_total": 39,
+          "fora_cockpit": 39,
+          "pct_cockpit": 0,
+          "despachos": 18,
+          "ultimo_dial": null
+        }
+      ],
+      "date": "2026-07-23",
+      "conv_by_p": {
+        "2": {
+          "leads": 11,
+          "conv": 0,
+          "pct": 0
+        },
+        "3": {
+          "leads": 123,
+          "conv": 1,
+          "pct": 0.8
+        },
+        "4": {
+          "leads": 67,
+          "conv": 1,
+          "pct": 1.5
+        }
+      }
+    },
+    "queue": {
+      "total": 1916,
+      "by_theme": {
+        "FAP": 639,
+        "AdBlue": 198,
+        "Performance": 822,
+        "Indefinido": 257
+      },
+      "by_p": {
+        "1": 1504,
+        "2": 397,
+        "3": 15
+      },
+      "by_status": {
+        "connected": 242,
+        "attempted": 371,
+        "pending": 1303
+      },
+      "preview": [
+        {
+          "id": "lead-1",
+          "name": "Lead 1",
+          "theme": "FAP",
+          "ano": "",
+          "stage": "Não Atendeu 1",
+          "status": "connected",
+          "p": 3,
+          "score": 0.647,
+          "value": 500,
+          "owner_ext": "106",
+          "owner_name": "Nelson",
+          "age_hours": 4.9,
+          "age_label": "5h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-2",
+          "name": "Lead 2",
+          "theme": "AdBlue",
+          "ano": "06/2015 a 2017",
+          "stage": "Lead",
+          "status": "attempted",
+          "p": 3,
+          "score": 0.643,
+          "value": 484,
+          "owner_ext": "106",
+          "owner_name": "Nelson",
+          "age_hours": 2,
+          "age_label": "2h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-3",
+          "name": "Lead 3",
+          "theme": "AdBlue",
+          "ano": "09/2017 a 2021 (Ph3)",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.6122,
+          "value": 500,
+          "owner_ext": "105",
+          "owner_name": "Flávio",
+          "age_hours": 3.5,
+          "age_label": "4h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-4",
+          "name": "Lead 4",
+          "theme": "Performance",
+          "ano": "2005 a 2012 (1P)",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.609,
+          "value": 610,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 0.4,
+          "age_label": "24min",
+          "is_fresh": true,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-5",
+          "name": "Lead 5",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5962,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 0.8,
+          "age_label": "48min",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-6",
+          "name": "Lead 6",
+          "theme": "Performance",
+          "ano": "2007 a 2010 (W204)",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5957,
+          "value": 810,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 1.1,
+          "age_label": "1h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-7",
+          "name": "Lead 7",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5588,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 2.3,
+          "age_label": "2h",
+          "is_fresh": false,
+          "has_phone": false,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-8",
+          "name": "Lead 8",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5586,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 2.3,
+          "age_label": "2h",
+          "is_fresh": false,
+          "has_phone": false,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-9",
+          "name": "Lead 9",
+          "theme": "Performance",
+          "ano": "2005 a 2008 (8P-1)",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5547,
+          "value": 340,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 2.6,
+          "age_label": "3h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-10",
+          "name": "Lead 10",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5355,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 3.3,
+          "age_label": "3h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-11",
+          "name": "Lead 11",
+          "theme": "Performance",
+          "ano": "10/2011 a 06/2015 (F3x)",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5346,
+          "value": 390,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 4,
+          "age_label": "4h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-12",
+          "name": "Lead 12",
+          "theme": "Performance",
+          "ano": "2005 a 2007",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5313,
+          "value": 310,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 3.7,
+          "age_label": "4h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-13",
+          "name": "Lead 13",
+          "theme": "Performance",
+          "ano": "2005 a 2010",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5053,
+          "value": 440,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 4.9,
+          "age_label": "5h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-14",
+          "name": "Lead 14",
+          "theme": "Performance",
+          "ano": "2005 a 2012 (1P)",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5033,
+          "value": 340,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 5,
+          "age_label": "5h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-15",
+          "name": "Lead 15",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5002,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 5,
+          "age_label": "5h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-16",
+          "name": "Lead 16",
+          "theme": "FAP",
+          "ano": "2014 a 2016",
+          "stage": "Lead",
+          "status": "connected",
+          "p": 2,
+          "score": 0.4994,
+          "value": 500,
+          "owner_ext": "106",
+          "owner_name": "Nelson",
+          "age_hours": 698.4,
+          "age_label": "29d",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-17",
+          "name": "Lead 17",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 2,
+          "score": 0.4783,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 6.2,
+          "age_label": "6h",
+          "is_fresh": false,
+          "has_phone": false,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-18",
+          "name": "Lead 18",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 2,
+          "score": 0.4783,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 6.2,
+          "age_label": "6h",
+          "is_fresh": false,
+          "has_phone": false,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-19",
+          "name": "Lead 19",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 2,
+          "score": 0.4783,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 6.2,
+          "age_label": "6h",
+          "is_fresh": false,
+          "has_phone": false,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-20",
+          "name": "Lead 20",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 2,
+          "score": 0.4782,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 6.2,
+          "age_label": "6h",
+          "is_fresh": false,
+          "has_phone": false,
+          "has_vehicle": false
+        }
+      ]
+    },
+    "leadsPanel": {
+      "daily": {
+        "range": "daily",
+        "rows": [
+          {
+            "label": "23/06",
+            "leads": 59,
+            "contacted": 39,
+            "converted": 1,
+            "FAP": 25,
+            "Performance": 0,
+            "AdBlue": 3,
+            "Indefinido": 31,
+            "uncalled": 20,
+            "contact_rate": 66.1,
+            "conv_rate": 1.7
+          },
+          {
+            "label": "24/06",
+            "leads": 61,
+            "contacted": 38,
+            "converted": 2,
+            "FAP": 14,
+            "Performance": 0,
+            "AdBlue": 1,
+            "Indefinido": 46,
+            "uncalled": 23,
+            "contact_rate": 62.3,
+            "conv_rate": 3.3
+          },
+          {
+            "label": "25/06",
+            "leads": 48,
+            "contacted": 26,
+            "converted": 3,
+            "FAP": 10,
+            "Performance": 0,
+            "AdBlue": 1,
+            "Indefinido": 37,
+            "uncalled": 22,
+            "contact_rate": 54.2,
+            "conv_rate": 6.2
+          },
+          {
+            "label": "26/06",
+            "leads": 53,
+            "contacted": 27,
+            "converted": 2,
+            "FAP": 11,
+            "Performance": 0,
+            "AdBlue": 1,
+            "Indefinido": 41,
+            "uncalled": 26,
+            "contact_rate": 50.9,
+            "conv_rate": 3.8
+          },
+          {
+            "label": "27/06",
+            "leads": 41,
+            "contacted": 22,
+            "converted": 0,
+            "FAP": 8,
+            "Performance": 0,
+            "AdBlue": 2,
+            "Indefinido": 31,
+            "uncalled": 19,
+            "contact_rate": 53.7,
+            "conv_rate": 0
+          },
+          {
+            "label": "28/06",
+            "leads": 45,
+            "contacted": 30,
+            "converted": 0,
+            "FAP": 7,
+            "Performance": 0,
+            "AdBlue": 2,
+            "Indefinido": 36,
+            "uncalled": 15,
+            "contact_rate": 66.7,
+            "conv_rate": 0
+          },
+          {
+            "label": "29/06",
+            "leads": 62,
+            "contacted": 42,
+            "converted": 3,
+            "FAP": 15,
+            "Performance": 0,
+            "AdBlue": 0,
+            "Indefinido": 47,
+            "uncalled": 20,
+            "contact_rate": 67.7,
+            "conv_rate": 4.8
+          },
+          {
+            "label": "30/06",
+            "leads": 72,
+            "contacted": 35,
+            "converted": 2,
+            "FAP": 30,
+            "Performance": 0,
+            "AdBlue": 4,
+            "Indefinido": 38,
+            "uncalled": 37,
+            "contact_rate": 48.6,
+            "conv_rate": 2.8
+          },
+          {
+            "label": "01/07",
+            "leads": 73,
+            "contacted": 46,
+            "converted": 3,
+            "FAP": 21,
+            "Performance": 0,
+            "AdBlue": 4,
+            "Indefinido": 48,
+            "uncalled": 27,
+            "contact_rate": 63,
+            "conv_rate": 4.1
+          },
+          {
+            "label": "02/07",
+            "leads": 69,
+            "contacted": 33,
+            "converted": 1,
+            "FAP": 22,
+            "Performance": 0,
+            "AdBlue": 5,
+            "Indefinido": 42,
+            "uncalled": 36,
+            "contact_rate": 47.8,
+            "conv_rate": 1.4
+          },
+          {
+            "label": "03/07",
+            "leads": 69,
+            "contacted": 33,
+            "converted": 2,
+            "FAP": 23,
+            "Performance": 0,
+            "AdBlue": 4,
+            "Indefinido": 42,
+            "uncalled": 36,
+            "contact_rate": 47.8,
+            "conv_rate": 2.9
+          },
+          {
+            "label": "04/07",
+            "leads": 62,
+            "contacted": 19,
+            "converted": 0,
+            "FAP": 23,
+            "Performance": 0,
+            "AdBlue": 4,
+            "Indefinido": 35,
+            "uncalled": 43,
+            "contact_rate": 30.6,
+            "conv_rate": 0
+          },
+          {
+            "label": "05/07",
+            "leads": 71,
+            "contacted": 28,
+            "converted": 1,
+            "FAP": 31,
+            "Performance": 0,
+            "AdBlue": 1,
+            "Indefinido": 39,
+            "uncalled": 43,
+            "contact_rate": 39.4,
+            "conv_rate": 1.4
+          },
+          {
+            "label": "06/07",
+            "leads": 67,
+            "contacted": 24,
+            "converted": 3,
+            "FAP": 21,
+            "Performance": 0,
+            "AdBlue": 4,
+            "Indefinido": 42,
+            "uncalled": 43,
+            "contact_rate": 35.8,
+            "conv_rate": 4.5
+          },
+          {
+            "label": "07/07",
+            "leads": 61,
+            "contacted": 22,
+            "converted": 4,
+            "FAP": 16,
+            "Performance": 0,
+            "AdBlue": 6,
+            "Indefinido": 39,
+            "uncalled": 39,
+            "contact_rate": 36.1,
+            "conv_rate": 6.6
+          },
+          {
+            "label": "08/07",
+            "leads": 53,
+            "contacted": 19,
+            "converted": 2,
+            "FAP": 15,
+            "Performance": 0,
+            "AdBlue": 4,
+            "Indefinido": 34,
+            "uncalled": 34,
+            "contact_rate": 35.8,
+            "conv_rate": 3.8
+          },
+          {
+            "label": "09/07",
+            "leads": 71,
+            "contacted": 16,
+            "converted": 0,
+            "FAP": 27,
+            "Performance": 0,
+            "AdBlue": 5,
+            "Indefinido": 39,
+            "uncalled": 55,
+            "contact_rate": 22.5,
+            "conv_rate": 0
+          },
+          {
+            "label": "10/07",
+            "leads": 100,
+            "contacted": 30,
+            "converted": 3,
+            "FAP": 27,
+            "Performance": 0,
+            "AdBlue": 31,
+            "Indefinido": 42,
+            "uncalled": 70,
+            "contact_rate": 30,
+            "conv_rate": 3
+          },
+          {
+            "label": "11/07",
+            "leads": 69,
+            "contacted": 17,
+            "converted": 0,
+            "FAP": 24,
+            "Performance": 0,
+            "AdBlue": 20,
+            "Indefinido": 25,
+            "uncalled": 52,
+            "contact_rate": 24.6,
+            "conv_rate": 0
+          },
+          {
+            "label": "12/07",
+            "leads": 83,
+            "contacted": 18,
+            "converted": 0,
+            "FAP": 33,
+            "Performance": 0,
+            "AdBlue": 9,
+            "Indefinido": 41,
+            "uncalled": 65,
+            "contact_rate": 21.7,
+            "conv_rate": 0
+          },
+          {
+            "label": "13/07",
+            "leads": 104,
+            "contacted": 26,
+            "converted": 3,
+            "FAP": 35,
+            "Performance": 0,
+            "AdBlue": 22,
+            "Indefinido": 47,
+            "uncalled": 78,
+            "contact_rate": 25,
+            "conv_rate": 2.9
+          },
+          {
+            "label": "14/07",
+            "leads": 79,
+            "contacted": 33,
+            "converted": 1,
+            "FAP": 22,
+            "Performance": 0,
+            "AdBlue": 14,
+            "Indefinido": 43,
+            "uncalled": 46,
+            "contact_rate": 41.8,
+            "conv_rate": 1.3
+          },
+          {
+            "label": "15/07",
+            "leads": 53,
+            "contacted": 26,
+            "converted": 2,
+            "FAP": 26,
+            "Performance": 0,
+            "AdBlue": 2,
+            "Indefinido": 25,
+            "uncalled": 27,
+            "contact_rate": 49.1,
+            "conv_rate": 3.8
+          },
+          {
+            "label": "16/07",
+            "leads": 65,
+            "contacted": 40,
+            "converted": 1,
+            "FAP": 25,
+            "Performance": 0,
+            "AdBlue": 5,
+            "Indefinido": 35,
+            "uncalled": 25,
+            "contact_rate": 61.5,
+            "conv_rate": 1.5
+          },
+          {
+            "label": "17/07",
+            "leads": 67,
+            "contacted": 26,
+            "converted": 2,
+            "FAP": 20,
+            "Performance": 0,
+            "AdBlue": 4,
+            "Indefinido": 43,
+            "uncalled": 41,
+            "contact_rate": 38.8,
+            "conv_rate": 3
+          },
+          {
+            "label": "18/07",
+            "leads": 64,
+            "contacted": 12,
+            "converted": 2,
+            "FAP": 33,
+            "Performance": 0,
+            "AdBlue": 1,
+            "Indefinido": 30,
+            "uncalled": 52,
+            "contact_rate": 18.8,
+            "conv_rate": 3.1
+          },
+          {
+            "label": "19/07",
+            "leads": 62,
+            "contacted": 11,
+            "converted": 0,
+            "FAP": 27,
+            "Performance": 0,
+            "AdBlue": 5,
+            "Indefinido": 30,
+            "uncalled": 51,
+            "contact_rate": 17.7,
+            "conv_rate": 0
+          },
+          {
+            "label": "20/07",
+            "leads": 74,
+            "contacted": 18,
+            "converted": 0,
+            "FAP": 29,
+            "Performance": 0,
+            "AdBlue": 3,
+            "Indefinido": 42,
+            "uncalled": 56,
+            "contact_rate": 24.3,
+            "conv_rate": 0
+          },
+          {
+            "label": "21/07",
+            "leads": 70,
+            "contacted": 23,
+            "converted": 3,
+            "FAP": 33,
+            "Performance": 0,
+            "AdBlue": 2,
+            "Indefinido": 35,
+            "uncalled": 47,
+            "contact_rate": 32.9,
+            "conv_rate": 4.3
+          },
+          {
+            "label": "22/07",
+            "leads": 50,
+            "contacted": 14,
+            "converted": 0,
+            "FAP": 18,
+            "Performance": 0,
+            "AdBlue": 2,
+            "Indefinido": 30,
+            "uncalled": 36,
+            "contact_rate": 28,
+            "conv_rate": 0
+          },
+          {
+            "label": "23/07",
+            "leads": 54,
+            "contacted": 12,
+            "converted": 0,
+            "FAP": 9,
+            "Performance": 0,
+            "AdBlue": 2,
+            "Indefinido": 43,
+            "uncalled": 42,
+            "contact_rate": 22.2,
+            "conv_rate": 0
+          }
+        ]
+      },
+      "weekly": {
+        "range": "weekly",
+        "rows": [
+          {
+            "label": "27/04",
+            "leads": 176,
+            "contacted": 121,
+            "converted": 6,
+            "FAP": 28,
+            "Performance": 0,
+            "AdBlue": 16,
+            "Indefinido": 132,
+            "uncalled": 55,
+            "contact_rate": 68.8,
+            "conv_rate": 3.4
+          },
+          {
+            "label": "04/05",
+            "leads": 423,
+            "contacted": 313,
+            "converted": 19,
+            "FAP": 65,
+            "Performance": 10,
+            "AdBlue": 35,
+            "Indefinido": 313,
+            "uncalled": 110,
+            "contact_rate": 74,
+            "conv_rate": 4.5
+          },
+          {
+            "label": "11/05",
+            "leads": 388,
+            "contacted": 219,
+            "converted": 14,
+            "FAP": 45,
+            "Performance": 7,
+            "AdBlue": 24,
+            "Indefinido": 312,
+            "uncalled": 169,
+            "contact_rate": 56.4,
+            "conv_rate": 3.6
+          },
+          {
+            "label": "18/05",
+            "leads": 266,
+            "contacted": 173,
+            "converted": 11,
+            "FAP": 0,
+            "Performance": 1,
+            "AdBlue": 28,
+            "Indefinido": 237,
+            "uncalled": 93,
+            "contact_rate": 65,
+            "conv_rate": 4.1
+          },
+          {
+            "label": "25/05",
+            "leads": 318,
+            "contacted": 204,
+            "converted": 15,
+            "FAP": 0,
+            "Performance": 0,
+            "AdBlue": 19,
+            "Indefinido": 299,
+            "uncalled": 114,
+            "contact_rate": 64.2,
+            "conv_rate": 4.7
+          },
+          {
+            "label": "01/06",
+            "leads": 347,
+            "contacted": 137,
+            "converted": 5,
+            "FAP": 0,
+            "Performance": 0,
+            "AdBlue": 16,
+            "Indefinido": 331,
+            "uncalled": 210,
+            "contact_rate": 39.5,
+            "conv_rate": 1.4
+          },
+          {
+            "label": "08/06",
+            "leads": 349,
+            "contacted": 121,
+            "converted": 14,
+            "FAP": 34,
+            "Performance": 1,
+            "AdBlue": 17,
+            "Indefinido": 297,
+            "uncalled": 228,
+            "contact_rate": 34.7,
+            "conv_rate": 4
+          },
+          {
+            "label": "15/06",
+            "leads": 470,
+            "contacted": 225,
+            "converted": 13,
+            "FAP": 131,
+            "Performance": 0,
+            "AdBlue": 23,
+            "Indefinido": 316,
+            "uncalled": 245,
+            "contact_rate": 47.9,
+            "conv_rate": 2.8
+          },
+          {
+            "label": "22/06",
+            "leads": 380,
+            "contacted": 216,
+            "converted": 9,
+            "FAP": 96,
+            "Performance": 0,
+            "AdBlue": 12,
+            "Indefinido": 272,
+            "uncalled": 164,
+            "contact_rate": 56.8,
+            "conv_rate": 2.4
+          },
+          {
+            "label": "29/06",
+            "leads": 478,
+            "contacted": 236,
+            "converted": 12,
+            "FAP": 165,
+            "Performance": 0,
+            "AdBlue": 22,
+            "Indefinido": 291,
+            "uncalled": 242,
+            "contact_rate": 49.4,
+            "conv_rate": 2.5
+          },
+          {
+            "label": "06/07",
+            "leads": 504,
+            "contacted": 146,
+            "converted": 12,
+            "FAP": 163,
+            "Performance": 0,
+            "AdBlue": 79,
+            "Indefinido": 262,
+            "uncalled": 358,
+            "contact_rate": 29,
+            "conv_rate": 2.4
+          },
+          {
+            "label": "13/07",
+            "leads": 494,
+            "contacted": 174,
+            "converted": 11,
+            "FAP": 188,
+            "Performance": 0,
+            "AdBlue": 53,
+            "Indefinido": 253,
+            "uncalled": 320,
+            "contact_rate": 35.2,
+            "conv_rate": 2.2
+          },
+          {
+            "label": "20/07",
+            "leads": 248,
+            "contacted": 67,
+            "converted": 3,
+            "FAP": 89,
+            "Performance": 0,
+            "AdBlue": 9,
+            "Indefinido": 150,
+            "uncalled": 181,
+            "contact_rate": 27,
+            "conv_rate": 1.2
+          }
+        ]
+      },
+      "monthly": {
+        "range": "month",
+        "rows": [
+          {
+            "label": "02/2026",
+            "leads": 895,
+            "contacted": 543,
+            "converted": 32,
+            "FAP": 1,
+            "Performance": 5,
+            "AdBlue": 0,
+            "Indefinido": 889,
+            "uncalled": 352,
+            "contact_rate": 60.7,
+            "conv_rate": 3.6
+          },
+          {
+            "label": "03/2026",
+            "leads": 1906,
+            "contacted": 1297,
+            "converted": 73,
+            "FAP": 3,
+            "Performance": 21,
+            "AdBlue": 0,
+            "Indefinido": 1882,
+            "uncalled": 609,
+            "contact_rate": 68,
+            "conv_rate": 3.8
+          },
+          {
+            "label": "04/2026",
+            "leads": 2048,
+            "contacted": 1040,
+            "converted": 83,
+            "FAP": 69,
+            "Performance": 93,
+            "AdBlue": 23,
+            "Indefinido": 1863,
+            "uncalled": 1008,
+            "contact_rate": 50.8,
+            "conv_rate": 4.1
+          },
+          {
+            "label": "05/2026",
+            "leads": 1522,
+            "contacted": 997,
+            "converted": 60,
+            "FAP": 130,
+            "Performance": 18,
+            "AdBlue": 118,
+            "Indefinido": 1256,
+            "uncalled": 525,
+            "contact_rate": 65.5,
+            "conv_rate": 3.9
+          },
+          {
+            "label": "06/2026",
+            "leads": 1680,
+            "contacted": 777,
+            "converted": 46,
+            "FAP": 306,
+            "Performance": 1,
+            "AdBlue": 72,
+            "Indefinido": 1301,
+            "uncalled": 903,
+            "contact_rate": 46.2,
+            "conv_rate": 2.7
+          },
+          {
+            "label": "07/2026",
+            "leads": 1590,
+            "contacted": 546,
+            "converted": 33,
+            "FAP": 560,
+            "Performance": 0,
+            "AdBlue": 159,
+            "Indefinido": 871,
+            "uncalled": 1044,
+            "contact_rate": 34.3,
+            "conv_rate": 2.1
+          }
+        ]
+      }
+    },
+    "kpiHistory": {
+      "rows": [
+        {
+          "fresh": 1564,
+          "na1": 383,
+          "na2": 4,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 505,
+          "nutrir_7d": 18,
+          "prontos_agora": 1917,
+          "leads_30d": 2163,
+          "taxa_contacto_30d": 19.6,
+          "convertidos_30d": 51,
+          "conv_30d": 2.4,
+          "speed_to_lead_min": 296,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 18,
+              "despachos": 0
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 13,
+              "despachos": 1
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 9,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 105,
+              "conv": 1,
+              "pct": 1
+            },
+            "4": {
+              "leads": 63,
+              "conv": 1,
+              "pct": 1.6
+            }
+          },
+          "punctuality": {
+            "105": {
+              "marcacoes": 8,
+              "ligadas": 5,
+              "atraso_total": 210,
+              "on_time": 0,
+              "late": 5,
+              "early": 0,
+              "atraso_medio": 42
+            },
+            "106": {
+              "marcacoes": 8,
+              "ligadas": 6,
+              "atraso_total": 166,
+              "on_time": 0,
+              "late": 6,
+              "early": 0,
+              "atraso_medio": 28
+            }
+          },
+          "date": "2026-07-22"
+        },
+        {
+          "fresh": 1573,
+          "na1": 390,
+          "na2": 5,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 502,
+          "nutrir_7d": 23,
+          "prontos_agora": 1935,
+          "leads_30d": 2176,
+          "taxa_contacto_30d": 19.7,
+          "convertidos_30d": 50,
+          "conv_30d": 2.3,
+          "speed_to_lead_min": 278,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 8,
+              "despachos": 2
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 32,
+              "despachos": 0
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 32,
+              "despachos": 16
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 9,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 103,
+              "conv": 1,
+              "pct": 1
+            },
+            "4": {
+              "leads": 58,
+              "conv": 1,
+              "pct": 1.7
+            }
+          },
+          "punctuality": {
+            "105": {
+              "marcacoes": 4,
+              "ligadas": 3,
+              "atraso_total": 106,
+              "on_time": 0,
+              "late": 3,
+              "early": 0,
+              "atraso_medio": 35
+            },
+            "106": {
+              "marcacoes": 8,
+              "ligadas": 8,
+              "atraso_total": 218,
+              "on_time": 2,
+              "late": 5,
+              "early": 1,
+              "atraso_medio": 27
+            }
+          },
+          "date": "2026-07-21"
+        },
+        {
+          "fresh": 1567,
+          "na1": 405,
+          "na2": 5,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 512,
+          "nutrir_7d": 24,
+          "prontos_agora": 1947,
+          "leads_30d": 2181,
+          "taxa_contacto_30d": 19.2,
+          "convertidos_30d": 46,
+          "conv_30d": 2.1,
+          "speed_to_lead_min": 239,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 9,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 24,
+              "despachos": 0
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 26,
+              "despachos": 0
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 9,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 84,
+              "conv": 1,
+              "pct": 1.2
+            },
+            "4": {
+              "leads": 47,
+              "conv": 0,
+              "pct": 0
+            }
+          },
+          "punctuality": {
+            "105": {
+              "marcacoes": 16,
+              "ligadas": 11,
+              "atraso_total": 720,
+              "on_time": 0,
+              "late": 7,
+              "early": 4,
+              "atraso_medio": 65
+            },
+            "106": {
+              "marcacoes": 15,
+              "ligadas": 15,
+              "atraso_total": 2488,
+              "on_time": 0,
+              "late": 15,
+              "early": 0,
+              "atraso_medio": 166
+            }
+          },
+          "date": "2026-07-20"
+        },
+        {
+          "fresh": 1543,
+          "na1": 416,
+          "na2": 5,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 535,
+          "nutrir_7d": 29,
+          "prontos_agora": 1935,
+          "leads_30d": 2156,
+          "taxa_contacto_30d": 18.8,
+          "convertidos_30d": 45,
+          "conv_30d": 2.1,
+          "speed_to_lead_min": 166,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 9,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 84,
+              "conv": 1,
+              "pct": 1.2
+            },
+            "4": {
+              "leads": 43,
+              "conv": 0,
+              "pct": 0
+            }
+          },
+          "punctuality": {},
+          "date": "2026-07-19"
+        },
+        {
+          "fresh": 1520,
+          "na1": 440,
+          "na2": 5,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 558,
+          "nutrir_7d": 29,
+          "prontos_agora": 1936,
+          "leads_30d": 2167,
+          "taxa_contacto_30d": 19.8,
+          "convertidos_30d": 47,
+          "conv_30d": 2.2,
+          "speed_to_lead_min": 274,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 9,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 84,
+              "conv": 1,
+              "pct": 1.2
+            },
+            "4": {
+              "leads": 43,
+              "conv": 0,
+              "pct": 0
+            }
+          },
+          "punctuality": {},
+          "date": "2026-07-18"
+        },
+        {
+          "fresh": 1491,
+          "na1": 450,
+          "na2": 5,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 559,
+          "nutrir_7d": 29,
+          "prontos_agora": 1916,
+          "leads_30d": 2157,
+          "taxa_contacto_30d": 20.8,
+          "convertidos_30d": 49,
+          "conv_30d": 2.3,
+          "speed_to_lead_min": 634,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 28,
+              "despachos": 2
+            },
+            "106": {
+              "dials": 2,
+              "outbound": 17,
+              "despachos": 4
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 9,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 84,
+              "conv": 1,
+              "pct": 1.2
+            },
+            "4": {
+              "leads": 43,
+              "conv": 0,
+              "pct": 0
+            }
+          },
+          "punctuality": {
+            "105": {
+              "marcacoes": 5,
+              "ligadas": 4,
+              "atraso_total": 7,
+              "on_time": 1,
+              "late": 1,
+              "early": 2,
+              "atraso_medio": 2
+            },
+            "106": {
+              "marcacoes": 3,
+              "ligadas": 3,
+              "atraso_total": 31,
+              "on_time": 1,
+              "late": 2,
+              "early": 0,
+              "atraso_medio": 10
+            }
+          },
+          "date": "2026-07-17"
+        },
+        {
+          "fresh": 1501,
+          "na1": 451,
+          "na2": 3,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 598,
+          "nutrir_7d": 26,
+          "prontos_agora": 1924,
+          "leads_30d": 2149,
+          "taxa_contacto_30d": 20.7,
+          "convertidos_30d": 50,
+          "conv_30d": 2.3,
+          "speed_to_lead_min": 472,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 32,
+              "despachos": 4
+            },
+            "106": {
+              "dials": 20,
+              "outbound": 46,
+              "despachos": 30
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 9,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 72,
+              "conv": 1,
+              "pct": 1.4
+            },
+            "4": {
+              "leads": 37,
+              "conv": 0,
+              "pct": 0
+            }
+          },
+          "punctuality": {
+            "105": {
+              "marcacoes": 4,
+              "ligadas": 4,
+              "atraso_total": 104,
+              "on_time": 1,
+              "late": 3,
+              "early": 0,
+              "atraso_medio": 26
+            },
+            "106": {
+              "marcacoes": 4,
+              "ligadas": 4,
+              "atraso_total": 11,
+              "on_time": 1,
+              "late": 2,
+              "early": 1,
+              "atraso_medio": 3
+            }
+          },
+          "date": "2026-07-16"
+        },
+        {
+          "fresh": 1525,
+          "na1": 450,
+          "na2": 4,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 601,
+          "nutrir_7d": 19,
+          "prontos_agora": 1941,
+          "leads_30d": 2163,
+          "taxa_contacto_30d": 20,
+          "convertidos_30d": 57,
+          "conv_30d": 2.6,
+          "speed_to_lead_min": 764,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 1,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 26,
+              "despachos": 0
+            },
+            "106": {
+              "dials": 22,
+              "outbound": 62,
+              "despachos": 30
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 7,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 46,
+              "conv": 1,
+              "pct": 2.2
+            },
+            "4": {
+              "leads": 21,
+              "conv": 0,
+              "pct": 0
+            }
+          },
+          "punctuality": {
+            "105": {
+              "marcacoes": 2,
+              "ligadas": 2,
+              "atraso_total": 81,
+              "on_time": 1,
+              "late": 1,
+              "early": 0,
+              "atraso_medio": 40
+            },
+            "106": {
+              "marcacoes": 5,
+              "ligadas": 5,
+              "atraso_total": 138,
+              "on_time": 1,
+              "late": 3,
+              "early": 1,
+              "atraso_medio": 28
+            }
+          },
+          "date": "2026-07-15"
+        },
+        {
+          "fresh": 1551,
+          "na1": 448,
+          "na2": 4,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 615,
+          "nutrir_7d": 18,
+          "prontos_agora": 1966,
+          "leads_30d": 2188,
+          "taxa_contacto_30d": 19.8,
+          "convertidos_30d": 58,
+          "conv_30d": 2.7,
+          "speed_to_lead_min": 570,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 8,
+              "despachos": 0
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 43,
+              "despachos": 24
+            }
+          },
+          "conv_by_p": {
+            "3": {
+              "leads": 28,
+              "conv": 0,
+              "pct": 0
+            },
+            "4": {
+              "leads": 9,
+              "conv": 0,
+              "pct": 0
+            }
+          },
+          "punctuality": {
+            "105": {
+              "marcacoes": 5,
+              "ligadas": 2,
+              "atraso_total": 98,
+              "on_time": 0,
+              "late": 2,
+              "early": 0,
+              "atraso_medio": 49
+            },
+            "106": {
+              "marcacoes": 4,
+              "ligadas": 4,
+              "atraso_total": 205,
+              "on_time": 1,
+              "late": 3,
+              "early": 0,
+              "atraso_medio": 51
+            }
+          },
+          "date": "2026-07-14"
+        },
+        {
+          "fresh": 1522,
+          "na1": 450,
+          "na2": 4,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 587,
+          "nutrir_7d": 15,
+          "prontos_agora": 1942,
+          "leads_30d": 2160,
+          "taxa_contacto_30d": 20.2,
+          "convertidos_30d": 54,
+          "conv_30d": 2.5,
+          "speed_to_lead_min": 634,
+          "usage": {
+            "102": {
+              "dials": 1,
+              "outbound": 1,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 38,
+              "despachos": 1
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 35,
+              "despachos": 0
+            }
+          },
+          "punctuality": {
+            "102": {
+              "marcacoes": 1,
+              "ligadas": 0,
+              "atraso_total": 0,
+              "on_time": 0,
+              "late": 0,
+              "early": 0,
+              "atraso_medio": null
+            },
+            "105": {
+              "marcacoes": 12,
+              "ligadas": 10,
+              "atraso_total": -199,
+              "on_time": 2,
+              "late": 4,
+              "early": 4,
+              "atraso_medio": -20
+            },
+            "106": {
+              "marcacoes": 17,
+              "ligadas": 15,
+              "atraso_total": 293,
+              "on_time": 3,
+              "late": 9,
+              "early": 3,
+              "atraso_medio": 20
+            }
+          },
+          "date": "2026-07-13"
         }
       ]
     }
@@ -2159,14 +4209,14 @@
       {
         "label": "07/2026",
         "leads": 1590,
-        "contacted": 543,
+        "contacted": 546,
         "converted": 33,
         "FAP": 560,
         "Performance": 0,
         "AdBlue": 159,
         "Indefinido": 871,
-        "uncalled": 1047,
-        "contact_rate": 34.2,
+        "uncalled": 1044,
+        "contact_rate": 34.3,
         "conv_rate": 2.1
       }
     ]

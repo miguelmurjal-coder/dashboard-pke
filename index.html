@@ -1080,6 +1080,101 @@ table { border-collapse: collapse; }
   border-radius: 0.75rem;
   padding: 1.1rem;
 }
+.call-cockpit-subtabs {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.call-cockpit-subtab {
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.52);
+  padding: 0.58rem 0.95rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+.call-cockpit-subtab-active {
+  background: rgba(0,229,204,0.16);
+  color: #20f2dc;
+}
+.call-cockpit-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.call-cockpit-kpis-5 {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.call-cockpit-kpi {
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 0.72rem;
+  background: rgba(255,255,255,0.026);
+  padding: 0.9rem;
+  text-align: center;
+}
+.call-cockpit-kpi-value {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.4rem;
+  line-height: 1;
+  font-weight: 900;
+}
+.call-cockpit-kpi-label {
+  margin-top: 0.35rem;
+  color: rgba(255,255,255,0.36);
+  font-size: 0.62rem;
+  font-weight: 750;
+}
+.call-cockpit-warning {
+  color: #ffc229;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+.call-cockpit-lead {
+  border: 1px solid #0fd4c8;
+  border-radius: 0.72rem;
+  background: #101114;
+  padding: 1rem;
+}
+.call-cockpit-lead-warn { border-color: #ff9f1c; }
+.call-cockpit-lead-title {
+  color: #f8fafc;
+  font-size: 1.55rem;
+  line-height: 1.1;
+  font-weight: 900;
+}
+.call-cockpit-actions {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+.call-cockpit-pill {
+  border-radius: 0.45rem;
+  padding: 0.45rem 0.62rem;
+  font-size: 0.68rem;
+  font-weight: 850;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.72);
+}
+.call-cockpit-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+.call-cockpit-table th {
+  background: rgba(0,0,0,0.34);
+  color: rgba(255,255,255,0.42);
+  font-weight: 800;
+  text-align: left;
+  padding: 0.58rem;
+}
+.call-cockpit-table td {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.72);
+  padding: 0.58rem;
+}
 .call-panel-title {
   font-size: 0.95rem;
   font-weight: 850;
@@ -1228,7 +1323,9 @@ table { border-collapse: collapse; }
 @media (max-width: 900px) {
   .call-browser-header { align-items: flex-start; flex-direction: column; }
   .call-dashboard-stats,
-  .call-agent-grid { grid-template-columns: 1fr; }
+  .call-agent-grid,
+  .call-cockpit-kpis,
+  .call-cockpit-kpis-5 { grid-template-columns: 1fr; }
   .call-funnel-row { grid-template-columns: 1fr; text-align: left; }
   .call-funnel-step { text-align: left; }
   .call-funnel-step:not(:last-child)::after { display: none; }
@@ -2965,6 +3062,7 @@ input::placeholder { color: #7f93b3; }
       scoreTrend,
       stats: payload && payload.stats || {},
       config: payload && payload.config || {},
+      cockpit: payload && payload.cockpit || {},
       manualRevenue: payload && payload.manualRevenue || null
     };
   }
@@ -3036,6 +3134,197 @@ input::placeholder { color: #7f93b3; }
     return h("div", { className: "space-y-4" },
       h("div", { className: "call-dashboard-stats" }, statRows.map((row) => h(CallDashboardStat, { key: row.label, ...row }))),
       h("div", { className: "call-agent-grid" }, agents.map((agent) => h(CallAgentDashboardCard, { key: agent.ext || agent.name, agent, period: summary.period })))
+    );
+  }
+  function callGapLabel(seconds) {
+    const value = Number(seconds);
+    if (!Number.isFinite(value)) return "—";
+    if (value < 60) return `${Math.round(value)}s`;
+    return `${Math.floor(value / 60)}m${String(Math.round(value % 60)).padStart(2, "0")}s`;
+  }
+  function callCockpitKpi(label, value, color, help) {
+    return h("div", { className: "call-cockpit-kpi", "data-help": help },
+      h("div", { className: "call-cockpit-kpi-value", style: { color } }, value),
+      h("div", { className: "call-cockpit-kpi-label" }, label)
+    );
+  }
+  function callCockpitTable(headers, rows, help) {
+    return h("div", { className: "call-panel-card", style: { padding: 0, overflow: "hidden" }, "data-help": help },
+      h("div", { style: { overflowX: "auto" } },
+        h("table", { className: "call-cockpit-table" },
+          h("thead", null, h("tr", null, headers.map((header) => h("th", { key: header }, header)))),
+          h("tbody", null, rows.map((row, index) => h("tr", { key: index }, row.map((cell, cellIndex) => h("td", { key: `${index}-${cellIndex}` }, cell)))))
+        )
+      )
+    );
+  }
+  function CallCockpitSellerView({ seller }) {
+    const perf = seller && seller.perf || {};
+    const next = seller && seller.next && seller.next.lead || null;
+    const agenda = seller && seller.agenda || {};
+    const gap = perf.avg_gap_sec;
+    const gapColor = gap == null ? "rgba(255,255,255,0.55)" : gap <= 60 ? "#34d399" : gap <= 120 ? "#ffb224" : "#ff416a";
+    const rows = (agenda.preview || []).map((row) => [
+      row.time || "—",
+      row.lead || "Lead",
+      row.tipo || "—",
+      row.status || "—",
+      row.has_context ? "Com contexto" : "Sem contexto"
+    ]);
+    return h("div", { className: "space-y-4" },
+      h("div", { className: "call-cockpit-kpis" },
+        callCockpitKpi("Chamadas hoje", fmtNumber(perf.calls || 0), "#13d7d0", `${seller.name}: chamadas feitas hoje no Cockpit/Call Analytics.`),
+        callCockpitKpi("Contactados", fmtNumber(perf.answered || 0), "#34d399", `${seller.name}: contactos atendidos ou considerados contactados hoje.`),
+        callCockpitKpi("Conversões", fmtNumber(perf.conversoes || 0), "#ffe000", `${seller.name}: leads marcadas como conversão hoje.`),
+        callCockpitKpi("Entre chamadas", callGapLabel(gap), gapColor, `${seller.name}: tempo médio entre chamadas. Objetivo operacional: menos de 60 segundos.`)
+      ),
+      h("div", { className: "call-cockpit-warning" }, "⚠ Objetivo: menos de 60s entre chamadas. Menos tempo off, mais tempo on."),
+      h("div", { className: "call-panel-card", "data-help": "Agenda do Dia: resumo das marcações/retornos do vendedor. No MCP os contactos pessoais são mascarados; a lista completa fica apenas no Call Analytics local." },
+        h("div", { className: "call-panel-title" }, `📅 Agenda do Dia (${fmtNumber(agenda.count || 0)})`),
+        rows.length ? callCockpitTable(["Hora", "Lead", "Tipo", "Status", "Contexto"], rows, "Agenda higienizada do vendedor. Não inclui telefones, emails ou nomes reais no MCP publicado.") : h("div", { className: "text-xs text-slate-400" }, "Sem marcações para hoje.")
+      ),
+      next ? h("div", { className: `call-cockpit-lead ${next.p >= 4 ? "call-cockpit-lead-warn" : ""}`, "data-help": "Próximo a ligar: lead que o Cockpit local entregaria ao vendedor. No MCP aparece mascarado para manter a privacidade dos contactos." },
+        h("div", { className: "text-xs font-black", style: { color: next.p >= 4 ? "#ffb224" : "#20f2dc" } }, `⚡ PRÓXIMO A LIGAR · P${next.p || "?"} · ${next.theme || "Indefinido"}`),
+        h("div", { className: "call-cockpit-lead-title mt-2" }, next.name || "Lead"),
+        h("div", { className: "text-xs text-slate-400 mt-2" }, `${fmtCurrency(next.value || 0)} · ${next.stage || "Lead"} · há ${next.age_label || "—"} · ${next.owner_name ? `Owner ${next.owner_name}` : "sem owner"}`),
+        h("div", { className: "call-cockpit-actions" },
+          ["✅ Conversão", "📅 Ligar + tarde", "🌱 Nutrir", "🚫 Nº não atribuído", "⏭️ Próximo", "📞 LIGAR"].map((label) => h("span", { key: label, className: "call-cockpit-pill" }, label))
+        )
+      ) : h("div", { className: "call-cockpit-lead", "data-help": "Sem próximo lead disponível para este vendedor no snapshot atual." }, h("div", { className: "call-cockpit-lead-title" }, "Sem próximo lead")),
+      h("div", { className: "call-mini-grid" },
+        h("div", { className: "call-panel-card", "data-help": "Dados do Lead/Viatura: resumo higienizado da próxima oportunidade. Os detalhes pessoais ficam no Call Analytics local." },
+          h("div", { className: "call-panel-title" }, "📋 Dados do Lead/Viatura"),
+          next ? h("div", { className: "text-xs text-slate-300 leading-6" }, `Tema: ${next.theme || "—"} · Viatura: ${next.has_vehicle ? "com dados" : "sem dados"} · Telefone: ${next.has_phone ? "presente" : "em falta"} · Estado: ${next.status || "—"}`) : h("div", { className: "text-xs text-slate-400" }, "Sem lead.")
+        ),
+        h("div", { className: "call-panel-card", "data-help": "Histórico de interações: no MCP mostramos apenas se existe histórico, sem publicar conteúdo individual dos contactos." },
+          h("div", { className: "call-panel-title" }, "📞 Histórico de interações"),
+          h("div", { className: "text-xs text-slate-400" }, "Consulta detalhada disponível no Call Analytics local.")
+        )
+      )
+    );
+  }
+  function CallCockpitManagementView({ cockpit }) {
+    const pipeline = cockpit.pipeline || {};
+    const adoption = cockpit.adoption || {};
+    const sellers = adoption.sellers || (cockpit.sellers || []).map((seller) => ({ ext: seller.ext, name: seller.name, ...seller.perf }));
+    const latest = (cockpit.kpiHistory && cockpit.kpiHistory.rows || [])[0] || pipeline;
+    const perfRows = (cockpit.sellers || []).map((seller) => [
+      `${seller.name} (${seller.ext})`,
+      fmtNumber(seller.perf && seller.perf.calls || 0),
+      fmtNumber(seller.perf && seller.perf.answered || 0),
+      seller.perf && seller.perf.calls ? fmtPercent((seller.perf.answered || 0) / seller.perf.calls) : "0%",
+      fmtNumber(seller.perf && seller.perf.conversoes || 0),
+      callGapLabel(seller.perf && seller.perf.avg_gap_sec)
+    ]);
+    const adoptionRows = sellers.map((seller) => [
+      `${seller.name} (${seller.ext})`,
+      fmtNumber(seller.dials_cockpit || 0),
+      fmtNumber(seller.fora_cockpit || 0),
+      `${fmtNumber(seller.pct_cockpit || 0)}%`,
+      fmtNumber(seller.despachos || 0),
+      seller.ultimo_dial ? String(seller.ultimo_dial).slice(11, 16) : "—"
+    ]);
+    const priorityRows = Object.entries(adoption.conv_by_p || {}).sort((a, b) => Number(b[0]) - Number(a[0])).map(([p, row]) => [`P${p}`, fmtNumber(row.leads || 0), fmtNumber(row.conv || 0), `${fmtNumber(row.pct || 0)}%`]);
+    const historyRows = (cockpit.kpiHistory && cockpit.kpiHistory.rows || []).slice(0, 10).map((row) => [
+      row.date || "—",
+      `${fmtNumber(row.taxa_contacto_30d || 0)}%`,
+      `${fmtNumber(row.speed_to_lead_min || 0)} min`,
+      `${fmtNumber(row.conv_30d || 0)}%`,
+      fmtNumber(row.novos_7d || 0),
+      fmtNumber(row.prontos_agora || 0)
+    ]);
+    return h("div", { className: "space-y-4" },
+      h("div", { className: "call-panel-title", style: { marginBottom: 0 } }, "🔄 Pipeline de Chamadas — as 4 listas"),
+      h("div", { className: "call-cockpit-kpis call-cockpit-kpis-5" },
+        callCockpitKpi("Por contactar", fmtNumber(pipeline.fresh || 0), "#ff416a", "Leads novas ou em primeira chamada que ainda precisam de contacto."),
+        callCockpitKpi("Em cadência", fmtNumber((pipeline.na1 || 0) + (pipeline.na2 || 0)), "#ffb224", "Leads que já tiveram tentativa(s) sem resposta e continuam na cadência."),
+        callCockpitKpi("Falou, em aberto", fmtNumber(pipeline.falou_aberto || 0), "#13d7d0", "Leads onde houve conversa mas ainda não existe fecho."),
+        callCockpitKpi("Prontos a ligar", fmtNumber(pipeline.prontos_agora || 0), "#13d7d0", "Total da fila pronta para chamada agora."),
+        callCockpitKpi("Convertidos 30d", fmtNumber(pipeline.convertidos_30d || latest.convertidos_30d || 0), "#ffe000", "Conversões registadas nos últimos 30 dias.")
+      ),
+      h("div", { className: "call-cockpit-kpis call-cockpit-kpis-5" },
+        callCockpitKpi("Novos 7d", fmtNumber(pipeline.novos_7d || 0), "#13d7d0", "Entradas novas no funil nos últimos 7 dias."),
+        callCockpitKpi("Leads 30d", fmtNumber(pipeline.leads_30d || 0), "#a78bfa", "Total de leads considerados nos últimos 30 dias."),
+        callCockpitKpi("Taxa contacto 30d", `${fmtNumber(pipeline.taxa_contacto_30d || 0)}%`, "#34d399", "Percentagem de leads dos últimos 30 dias que já tiveram contacto."),
+        callCockpitKpi("Speed-to-lead", `${fmtNumber(pipeline.speed_to_lead_min || 0)} min`, "#ffb224", "Tempo mediano até à primeira chamada."),
+        callCockpitKpi("Nutrir 7d", fmtNumber(pipeline.nutrir_7d || 0), "rgba(255,255,255,0.65)", "Leads colocadas em nutrição nos últimos 7 dias.")
+      ),
+      callCockpitTable(["Vendedor", "Chamadas", "Contactados", "% Contacto", "Conversões", "Entre chamadas"], perfRows, "Performance dos vendedores hoje: volume, contacto, conversões e tempo médio entre chamadas."),
+      callCockpitTable(["Vendedor", "Via Cockpit", "Fora do sistema", "% no sistema", "Despachos", "Último LIGAR"], adoptionRows, "Adoção do Cockpit: mostra se as chamadas estão a ser feitas pelo botão LIGAR do sistema ou fora dele."),
+      priorityRows.length ? callCockpitTable(["Prioridade", "Leads trabalhados", "Convertidos", "% Conversão"], priorityRows, "Conversão por prioridade: valida se as prioridades P4/P3/P2 estão a entregar melhor resultado.") : null,
+      historyRows.length ? callCockpitTable(["Dia", "Taxa contacto", "Speed-to-lead", "Conversão", "Novos 7d", "Prontos"], historyRows, "KPIs diários: evolução operacional recente do funil de chamadas.") : null
+    );
+  }
+  function CallCockpitLeadsView({ queue }) {
+    const rows = (queue.preview || []).slice(0, 18).map((lead) => [
+      `P${lead.p || "?"}`,
+      lead.theme || "Indefinido",
+      lead.name || "Lead",
+      lead.has_phone ? "telefone presente" : "telefone em falta",
+      lead.has_vehicle ? "com viatura" : "sem viatura",
+      lead.stage || "Lead",
+      lead.status || "—",
+      lead.age_label || "—",
+      lead.owner_name || "—"
+    ]);
+    return h("div", { className: "space-y-4" },
+      h("div", { className: "call-panel-card", "data-help": "Fila de Leads interna: no Call Analytics local esta lista tem nomes e telefones. No MCP fica mascarada, mas mantém prioridade, tema, estado, idade e owner para leitura operacional." },
+        h("div", { className: "call-panel-title" }, "📋 Fila de Leads (interna)"),
+        h("div", { className: "text-xs text-slate-400" }, `${fmtNumber(queue.total || 0)} leads na fila. Distribuição: FAP ${fmtNumber(queue.by_theme && queue.by_theme.FAP || 0)}, Performance ${fmtNumber(queue.by_theme && queue.by_theme.Performance || 0)}, AdBlue ${fmtNumber(queue.by_theme && queue.by_theme.AdBlue || 0)}, Indefinido ${fmtNumber(queue.by_theme && queue.by_theme.Indefinido || 0)}.`)
+      ),
+      rows.length ? callCockpitTable(["P", "Tema", "Lead", "Telefone", "Viatura", "Estágio", "Status", "Idade", "Owner"], rows, "Preview higienizada da fila de leads. Telefones e nomes reais ficam apenas no sistema local.") : h(EmptyState, { text: "Sem leads no snapshot atual." })
+    );
+  }
+  function CallCockpitEvolutionView({ cockpit }) {
+    const rows = (cockpit.leadsPanel && cockpit.leadsPanel.weekly && cockpit.leadsPanel.weekly.rows || cockpit.leadsPanel && cockpit.leadsPanel.monthly && cockpit.leadsPanel.monthly.rows || []).slice().reverse();
+    const latest = rows[0] || {};
+    const tableRows = rows.slice(0, 12).map((row) => [
+      row.label || row.date || "—",
+      fmtNumber(row.leads || 0),
+      fmtNumber(row.fap || 0),
+      fmtNumber(row.performance || row.perf || 0),
+      fmtNumber(row.adblue || 0),
+      fmtNumber(row.indef || row.indefinido || 0),
+      fmtNumber(row.contacted || 0),
+      `${fmtNumber(row.contact_rate || 0)}%`,
+      fmtNumber(row.uncalled || 0),
+      fmtNumber(row.converted || 0),
+      `${fmtNumber(row.conv_rate || 0)}%`
+    ]);
+    return h("div", { className: "space-y-4" },
+      h("div", { className: "call-panel-title", style: { marginBottom: 0 } }, "📈 Análise & Evolução dos Leads"),
+      h("div", { className: "call-cockpit-kpis" },
+        callCockpitKpi("Leads período", fmtNumber(latest.leads || 0), "#13d7d0", "Leads no período mais recente da evolução."),
+        callCockpitKpi("Taxa contacto", `${fmtNumber(latest.contact_rate || 0)}%`, "#ff416a", "Percentagem de leads contactadas no período."),
+        callCockpitKpi("Por contactar", fmtNumber(latest.uncalled || 0), "#ff416a", "Leads ainda por contactar no período."),
+        callCockpitKpi("Conversão", `${fmtNumber(latest.conv_rate || 0)}%`, "#13d7d0", "Percentagem de leads convertidas no período.")
+      ),
+      tableRows.length ? callCockpitTable(["Período", "Leads", "FAP", "Perf.", "AdBlue", "Indef.", "Contactados", "% Contacto", "Por contactar", "Convertidos", "% Conv"], tableRows, "Evolução semanal/mensal dos leads no Call Analytics.") : h(EmptyState, { text: "Sem evolução disponível." })
+    );
+  }
+  function CallCockpitBrowserView({ cockpit }) {
+    const [sub, setSub] = useState("102");
+    const subtabs = [
+      ["102", "👤 Tiago"],
+      ["105", "👤 Flávio"],
+      ["106", "👤 Nelson"],
+      ["mgmt", "📊 Management"],
+      ["leads", "📋 Leads"],
+      ["evolucao", "📈 Evolução"]
+    ];
+    const sellers = cockpit && cockpit.sellers || [];
+    const seller = sellers.find((item) => item.ext === sub) || sellers[0] || {};
+    return h("div", { className: "space-y-4", "data-help": "Cockpit: cópia de consulta do Cockpit do PKE Call Analytics. Mostra vendedores, fila, gestão e evolução com dados atualizados pelo runner local. Os dados pessoais são mascarados no MCP." },
+      h("div", { className: "call-cockpit-subtabs" }, subtabs.map(([key, label]) => h("button", {
+        key,
+        type: "button",
+        className: `call-cockpit-subtab ${sub === key ? "call-cockpit-subtab-active" : ""}`,
+        onClick: () => setSub(key)
+      }, label))),
+      sub === "mgmt" ? h(CallCockpitManagementView, { cockpit }) :
+      sub === "leads" ? h(CallCockpitLeadsView, { queue: cockpit.queue || {} }) :
+      sub === "evolucao" ? h(CallCockpitEvolutionView, { cockpit }) :
+      h(CallCockpitSellerView, { seller })
     );
   }
   function CallFunnelBrowserStrip({ funnel, analytics, manualRevenue }) {
@@ -6976,6 +7265,7 @@ input::placeholder { color: #7f93b3; }
     const summary = buildCallAnalyticsSummary(data, selectedMonths, callPeriod);
     const funnel = summary.funnel || {};
     const analytics = summary.analytics || {};
+    const cockpit = summary.cockpit || {};
     const latestLead = summary.latestLead || {};
     const BrowserMetricCard = ({ title, subtitle, children, help }) => h("div", { className: "call-panel-card", "data-help": help || `${title}: dados vindos do PKE Call Analytics.` }, h("div", { className: "call-panel-title" }, title), subtitle && h("p", { className: "text-xs text-slate-400 mb-3" }, subtitle), children);
     const agentRows = summary.agents.map((agent) => ({
@@ -6999,7 +7289,7 @@ input::placeholder { color: #7f93b3; }
       count: row.count || 0
     }));
     const browserTabs = [
-      { key: "cockpit", label: "🎯 Cockpit", enabled: false },
+      { key: "cockpit", label: "🎯 Cockpit", enabled: true },
       { key: "dashboard", label: "📊 Dashboard", enabled: true },
       { key: "funnel", label: "📊 Funnel", enabled: false },
       { key: "missed", label: `📥 Missed (${summary.dashboard.missed_count || 0})`, enabled: false },
@@ -7049,6 +7339,7 @@ input::placeholder { color: #7f93b3; }
           "data-help": tab.enabled ? `${tab.label}: abre esta vista com dados agregados do PKE Call Analytics no MCP.` : `${tab.label}: esta vista ainda aparece apenas como referência visual da navegação original.`
         }, tab.label))),
         h("div", { className: "call-browser-content space-y-4" },
+          callView === "cockpit" ? h(CallCockpitBrowserView, { cockpit }) :
           callView === "dashboard" ? h(CallDashboardBrowserView, { summary }) : [
             h(CallFunnelBrowserStrip, { funnel, analytics, manualRevenue: summary.manualRevenue }),
             h(CallHourlyBrowserChart, { hourly: analytics.hourly || [] }),
