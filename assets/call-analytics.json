@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-23T15:55:46.409Z",
+  "generatedAt": "2026-07-23T16:06:35.363Z",
   "source": "http://192.168.1.13:3000",
   "stats": {
-    "total_records": 57242,
+    "total_records": 57245,
     "scored_calls": 2943,
     "avg_score": 4.4
   },
@@ -74,7 +74,7 @@
         },
         {
           "hour": 16,
-          "total": 7,
+          "total": 10,
           "effective": 3,
           "answered": 3
         },
@@ -139,7 +139,7 @@
               "effective": 0
             },
             "Thu": {
-              "total": 5,
+              "total": 6,
               "effective": 1
             },
             "Fri": {
@@ -164,7 +164,7 @@
               "effective": 0
             },
             "Thu": {
-              "total": 44,
+              "total": 46,
               "effective": 28
             },
             "Fri": {
@@ -189,25 +189,25 @@
         }
       ],
       "funnel": {
-        "leads_month": 1310,
-        "calls_total": 1377,
+        "leads_month": 1311,
+        "calls_total": 1380,
         "calls_effective": 830,
         "bookings_total": 272,
         "bookings_finalized": 194,
         "bookings_cancelled": 57,
         "bookings_pending": 21,
         "revenue_actual": 79572,
-        "revenue_projected": 108550,
+        "revenue_projected": 108357,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 194,
-        "cars_projected": 265,
+        "cars_projected": 264,
         "conversions": 59,
         "conversion_rate": 7.1,
         "cancellation_rate": 21,
-        "days_elapsed": 16.86,
-        "days_remaining": 6.140000000000001,
-        "daily_rate_effective": 49.2,
+        "days_elapsed": 16.89,
+        "days_remaining": 6.109999999999999,
+        "daily_rate_effective": 49.1,
         "vendor_bookings": {
           "102": {
             "name": "Tiago Cruz",
@@ -416,12 +416,12 @@
         }
       },
       "projection": {
-        "projected_cars": 265,
-        "projected_revenue": 108550,
+        "projected_cars": 264,
+        "projected_revenue": 108357,
         "revenue_actual": 79572,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -4.1
+        "gap_cars_per_day": -3.9
       }
     },
     "week": {
@@ -476,7 +476,7 @@
         },
         {
           "hour": 16,
-          "total": 36,
+          "total": 39,
           "effective": 22,
           "answered": 22
         },
@@ -541,7 +541,7 @@
               "effective": 14
             },
             "Thu": {
-              "total": 5,
+              "total": 6,
               "effective": 1
             },
             "Fri": {
@@ -566,7 +566,7 @@
               "effective": 17
             },
             "Thu": {
-              "total": 44,
+              "total": 46,
               "effective": 28
             },
             "Fri": {
@@ -652,25 +652,25 @@
         }
       ],
       "funnel": {
-        "leads_month": 1310,
-        "calls_total": 1377,
+        "leads_month": 1311,
+        "calls_total": 1380,
         "calls_effective": 830,
         "bookings_total": 272,
         "bookings_finalized": 194,
         "bookings_cancelled": 57,
         "bookings_pending": 21,
         "revenue_actual": 79572,
-        "revenue_projected": 108550,
+        "revenue_projected": 108357,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 194,
-        "cars_projected": 265,
+        "cars_projected": 264,
         "conversions": 59,
         "conversion_rate": 7.1,
         "cancellation_rate": 21,
-        "days_elapsed": 16.86,
-        "days_remaining": 6.140000000000001,
-        "daily_rate_effective": 49.2,
+        "days_elapsed": 16.89,
+        "days_remaining": 6.109999999999999,
+        "daily_rate_effective": 49.1,
         "vendor_bookings": {
           "102": {
             "name": "Tiago Cruz",
@@ -879,12 +879,12 @@
         }
       },
       "projection": {
-        "projected_cars": 265,
-        "projected_revenue": 108550,
+        "projected_cars": 264,
+        "projected_revenue": 108357,
         "revenue_actual": 79572,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -4.1
+        "gap_cars_per_day": -3.9
       }
     },
     "month": {
@@ -939,7 +939,7 @@
         },
         {
           "hour": 16,
-          "total": 183,
+          "total": 186,
           "effective": 103,
           "answered": 106
         },
@@ -1004,7 +1004,7 @@
               "effective": 46
             },
             "Thu": {
-              "total": 125,
+              "total": 126,
               "effective": 57
             },
             "Fri": {
@@ -1029,7 +1029,7 @@
               "effective": 98
             },
             "Thu": {
-              "total": 134,
+              "total": 136,
               "effective": 86
             },
             "Fri": {
@@ -1366,25 +1366,25 @@
         }
       ],
       "funnel": {
-        "leads_month": 1310,
-        "calls_total": 1377,
+        "leads_month": 1311,
+        "calls_total": 1380,
         "calls_effective": 830,
         "bookings_total": 272,
         "bookings_finalized": 194,
         "bookings_cancelled": 57,
         "bookings_pending": 21,
         "revenue_actual": 79572,
-        "revenue_projected": 108550,
+        "revenue_projected": 108357,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 194,
-        "cars_projected": 265,
+        "cars_projected": 264,
         "conversions": 59,
         "conversion_rate": 7.1,
         "cancellation_rate": 21,
-        "days_elapsed": 16.86,
-        "days_remaining": 6.140000000000001,
-        "daily_rate_effective": 49.2,
+        "days_elapsed": 16.89,
+        "days_remaining": 6.109999999999999,
+        "daily_rate_effective": 49.1,
         "vendor_bookings": {
           "102": {
             "name": "Tiago Cruz",
@@ -1593,12 +1593,12 @@
         }
       },
       "projection": {
-        "projected_cars": 265,
-        "projected_revenue": 108550,
+        "projected_cars": 264,
+        "projected_revenue": 108357,
         "revenue_actual": 79572,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -4.1
+        "gap_cars_per_day": -3.9
       }
     }
   },
@@ -1608,9 +1608,9 @@
       "since": "2026-07-23",
       "until": "2026-07-23",
       "working_days": 1,
-      "leads": 53,
-      "conv_started": 53,
-      "responded": 21,
+      "leads": 54,
+      "conv_started": 54,
+      "responded": 22,
       "alex_bookings": 4,
       "connected": 0,
       "total_calls_3min": 14,
@@ -1624,9 +1624,9 @@
       "since": "2026-07-20",
       "until": "2026-07-23",
       "working_days": 4,
-      "leads": 247,
-      "conv_started": 247,
-      "responded": 138,
+      "leads": 248,
+      "conv_started": 248,
+      "responded": 139,
       "alex_bookings": 4,
       "connected": 0,
       "total_calls_3min": 105,
@@ -1661,9 +1661,9 @@
       "since": "2026-07-01",
       "until": "2026-07-23",
       "working_days": 17,
-      "leads": 1589,
-      "conv_started": 1589,
-      "responded": 1009,
+      "leads": 1590,
+      "conv_started": 1590,
+      "responded": 1010,
       "alex_bookings": 4,
       "connected": 0,
       "total_calls_3min": 517,
@@ -1724,18 +1724,18 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 5,
-        "outbound": 5,
+        "total": 6,
+        "outbound": 6,
         "inbound": 0,
-        "outbound_unique": 5,
+        "outbound_unique": 6,
         "answered": 1,
         "effective": 1,
         "talk_sec": 49,
         "talk_min": 1,
-        "answer_rate": 20,
-        "effective_rate": 20,
+        "answer_rate": 17,
+        "effective_rate": 17,
         "inbound_answered": 0,
-        "outbound_rate": 20,
+        "outbound_rate": 17,
         "bookings_finalized": 0,
         "bookings_pending": 0,
         "bookings_cancelled": 0,
@@ -1745,18 +1745,18 @@
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 44,
-        "outbound": 35,
+        "total": 46,
+        "outbound": 37,
         "inbound": 9,
-        "outbound_unique": 23,
+        "outbound_unique": 25,
         "answered": 28,
         "effective": 19,
         "talk_sec": 6546,
         "talk_min": 109,
-        "answer_rate": 64,
-        "effective_rate": 64,
+        "answer_rate": 61,
+        "effective_rate": 61,
         "inbound_answered": 9,
-        "outbound_rate": 65,
+        "outbound_rate": 60,
         "bookings_finalized": 0,
         "bookings_pending": 4,
         "bookings_cancelled": 0,
@@ -1789,10 +1789,10 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 91,
-        "outbound": 79,
+        "total": 92,
+        "outbound": 80,
         "inbound": 12,
-        "outbound_unique": 63,
+        "outbound_unique": 64,
         "answered": 55,
         "effective": 41,
         "talk_sec": 22487,
@@ -1800,7 +1800,7 @@
         "answer_rate": 60,
         "effective_rate": 58,
         "inbound_answered": 12,
-        "outbound_rate": 51,
+        "outbound_rate": 50,
         "bookings_finalized": 45,
         "bookings_pending": 5,
         "bookings_cancelled": 17,
@@ -1810,18 +1810,18 @@
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 141,
-        "outbound": 106,
+        "total": 143,
+        "outbound": 108,
         "inbound": 35,
-        "outbound_unique": 77,
+        "outbound_unique": 79,
         "answered": 102,
         "effective": 66,
         "talk_sec": 36693,
         "talk_min": 612,
-        "answer_rate": 72,
-        "effective_rate": 72,
+        "answer_rate": 71,
+        "effective_rate": 71,
         "inbound_answered": 35,
-        "outbound_rate": 65,
+        "outbound_rate": 63,
         "bookings_finalized": 41,
         "bookings_pending": 7,
         "bookings_cancelled": 14,
@@ -1854,10 +1854,10 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 442,
-        "outbound": 362,
+        "total": 443,
+        "outbound": 363,
         "inbound": 80,
-        "outbound_unique": 275,
+        "outbound_unique": 276,
         "answered": 260,
         "effective": 176,
         "talk_sec": 94750,
@@ -1875,10 +1875,10 @@
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 709,
-        "outbound": 577,
+        "total": 711,
+        "outbound": 579,
         "inbound": 132,
-        "outbound_unique": 440,
+        "outbound_unique": 442,
         "answered": 450,
         "effective": 311,
         "talk_sec": 147172,
@@ -1893,6 +1893,193 @@
         "avg_ai_score": 3.8,
         "scored_calls": 258
       }
+    }
+  },
+  "dashboard": {
+    "today": {
+      "total": 170,
+      "effective": 29,
+      "talk_sec": 6595,
+      "talk_min": 110,
+      "missed_count": 4,
+      "unanswered_count": 10,
+      "hourly": [
+        {
+          "hour": 9,
+          "total": 6,
+          "effective": 0
+        },
+        {
+          "hour": 10,
+          "total": 22,
+          "effective": 5
+        },
+        {
+          "hour": 11,
+          "total": 8,
+          "effective": 3
+        },
+        {
+          "hour": 12,
+          "total": 20,
+          "effective": 4
+        },
+        {
+          "hour": 13,
+          "total": 25,
+          "effective": 1
+        },
+        {
+          "hour": 14,
+          "total": 29,
+          "effective": 8
+        },
+        {
+          "hour": 15,
+          "total": 44,
+          "effective": 5
+        },
+        {
+          "hour": 16,
+          "total": 16,
+          "effective": 3
+        }
+      ]
+    },
+    "week": {
+      "total": 733,
+      "effective": 167,
+      "talk_sec": 64863,
+      "talk_min": 1081,
+      "missed_count": 13,
+      "unanswered_count": 43,
+      "hourly": [
+        {
+          "hour": 8,
+          "total": 7,
+          "effective": 2
+        },
+        {
+          "hour": 9,
+          "total": 74,
+          "effective": 16
+        },
+        {
+          "hour": 10,
+          "total": 74,
+          "effective": 23
+        },
+        {
+          "hour": 11,
+          "total": 79,
+          "effective": 23
+        },
+        {
+          "hour": 12,
+          "total": 61,
+          "effective": 19
+        },
+        {
+          "hour": 13,
+          "total": 51,
+          "effective": 3
+        },
+        {
+          "hour": 14,
+          "total": 92,
+          "effective": 18
+        },
+        {
+          "hour": 15,
+          "total": 118,
+          "effective": 23
+        },
+        {
+          "hour": 16,
+          "total": 93,
+          "effective": 22
+        },
+        {
+          "hour": 17,
+          "total": 80,
+          "effective": 16
+        },
+        {
+          "hour": 18,
+          "total": 4,
+          "effective": 2
+        }
+      ]
+    },
+    "month": {
+      "total": 3116,
+      "effective": 830,
+      "talk_sec": 289308,
+      "talk_min": 4822,
+      "missed_count": 29,
+      "unanswered_count": 299,
+      "hourly": [
+        {
+          "hour": 5,
+          "total": 1,
+          "effective": 0
+        },
+        {
+          "hour": 8,
+          "total": 24,
+          "effective": 5
+        },
+        {
+          "hour": 9,
+          "total": 412,
+          "effective": 89
+        },
+        {
+          "hour": 10,
+          "total": 371,
+          "effective": 109
+        },
+        {
+          "hour": 11,
+          "total": 422,
+          "effective": 131
+        },
+        {
+          "hour": 12,
+          "total": 271,
+          "effective": 99
+        },
+        {
+          "hour": 13,
+          "total": 130,
+          "effective": 16
+        },
+        {
+          "hour": 14,
+          "total": 350,
+          "effective": 95
+        },
+        {
+          "hour": 15,
+          "total": 377,
+          "effective": 92
+        },
+        {
+          "hour": 16,
+          "total": 402,
+          "effective": 103
+        },
+        {
+          "hour": 17,
+          "total": 339,
+          "effective": 86
+        },
+        {
+          "hour": 18,
+          "total": 17,
+          "effective": 5
+        }
+      ]
     }
   },
   "manualRevenue": {
@@ -1971,15 +2158,15 @@
       },
       {
         "label": "07/2026",
-        "leads": 1589,
-        "contacted": 540,
+        "leads": 1590,
+        "contacted": 543,
         "converted": 33,
         "FAP": 560,
         "Performance": 0,
         "AdBlue": 159,
-        "Indefinido": 870,
-        "uncalled": 1049,
-        "contact_rate": 34,
+        "Indefinido": 871,
+        "uncalled": 1047,
+        "contact_rate": 34.2,
         "conv_rate": 2.1
       }
     ]

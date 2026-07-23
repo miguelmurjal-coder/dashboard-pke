@@ -5,6 +5,33 @@ const BASE_URL = (CONFIGURED_BASE_URL || "http://192.168.1.13:3000").replace(/\/
 const OUT_FILE = "assets/call-analytics.json";
 const PERIODS = ["today", "week", "month"];
 
+function aggregateDashboard(calls, missed, unanswered) {
+  const rows = Array.isArray(calls) ? calls : [];
+  const total = rows.length;
+  const effective = rows.filter((call) => Boolean(call?.is_effective)).length;
+  const talkSec = rows
+    .filter((call) => call?.disposition === "ANSWERED")
+    .reduce((sum, call) => sum + Number(call?.talk_time || 0), 0);
+  const hourly = {};
+  for (const call of rows) {
+    const rawDate = call?.call_date || "";
+    const hour = Number(String(rawDate).slice(11, 13));
+    if (!Number.isFinite(hour)) continue;
+    hourly[hour] ||= { hour, total: 0, effective: 0 };
+    hourly[hour].total += 1;
+    if (call?.is_effective) hourly[hour].effective += 1;
+  }
+  return {
+    total,
+    effective,
+    talk_sec: talkSec,
+    talk_min: Math.round(talkSec / 60),
+    missed_count: Array.isArray(missed) ? missed.length : 0,
+    unanswered_count: Array.isArray(unanswered) ? unanswered.length : 0,
+    hourly: Object.values(hourly).sort((a, b) => a.hour - b.hour)
+  };
+}
+
 async function readPreviousPayload() {
   try {
     return JSON.parse(await readFile(OUT_FILE, "utf8"));
@@ -59,6 +86,9 @@ async function fetchCallAnalytics() {
     ["leadsPanel", "/api/leads-panel?range=month"],
     ["manualRevenue", "/api/manual-revenue"],
     ...PERIODS.flatMap((period) => [
+      [`calls:${period}`, `/api/calls?period=${period}`],
+      [`missed:${period}`, `/api/missed?period=${period}`],
+      [`unanswered:${period}`, `/api/unanswered?period=${period}`],
       [`analytics:${period}`, `/api/analytics?period=${period}`],
       [`funnel:${period}`, `/api/funnel?period=${period}`],
       [`agents:${period}`, `/api/agent_summary?period=${period}`]
@@ -72,10 +102,16 @@ async function fetchCallAnalytics() {
   const analytics = {};
   const funnel = {};
   const agents = {};
+  const dashboard = {};
   for (const period of PERIODS) {
     analytics[period] = unwrap(resolved[`analytics:${period}`]);
     funnel[period] = unwrap(resolved[`funnel:${period}`]);
     agents[period] = unwrap(resolved[`agents:${period}`]);
+    dashboard[period] = aggregateDashboard(
+      unwrap(resolved[`calls:${period}`]),
+      unwrap(resolved[`missed:${period}`]),
+      unwrap(resolved[`unanswered:${period}`])
+    );
   }
 
   return {
@@ -86,6 +122,7 @@ async function fetchCallAnalytics() {
     analytics,
     funnel,
     agents,
+    dashboard,
     manualRevenue: unwrap(resolved.manualRevenue),
     leadsPanel: unwrap(resolved.leadsPanel),
     errors: collectErrors(resolved)
