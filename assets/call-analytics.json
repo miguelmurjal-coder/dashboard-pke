@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-23T15:14:09.987Z",
+  "generatedAt": "2026-07-23T15:28:37.682Z",
   "source": "http://192.168.1.13:3000",
   "stats": {
-    "total_records": 57229,
+    "total_records": 57235,
     "scored_calls": 2943,
     "avg_score": 4.4
   },
@@ -74,9 +74,9 @@
         },
         {
           "hour": 16,
-          "total": 0,
-          "effective": 0,
-          "answered": 0
+          "total": 3,
+          "effective": 1,
+          "answered": 1
         },
         {
           "hour": 17,
@@ -139,7 +139,7 @@
               "effective": 0
             },
             "Thu": {
-              "total": 3,
+              "total": 4,
               "effective": 1
             },
             "Fri": {
@@ -164,8 +164,8 @@
               "effective": 0
             },
             "Thu": {
-              "total": 39,
-              "effective": 25
+              "total": 41,
+              "effective": 26
             },
             "Fri": {
               "total": 0,
@@ -189,24 +189,24 @@
         }
       ],
       "funnel": {
-        "leads_month": 1308,
-        "calls_total": 1370,
-        "calls_effective": 827,
+        "leads_month": 1309,
+        "calls_total": 1373,
+        "calls_effective": 828,
         "bookings_total": 270,
         "bookings_finalized": 193,
         "bookings_cancelled": 57,
         "bookings_pending": 20,
         "revenue_actual": 79176,
-        "revenue_projected": 108525,
+        "revenue_projected": 108331,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 193,
-        "cars_projected": 265,
+        "cars_projected": 264,
         "conversions": 58,
         "conversion_rate": 7,
         "cancellation_rate": 21.1,
-        "days_elapsed": 16.78,
-        "days_remaining": 6.219999999999999,
+        "days_elapsed": 16.81,
+        "days_remaining": 6.190000000000001,
         "daily_rate_effective": 49.3,
         "vendor_bookings": {
           "102": {
@@ -416,12 +416,12 @@
         }
       },
       "projection": {
-        "projected_cars": 265,
-        "projected_revenue": 108525,
+        "projected_cars": 264,
+        "projected_revenue": 108331,
         "revenue_actual": 79176,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -4
+        "gap_cars_per_day": -3.9
       }
     },
     "week": {
@@ -476,9 +476,9 @@
         },
         {
           "hour": 16,
-          "total": 29,
-          "effective": 19,
-          "answered": 19
+          "total": 32,
+          "effective": 20,
+          "answered": 20
         },
         {
           "hour": 17,
@@ -541,7 +541,7 @@
               "effective": 14
             },
             "Thu": {
-              "total": 3,
+              "total": 4,
               "effective": 1
             },
             "Fri": {
@@ -566,8 +566,8 @@
               "effective": 17
             },
             "Thu": {
-              "total": 39,
-              "effective": 25
+              "total": 41,
+              "effective": 26
             },
             "Fri": {
               "total": 0,
@@ -652,24 +652,24 @@
         }
       ],
       "funnel": {
-        "leads_month": 1308,
-        "calls_total": 1370,
-        "calls_effective": 827,
+        "leads_month": 1309,
+        "calls_total": 1373,
+        "calls_effective": 828,
         "bookings_total": 270,
         "bookings_finalized": 193,
         "bookings_cancelled": 57,
         "bookings_pending": 20,
         "revenue_actual": 79176,
-        "revenue_projected": 108525,
+        "revenue_projected": 108331,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 193,
-        "cars_projected": 265,
+        "cars_projected": 264,
         "conversions": 58,
         "conversion_rate": 7,
         "cancellation_rate": 21.1,
-        "days_elapsed": 16.78,
-        "days_remaining": 6.219999999999999,
+        "days_elapsed": 16.81,
+        "days_remaining": 6.190000000000001,
         "daily_rate_effective": 49.3,
         "vendor_bookings": {
           "102": {
@@ -879,12 +879,12 @@
         }
       },
       "projection": {
-        "projected_cars": 265,
-        "projected_revenue": 108525,
+        "projected_cars": 264,
+        "projected_revenue": 108331,
         "revenue_actual": 79176,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -4
+        "gap_cars_per_day": -3.9
       }
     },
     "month": {
@@ -939,9 +939,9 @@
         },
         {
           "hour": 16,
-          "total": 176,
-          "effective": 100,
-          "answered": 103
+          "total": 179,
+          "effective": 101,
+          "answered": 104
         },
         {
           "hour": 17,
@@ -1004,7 +1004,7 @@
               "effective": 46
             },
             "Thu": {
-              "total": 123,
+              "total": 124,
               "effective": 57
             },
             "Fri": {
@@ -1029,8 +1029,8 @@
               "effective": 98
             },
             "Thu": {
-              "total": 129,
-              "effective": 83
+              "total": 131,
+              "effective": 84
             },
             "Fri": {
               "total": 118,
@@ -1366,24 +1366,24 @@
         }
       ],
       "funnel": {
-        "leads_month": 1308,
-        "calls_total": 1370,
-        "calls_effective": 827,
+        "leads_month": 1309,
+        "calls_total": 1373,
+        "calls_effective": 828,
         "bookings_total": 270,
         "bookings_finalized": 193,
         "bookings_cancelled": 57,
         "bookings_pending": 20,
         "revenue_actual": 79176,
-        "revenue_projected": 108525,
+        "revenue_projected": 108331,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 193,
-        "cars_projected": 265,
+        "cars_projected": 264,
         "conversions": 58,
         "conversion_rate": 7,
         "cancellation_rate": 21.1,
-        "days_elapsed": 16.78,
-        "days_remaining": 6.219999999999999,
+        "days_elapsed": 16.81,
+        "days_remaining": 6.190000000000001,
         "daily_rate_effective": 49.3,
         "vendor_bookings": {
           "102": {
@@ -1593,12 +1593,12 @@
         }
       },
       "projection": {
-        "projected_cars": 265,
-        "projected_revenue": 108525,
+        "projected_cars": 264,
+        "projected_revenue": 108331,
         "revenue_actual": 79176,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -4
+        "gap_cars_per_day": -3.9
       }
     }
   },
@@ -1724,18 +1724,18 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 3,
-        "outbound": 3,
+        "total": 4,
+        "outbound": 4,
         "inbound": 0,
-        "outbound_unique": 3,
+        "outbound_unique": 4,
         "answered": 1,
         "effective": 1,
         "talk_sec": 49,
         "talk_min": 1,
-        "answer_rate": 33,
-        "effective_rate": 33,
+        "answer_rate": 25,
+        "effective_rate": 25,
         "inbound_answered": 0,
-        "outbound_rate": 33,
+        "outbound_rate": 25,
         "bookings_finalized": 0,
         "bookings_pending": 0,
         "bookings_cancelled": 0,
@@ -1745,18 +1745,18 @@
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 39,
-        "outbound": 30,
+        "total": 41,
+        "outbound": 32,
         "inbound": 9,
-        "outbound_unique": 22,
-        "answered": 25,
-        "effective": 16,
-        "talk_sec": 6159,
-        "talk_min": 103,
-        "answer_rate": 64,
-        "effective_rate": 64,
+        "outbound_unique": 23,
+        "answered": 26,
+        "effective": 17,
+        "talk_sec": 6245,
+        "talk_min": 104,
+        "answer_rate": 63,
+        "effective_rate": 63,
         "inbound_answered": 9,
-        "outbound_rate": 59,
+        "outbound_rate": 61,
         "bookings_finalized": 0,
         "bookings_pending": 4,
         "bookings_cancelled": 0,
@@ -1789,16 +1789,16 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 89,
-        "outbound": 77,
+        "total": 90,
+        "outbound": 78,
         "inbound": 12,
-        "outbound_unique": 61,
+        "outbound_unique": 62,
         "answered": 55,
         "effective": 41,
         "talk_sec": 22487,
         "talk_min": 375,
-        "answer_rate": 62,
-        "effective_rate": 60,
+        "answer_rate": 61,
+        "effective_rate": 59,
         "inbound_answered": 12,
         "outbound_rate": 52,
         "bookings_finalized": 45,
@@ -1810,18 +1810,18 @@
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 136,
-        "outbound": 101,
+        "total": 138,
+        "outbound": 103,
         "inbound": 35,
-        "outbound_unique": 76,
-        "answered": 99,
-        "effective": 63,
-        "talk_sec": 36306,
-        "talk_min": 605,
-        "answer_rate": 73,
+        "outbound_unique": 77,
+        "answered": 100,
+        "effective": 64,
+        "talk_sec": 36392,
+        "talk_min": 607,
+        "answer_rate": 72,
         "effective_rate": 72,
         "inbound_answered": 35,
-        "outbound_rate": 63,
+        "outbound_rate": 64,
         "bookings_finalized": 41,
         "bookings_pending": 7,
         "bookings_cancelled": 14,
@@ -1854,10 +1854,10 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 440,
-        "outbound": 360,
+        "total": 441,
+        "outbound": 361,
         "inbound": 80,
-        "outbound_unique": 273,
+        "outbound_unique": 274,
         "answered": 260,
         "effective": 176,
         "talk_sec": 94750,
@@ -1875,14 +1875,14 @@
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 704,
-        "outbound": 572,
+        "total": 706,
+        "outbound": 574,
         "inbound": 132,
         "outbound_unique": 440,
-        "answered": 447,
-        "effective": 308,
-        "talk_sec": 146785,
-        "talk_min": 2446,
+        "answered": 448,
+        "effective": 309,
+        "talk_sec": 146871,
+        "talk_min": 2448,
         "answer_rate": 63,
         "effective_rate": 62,
         "inbound_answered": 132,
