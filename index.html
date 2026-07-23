@@ -1028,6 +1028,7 @@ table { border-collapse: collapse; }
 .call-hour-col {
   flex: 1;
   min-width: 2.5rem;
+  height: 100%;
   position: relative;
   display: flex;
   align-items: end;
@@ -2741,11 +2742,14 @@ input::placeholder { color: #7f93b3; }
     };
   }
   function CallFunnelBrowserStrip({ funnel, analytics }) {
-    const callsTotal = funnel.calls_total || analytics.funnel && analytics.funnel.calls_total || 0;
-    const leads = funnel.leads_month || analytics.funnel && analytics.funnel.leads_month || 0;
-    const effective = funnel.calls_effective || analytics.funnel && analytics.funnel.calls_effective || 0;
-    const bookings = funnel.bookings_total || analytics.funnel && analytics.funnel.bookings_total || 0;
-    const finalized = funnel.bookings_finalized || analytics.funnel && analytics.funnel.bookings_finalized || 0;
+    const analyticsFunnel = analytics && analytics.funnel || {};
+    const source = Object.keys(analyticsFunnel).length ? analyticsFunnel : funnel || {};
+    const projection = analytics && analytics.projection || {};
+    const callsTotal = source.calls_total || 0;
+    const leads = source.leads_month || source.leads || 0;
+    const effective = source.calls_effective || source.total_calls_3min || 0;
+    const bookings = source.bookings_total || source.conversions_total || 0;
+    const finalized = source.bookings_finalized || 0;
     const steps = [
       { label: "Propostas", value: leads, color: "#a78bfa", rate: "" },
       { label: "Calls", value: callsTotal, color: "#13d7d0", rate: leads ? `${fmtPercent(callsTotal / leads)} das propostas` : "" },
@@ -2753,14 +2757,14 @@ input::placeholder { color: #7f93b3; }
       { label: "Marcações", value: bookings, color: "#60a5fa", rate: effective ? `${fmtPercent(bookings / effective)} das efetivas` : "" },
       { label: "Finalizadas", value: finalized, color: "#ffb224", rate: bookings ? `${fmtPercent(finalized / bookings)} das marcações` : "" }
     ];
-    const projected = funnel.revenue_projected || analytics.projection && analytics.projection.projected_revenue || 0;
-    const actual = funnel.revenue_actual || analytics.projection && analytics.projection.revenue_actual || 0;
-    const target = funnel.target_revenue || analytics.projection && analytics.projection.target_revenue || 0;
-    const cancelled = funnel.bookings_cancelled || 0;
-    const cancelRate = asFractionPercent(funnel.cancellation_rate);
+    const projected = source.revenue_projected || projection.projected_revenue || 0;
+    const actual = source.revenue_actual || projection.revenue_actual || 0;
+    const target = source.target_revenue || projection.target_revenue || 0;
+    const cancelled = source.bookings_cancelled || 0;
+    const cancelRate = asFractionPercent(source.cancellation_rate);
     const progress = target ? Math.min(1, projected / target) : 0;
-    const gapCars = Math.max(0, (funnel.target_cars || 0) - (funnel.cars_projected || 0));
-    const daysRemaining = funnel.days_remaining || 0;
+    const gapCars = Math.max(0, (source.target_cars || 0) - (source.cars_projected || projection.projected_cars || 0));
+    const daysRemaining = source.days_remaining || 0;
     const carsPerDay = daysRemaining ? gapCars / daysRemaining : 0;
     return h("div", { className: "call-panel-card", "data-help": "Alex Funnel - Month to Date: funil comercial do PKE Call Analytics. Mostra a passagem de propostas/leads para chamadas, chamadas efetivas, marcações e finalizações. Origem dos dados: PKE Call Analytics, tab Analytics/Funnel." },
       h("div", { className: "call-panel-title" }, "🔄 Alex Funnel — Month to Date"),
