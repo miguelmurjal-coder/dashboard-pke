@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-23T15:06:04.499Z",
+  "generatedAt": "2026-07-23T15:14:09.987Z",
   "source": "http://192.168.1.13:3000",
   "stats": {
     "total_records": 57229,
-    "scored_calls": 2942,
+    "scored_calls": 2943,
     "avg_score": 4.4
   },
   "config": {
@@ -180,12 +180,12 @@
           "by_agent": {
             "106": {
               "name": "Nelson Dias",
-              "avg": 3.5,
-              "count": 13
+              "avg": 3.6,
+              "count": 14
             }
           },
-          "avg": 3.5,
-          "count": 13
+          "avg": 3.6,
+          "count": 14
         }
       ],
       "funnel": {
@@ -197,7 +197,7 @@
         "bookings_cancelled": 57,
         "bookings_pending": 20,
         "revenue_actual": 79176,
-        "revenue_projected": 108654,
+        "revenue_projected": 108525,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 193,
@@ -205,8 +205,8 @@
         "conversions": 58,
         "conversion_rate": 7,
         "cancellation_rate": 21.1,
-        "days_elapsed": 16.76,
-        "days_remaining": 6.239999999999998,
+        "days_elapsed": 16.78,
+        "days_remaining": 6.219999999999999,
         "daily_rate_effective": 49.3,
         "vendor_bookings": {
           "102": {
@@ -417,7 +417,7 @@
       },
       "projection": {
         "projected_cars": 265,
-        "projected_revenue": 108654,
+        "projected_revenue": 108525,
         "revenue_actual": 79176,
         "target_revenue": 120000,
         "on_track": false,
@@ -643,12 +643,12 @@
           "by_agent": {
             "106": {
               "name": "Nelson Dias",
-              "avg": 3.5,
-              "count": 13
+              "avg": 3.6,
+              "count": 14
             }
           },
-          "avg": 3.5,
-          "count": 13
+          "avg": 3.6,
+          "count": 14
         }
       ],
       "funnel": {
@@ -660,7 +660,7 @@
         "bookings_cancelled": 57,
         "bookings_pending": 20,
         "revenue_actual": 79176,
-        "revenue_projected": 108654,
+        "revenue_projected": 108525,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 193,
@@ -668,8 +668,8 @@
         "conversions": 58,
         "conversion_rate": 7,
         "cancellation_rate": 21.1,
-        "days_elapsed": 16.76,
-        "days_remaining": 6.239999999999998,
+        "days_elapsed": 16.78,
+        "days_remaining": 6.219999999999999,
         "daily_rate_effective": 49.3,
         "vendor_bookings": {
           "102": {
@@ -880,7 +880,7 @@
       },
       "projection": {
         "projected_cars": 265,
-        "projected_revenue": 108654,
+        "projected_revenue": 108525,
         "revenue_actual": 79176,
         "target_revenue": 120000,
         "on_track": false,
@@ -1357,12 +1357,12 @@
           "by_agent": {
             "106": {
               "name": "Nelson Dias",
-              "avg": 3.5,
-              "count": 13
+              "avg": 3.6,
+              "count": 14
             }
           },
-          "avg": 3.5,
-          "count": 13
+          "avg": 3.6,
+          "count": 14
         }
       ],
       "funnel": {
@@ -1374,7 +1374,7 @@
         "bookings_cancelled": 57,
         "bookings_pending": 20,
         "revenue_actual": 79176,
-        "revenue_projected": 108654,
+        "revenue_projected": 108525,
         "target_revenue": 120000,
         "target_cars": 240,
         "cars_finalized": 193,
@@ -1382,8 +1382,8 @@
         "conversions": 58,
         "conversion_rate": 7,
         "cancellation_rate": 21.1,
-        "days_elapsed": 16.76,
-        "days_remaining": 6.239999999999998,
+        "days_elapsed": 16.78,
+        "days_remaining": 6.219999999999999,
         "daily_rate_effective": 49.3,
         "vendor_bookings": {
           "102": {
@@ -1594,7 +1594,7 @@
       },
       "projection": {
         "projected_cars": 265,
-        "projected_revenue": 108654,
+        "projected_revenue": 108525,
         "revenue_actual": 79176,
         "target_revenue": 120000,
         "on_track": false,
@@ -1760,8 +1760,8 @@
         "bookings_finalized": 0,
         "bookings_pending": 4,
         "bookings_cancelled": 0,
-        "avg_ai_score": 3.5,
-        "scored_calls": 13
+        "avg_ai_score": 3.6,
+        "scored_calls": 14
       }
     },
     "week": {
@@ -1826,7 +1826,7 @@
         "bookings_pending": 7,
         "bookings_cancelled": 14,
         "avg_ai_score": 3.8,
-        "scored_calls": 52
+        "scored_calls": 53
       }
     },
     "month": {
@@ -1891,7 +1891,7 @@
         "bookings_pending": 7,
         "bookings_cancelled": 14,
         "avg_ai_score": 3.8,
-        "scored_calls": 257
+        "scored_calls": 258
       }
     }
   },

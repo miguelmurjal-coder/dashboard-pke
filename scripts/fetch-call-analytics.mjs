@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 
-const BASE_URL = (process.env.CALL_ANALYTICS_BASE_URL || "http://192.168.1.13:3000").replace(/\/$/, "");
+const CONFIGURED_BASE_URL = process.env.CALL_ANALYTICS_BASE_URL || "";
+const BASE_URL = (CONFIGURED_BASE_URL || "http://192.168.1.13:3000").replace(/\/$/, "");
 const OUT_FILE = "assets/call-analytics.json";
 const PERIODS = ["today", "week", "month"];
 
@@ -92,6 +93,19 @@ async function fetchCallAnalytics() {
 async function main() {
   await mkdir("assets", { recursive: true });
   const previous = await readPreviousPayload();
+
+  if (process.env.GITHUB_ACTIONS === "true" && !CONFIGURED_BASE_URL) {
+    if (previous) {
+      await writeFile(OUT_FILE, JSON.stringify({
+        ...previous,
+        generatedAt: new Date().toISOString(),
+        stale: true,
+        error: "PKE Call Analytics é uma fonte de rede local; GitHub Action manteve o último snapshot publicado."
+      }, null, 2));
+      console.log("Call Analytics local source skipped on GitHub Actions; preserved previous snapshot.");
+      return;
+    }
+  }
 
   try {
     const payload = await fetchCallAnalytics();

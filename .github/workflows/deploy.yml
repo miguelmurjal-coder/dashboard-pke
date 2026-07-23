@@ -23,7 +23,7 @@ jobs:
 
       - name: Atualizar PKE Call Analytics
         env:
-          CALL_ANALYTICS_BASE_URL: ${{ secrets.CALL_ANALYTICS_BASE_URL || 'http://192.168.1.13:3000' }}
+          CALL_ANALYTICS_BASE_URL: ${{ secrets.CALL_ANALYTICS_BASE_URL }}
         run: node scripts/fetch-call-analytics.mjs
 
       - name: Preparar publicacao
