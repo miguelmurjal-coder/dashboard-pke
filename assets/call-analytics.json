@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-07-23T16:26:43.058Z",
+  "generatedAt": "2026-07-27T15:41:02.149Z",
   "source": "http://192.168.1.13:3000",
   "stats": {
-    "total_records": 57252,
-    "scored_calls": 2945,
+    "total_records": 57633,
+    "scored_calls": 3001,
     "avg_score": 4.4
   },
   "config": {
@@ -32,57 +32,57 @@
         },
         {
           "hour": 9,
-          "total": 0,
-          "effective": 0,
-          "answered": 0
-        },
-        {
-          "hour": 10,
-          "total": 6,
-          "effective": 5,
-          "answered": 5
-        },
-        {
-          "hour": 11,
           "total": 4,
           "effective": 3,
-          "answered": 3
-        },
-        {
-          "hour": 12,
-          "total": 4,
-          "effective": 4,
           "answered": 4
         },
         {
-          "hour": 13,
-          "total": 1,
-          "effective": 1,
-          "answered": 1
+          "hour": 10,
+          "total": 13,
+          "effective": 9,
+          "answered": 9
         },
         {
-          "hour": 14,
-          "total": 15,
+          "hour": 11,
+          "total": 8,
+          "effective": 7,
+          "answered": 7
+        },
+        {
+          "hour": 12,
+          "total": 10,
           "effective": 8,
           "answered": 8
         },
         {
+          "hour": 13,
+          "total": 2,
+          "effective": 2,
+          "answered": 2
+        },
+        {
+          "hour": 14,
+          "total": 19,
+          "effective": 14,
+          "answered": 14
+        },
+        {
           "hour": 15,
-          "total": 12,
-          "effective": 5,
-          "answered": 5
+          "total": 14,
+          "effective": 8,
+          "answered": 8
         },
         {
           "hour": 16,
-          "total": 12,
+          "total": 9,
           "effective": 4,
-          "answered": 5
+          "answered": 4
         },
         {
           "hour": 17,
-          "total": 3,
-          "effective": 1,
-          "answered": 1
+          "total": 0,
+          "effective": 0,
+          "answered": 0
         },
         {
           "hour": 18,
@@ -127,8 +127,8 @@
           "name": "Flávio Patinha",
           "days": {
             "Mon": {
-              "total": 0,
-              "effective": 0
+              "total": 34,
+              "effective": 25
             },
             "Tue": {
               "total": 0,
@@ -139,8 +139,8 @@
               "effective": 0
             },
             "Thu": {
-              "total": 9,
-              "effective": 2
+              "total": 0,
+              "effective": 0
             },
             "Fri": {
               "total": 0,
@@ -152,8 +152,8 @@
           "name": "Nelson Dias",
           "days": {
             "Mon": {
-              "total": 0,
-              "effective": 0
+              "total": 45,
+              "effective": 30
             },
             "Tue": {
               "total": 0,
@@ -164,8 +164,8 @@
               "effective": 0
             },
             "Thu": {
-              "total": 48,
-              "effective": 29
+              "total": 0,
+              "effective": 0
             },
             "Fri": {
               "total": 0,
@@ -176,186 +176,186 @@
       },
       "score_trend": [
         {
-          "date": "2026-07-23",
+          "date": "2026-07-27",
           "by_agent": {
             "105": {
               "name": "Flávio Patinha",
-              "avg": 3,
-              "count": 1
+              "avg": 4.9,
+              "count": 12
             },
             "106": {
               "name": "Nelson Dias",
-              "avg": 3.6,
-              "count": 15
+              "avg": 4,
+              "count": 24
             }
           },
-          "avg": 3.6,
-          "count": 16
+          "avg": 4.3,
+          "count": 36
         }
       ],
       "funnel": {
-        "leads_month": 1312,
-        "calls_total": 1385,
-        "calls_effective": 832,
-        "bookings_total": 272,
-        "bookings_finalized": 194,
-        "bookings_cancelled": 57,
-        "bookings_pending": 21,
-        "revenue_actual": 79572,
-        "revenue_projected": 108101,
+        "leads_month": 1443,
+        "calls_total": 1544,
+        "calls_effective": 916,
+        "bookings_total": 307,
+        "bookings_finalized": 232,
+        "bookings_cancelled": 63,
+        "bookings_pending": 12,
+        "revenue_actual": 96441,
+        "revenue_projected": 117798,
         "target_revenue": 120000,
         "target_cars": 240,
-        "cars_finalized": 194,
-        "cars_projected": 264,
-        "conversions": 59,
-        "conversion_rate": 7.1,
-        "cancellation_rate": 21,
-        "days_elapsed": 16.93,
-        "days_remaining": 6.07,
-        "daily_rate_effective": 49.1,
+        "cars_finalized": 232,
+        "cars_projected": 283,
+        "conversions": 70,
+        "conversion_rate": 7.6,
+        "cancellation_rate": 20.5,
+        "days_elapsed": 18.83,
+        "days_remaining": 4.170000000000002,
+        "daily_rate_effective": 48.6,
         "vendor_bookings": {
           "102": {
             "name": "Tiago Cruz",
-            "total": 25,
-            "finalized": 17,
+            "total": 27,
+            "finalized": 19,
             "cancelled": 6,
-            "conversions": 9
+            "conversions": 10
           },
           "105": {
             "name": "Flávio Patinha",
-            "total": 67,
-            "finalized": 45,
-            "cancelled": 17,
-            "conversions": 31
+            "total": 76,
+            "finalized": 55,
+            "cancelled": 18,
+            "conversions": 38
           },
           "106": {
             "name": "Nelson Dias",
-            "total": 62,
-            "finalized": 41,
+            "total": 73,
+            "finalized": 55,
             "cancelled": 14,
-            "conversions": 25
+            "conversions": 34
           }
         }
       },
       "cancel_by_vendor": {
         "102": {
           "name": "Tiago Cruz",
-          "total": 25,
+          "total": 27,
           "cancelled": 6,
-          "rate": 24
+          "rate": 22.2
         },
         "105": {
           "name": "Flávio Patinha",
-          "total": 67,
-          "cancelled": 17,
-          "rate": 25.4
+          "total": 76,
+          "cancelled": 18,
+          "rate": 23.7
         },
         "106": {
           "name": "Nelson Dias",
-          "total": 62,
+          "total": 73,
           "cancelled": 14,
-          "rate": 22.6
+          "rate": 19.2
         }
       },
       "value_by_vendor": {
         "102": {
           "name": "Tiago Cruz",
-          "count": 17,
-          "avg": 547,
-          "total": 9307
+          "count": 19,
+          "avg": 535,
+          "total": 10158
         },
         "105": {
           "name": "Flávio Patinha",
-          "count": 45,
-          "avg": 542,
-          "total": 24408
+          "count": 55,
+          "avg": 557,
+          "total": 30635
         },
         "106": {
           "name": "Nelson Dias",
-          "count": 41,
-          "avg": 485,
-          "total": 19871
+          "count": 55,
+          "avg": 495,
+          "total": 27241
         }
       },
       "payment_by_vendor": {
         "102": {
           "name": "Tiago Cruz",
           "types": {
-            "Pagamento Antecipado Completo": 9,
+            "Pagamento Antecipado Completo": 10,
             "Pagamento Sinal": 8,
-            "Sem Pagamento Online": 8
+            "Sem Pagamento Online": 9
           }
         },
         "105": {
           "name": "Flávio Patinha",
           "types": {
-            "Pagamento Antecipado Completo": 36,
-            "Pagamento Sinal": 4,
-            "Sem Pagamento Online": 27
+            "Pagamento Antecipado Completo": 41,
+            "Pagamento Sinal": 5,
+            "Sem Pagamento Online": 30
           }
         },
         "106": {
           "name": "Nelson Dias",
           "types": {
-            "Pagamento Antecipado Completo": 36,
-            "Sem Pagamento Online": 26
+            "Pagamento Antecipado Completo": 39,
+            "Sem Pagamento Online": 34
           }
         }
       },
       "top_services": [
         {
           "name": "PKE AdBlueOFF",
-          "count": 42
-        },
-        {
-          "name": "Substituição FAP",
-          "count": 18
+          "count": 48
         },
         {
           "name": "Diagnóstico Integral Sistema FAP",
-          "count": 16
+          "count": 21
         },
         {
           "name": "PKE SuperSPORT",
-          "count": 15
+          "count": 19
+        },
+        {
+          "name": "Substituição FAP",
+          "count": 19
         },
         {
           "name": "Diagnóstico Eletrónico",
+          "count": 18
+        },
+        {
+          "name": "PKE FlexDRIVE",
           "count": 14
         },
         {
-          "name": "PKE EGRoff",
+          "name": "APV - Solução Definitiva PKE FAPoff",
           "count": 13
         },
         {
           "name": "Limpeza Especializada FAP (serviço com desmontagem e montagem)",
-          "count": 11
+          "count": 13
         },
         {
-          "name": "APV - Solução Definitiva PKE FAPoff",
-          "count": 10
+          "name": "PKE EGRoff",
+          "count": 12
         },
         {
-          "name": "PKE FlexDRIVE",
-          "count": 10
-        },
-        {
-          "name": "APV - PKE FlexDRIVE",
-          "count": 7
+          "name": "(Cross-sell) Substituição FAP",
+          "count": 8
         }
       ],
       "utm_attribution": [
         {
           "source": "METAADS",
-          "leads": 436,
-          "converted": 630,
-          "rate": 144.5
+          "leads": 483,
+          "converted": 644,
+          "rate": 133.3
         },
         {
           "source": "GADS",
-          "leads": 149,
-          "converted": 8,
-          "rate": 5.4
+          "leads": 170,
+          "converted": 11,
+          "rate": 6.5
         },
         {
           "source": "fb",
@@ -365,9 +365,9 @@
         },
         {
           "source": "chatgpt.com",
-          "leads": 8,
-          "converted": 0,
-          "rate": 0
+          "leads": 10,
+          "converted": 1,
+          "rate": 10
         },
         {
           "source": "fapoff.pt",
@@ -384,118 +384,118 @@
       ],
       "time_to_convert": {
         "Nelson Dias": {
-          "avg_hours": 63.9,
-          "count": 13,
+          "avg_hours": 50,
+          "count": 19,
           "min_hours": 0,
           "max_hours": 365.6
         },
         "Tiago Cruz": {
-          "avg_hours": 189.3,
-          "count": 9,
-          "min_hours": 18.2,
+          "avg_hours": 193,
+          "count": 11,
+          "min_hours": 0.7,
           "max_hours": 507.7
         },
         "Website": {
-          "avg_hours": 0.9,
-          "count": 2,
+          "avg_hours": 8.1,
+          "count": 3,
           "min_hours": 0.2,
-          "max_hours": 1.7
+          "max_hours": 22.5
         },
         "Flávio Patinha": {
-          "avg_hours": 47.4,
-          "count": 10,
+          "avg_hours": 54.1,
+          "count": 12,
           "min_hours": 1.2,
           "max_hours": 244.9
         },
         "Bruno Magarreiro": {
-          "avg_hours": 86.2,
-          "count": 7,
+          "avg_hours": 84.3,
+          "count": 8,
           "min_hours": 0.1,
           "max_hours": 266.6
         },
         "Verónica Almeida": {
-          "avg_hours": 187.2,
-          "count": 4,
+          "avg_hours": 211,
+          "count": 5,
           "min_hours": 120.3,
           "max_hours": 318.3
         }
       },
       "projection": {
-        "projected_cars": 264,
-        "projected_revenue": 108101,
-        "revenue_actual": 79572,
+        "projected_cars": 283,
+        "projected_revenue": 117798,
+        "revenue_actual": 96441,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -4
+        "gap_cars_per_day": -10.3
       }
     },
     "week": {
       "hourly": [
         {
           "hour": 8,
+          "total": 0,
+          "effective": 0,
+          "answered": 0
+        },
+        {
+          "hour": 9,
+          "total": 4,
+          "effective": 3,
+          "answered": 4
+        },
+        {
+          "hour": 10,
+          "total": 13,
+          "effective": 9,
+          "answered": 9
+        },
+        {
+          "hour": 11,
+          "total": 8,
+          "effective": 7,
+          "answered": 7
+        },
+        {
+          "hour": 12,
+          "total": 10,
+          "effective": 8,
+          "answered": 8
+        },
+        {
+          "hour": 13,
           "total": 2,
           "effective": 2,
           "answered": 2
         },
         {
-          "hour": 9,
-          "total": 22,
-          "effective": 16,
-          "answered": 16
-        },
-        {
-          "hour": 10,
-          "total": 35,
-          "effective": 23,
-          "answered": 24
-        },
-        {
-          "hour": 11,
-          "total": 33,
-          "effective": 23,
-          "answered": 24
-        },
-        {
-          "hour": 12,
-          "total": 28,
-          "effective": 19,
-          "answered": 19
-        },
-        {
-          "hour": 13,
-          "total": 4,
-          "effective": 3,
-          "answered": 3
-        },
-        {
           "hour": 14,
-          "total": 30,
-          "effective": 18,
-          "answered": 19
+          "total": 19,
+          "effective": 14,
+          "answered": 14
         },
         {
           "hour": 15,
-          "total": 36,
-          "effective": 23,
-          "answered": 23
+          "total": 14,
+          "effective": 8,
+          "answered": 8
         },
         {
           "hour": 16,
-          "total": 41,
-          "effective": 23,
-          "answered": 24
+          "total": 9,
+          "effective": 4,
+          "answered": 4
         },
         {
           "hour": 17,
-          "total": 26,
-          "effective": 17,
-          "answered": 18
+          "total": 0,
+          "effective": 0,
+          "answered": 0
         },
         {
           "hour": 18,
-          "total": 4,
-          "effective": 2,
-          "answered": 2
+          "total": 0,
+          "effective": 0,
+          "answered": 0
         },
         {
           "hour": 19,
@@ -509,12 +509,12 @@
           "name": "Tiago Cruz",
           "days": {
             "Mon": {
-              "total": 11,
-              "effective": 7
+              "total": 0,
+              "effective": 0
             },
             "Tue": {
-              "total": 10,
-              "effective": 6
+              "total": 0,
+              "effective": 0
             },
             "Wed": {
               "total": 0,
@@ -534,20 +534,20 @@
           "name": "Flávio Patinha",
           "days": {
             "Mon": {
-              "total": 29,
-              "effective": 18
+              "total": 34,
+              "effective": 25
             },
             "Tue": {
-              "total": 35,
-              "effective": 20
+              "total": 0,
+              "effective": 0
             },
             "Wed": {
-              "total": 22,
-              "effective": 14
+              "total": 0,
+              "effective": 0
             },
             "Thu": {
-              "total": 9,
-              "effective": 2
+              "total": 0,
+              "effective": 0
             },
             "Fri": {
               "total": 0,
@@ -559,20 +559,20 @@
           "name": "Nelson Dias",
           "days": {
             "Mon": {
-              "total": 36,
-              "effective": 25
+              "total": 45,
+              "effective": 30
             },
             "Tue": {
-              "total": 42,
-              "effective": 31
+              "total": 0,
+              "effective": 0
             },
             "Wed": {
-              "total": 19,
-              "effective": 17
+              "total": 0,
+              "effective": 0
             },
             "Thu": {
-              "total": 48,
-              "effective": 29
+              "total": 0,
+              "effective": 0
             },
             "Fri": {
               "total": 0,
@@ -583,247 +583,186 @@
       },
       "score_trend": [
         {
-          "date": "2026-07-20",
+          "date": "2026-07-27",
           "by_agent": {
-            "102": {
-              "name": "Tiago Cruz",
-              "avg": 4.4,
-              "count": 5
-            },
             "105": {
               "name": "Flávio Patinha",
-              "avg": 5.7,
-              "count": 13
-            },
-            "106": {
-              "name": "Nelson Dias",
-              "avg": 3.9,
-              "count": 16
-            }
-          },
-          "avg": 4.7,
-          "count": 34
-        },
-        {
-          "date": "2026-07-21",
-          "by_agent": {
-            "102": {
-              "name": "Tiago Cruz",
-              "avg": 5,
-              "count": 4
-            },
-            "105": {
-              "name": "Flávio Patinha",
-              "avg": 5.3,
+              "avg": 4.9,
               "count": 12
             },
             "106": {
               "name": "Nelson Dias",
               "avg": 4,
-              "count": 15
+              "count": 24
             }
           },
-          "avg": 4.6,
-          "count": 31
-        },
-        {
-          "date": "2026-07-22",
-          "by_agent": {
-            "105": {
-              "name": "Flávio Patinha",
-              "avg": 5.3,
-              "count": 12
-            },
-            "106": {
-              "name": "Nelson Dias",
-              "avg": 3.7,
-              "count": 8
-            }
-          },
-          "avg": 4.7,
-          "count": 20
-        },
-        {
-          "date": "2026-07-23",
-          "by_agent": {
-            "105": {
-              "name": "Flávio Patinha",
-              "avg": 3,
-              "count": 1
-            },
-            "106": {
-              "name": "Nelson Dias",
-              "avg": 3.6,
-              "count": 15
-            }
-          },
-          "avg": 3.6,
-          "count": 16
+          "avg": 4.3,
+          "count": 36
         }
       ],
       "funnel": {
-        "leads_month": 1312,
-        "calls_total": 1385,
-        "calls_effective": 832,
-        "bookings_total": 272,
-        "bookings_finalized": 194,
-        "bookings_cancelled": 57,
-        "bookings_pending": 21,
-        "revenue_actual": 79572,
-        "revenue_projected": 108101,
+        "leads_month": 1443,
+        "calls_total": 1544,
+        "calls_effective": 916,
+        "bookings_total": 307,
+        "bookings_finalized": 232,
+        "bookings_cancelled": 63,
+        "bookings_pending": 12,
+        "revenue_actual": 96441,
+        "revenue_projected": 117798,
         "target_revenue": 120000,
         "target_cars": 240,
-        "cars_finalized": 194,
-        "cars_projected": 264,
-        "conversions": 59,
-        "conversion_rate": 7.1,
-        "cancellation_rate": 21,
-        "days_elapsed": 16.93,
-        "days_remaining": 6.07,
-        "daily_rate_effective": 49.1,
+        "cars_finalized": 232,
+        "cars_projected": 283,
+        "conversions": 70,
+        "conversion_rate": 7.6,
+        "cancellation_rate": 20.5,
+        "days_elapsed": 18.83,
+        "days_remaining": 4.170000000000002,
+        "daily_rate_effective": 48.6,
         "vendor_bookings": {
           "102": {
             "name": "Tiago Cruz",
-            "total": 25,
-            "finalized": 17,
+            "total": 27,
+            "finalized": 19,
             "cancelled": 6,
-            "conversions": 9
+            "conversions": 10
           },
           "105": {
             "name": "Flávio Patinha",
-            "total": 67,
-            "finalized": 45,
-            "cancelled": 17,
-            "conversions": 31
+            "total": 76,
+            "finalized": 55,
+            "cancelled": 18,
+            "conversions": 38
           },
           "106": {
             "name": "Nelson Dias",
-            "total": 62,
-            "finalized": 41,
+            "total": 73,
+            "finalized": 55,
             "cancelled": 14,
-            "conversions": 25
+            "conversions": 34
           }
         }
       },
       "cancel_by_vendor": {
         "102": {
           "name": "Tiago Cruz",
-          "total": 25,
+          "total": 27,
           "cancelled": 6,
-          "rate": 24
+          "rate": 22.2
         },
         "105": {
           "name": "Flávio Patinha",
-          "total": 67,
-          "cancelled": 17,
-          "rate": 25.4
+          "total": 76,
+          "cancelled": 18,
+          "rate": 23.7
         },
         "106": {
           "name": "Nelson Dias",
-          "total": 62,
+          "total": 73,
           "cancelled": 14,
-          "rate": 22.6
+          "rate": 19.2
         }
       },
       "value_by_vendor": {
         "102": {
           "name": "Tiago Cruz",
-          "count": 17,
-          "avg": 547,
-          "total": 9307
+          "count": 19,
+          "avg": 535,
+          "total": 10158
         },
         "105": {
           "name": "Flávio Patinha",
-          "count": 45,
-          "avg": 542,
-          "total": 24408
+          "count": 55,
+          "avg": 557,
+          "total": 30635
         },
         "106": {
           "name": "Nelson Dias",
-          "count": 41,
-          "avg": 485,
-          "total": 19871
+          "count": 55,
+          "avg": 495,
+          "total": 27241
         }
       },
       "payment_by_vendor": {
         "102": {
           "name": "Tiago Cruz",
           "types": {
-            "Pagamento Antecipado Completo": 9,
+            "Pagamento Antecipado Completo": 10,
             "Pagamento Sinal": 8,
-            "Sem Pagamento Online": 8
+            "Sem Pagamento Online": 9
           }
         },
         "105": {
           "name": "Flávio Patinha",
           "types": {
-            "Pagamento Antecipado Completo": 36,
-            "Pagamento Sinal": 4,
-            "Sem Pagamento Online": 27
+            "Pagamento Antecipado Completo": 41,
+            "Pagamento Sinal": 5,
+            "Sem Pagamento Online": 30
           }
         },
         "106": {
           "name": "Nelson Dias",
           "types": {
-            "Pagamento Antecipado Completo": 36,
-            "Sem Pagamento Online": 26
+            "Pagamento Antecipado Completo": 39,
+            "Sem Pagamento Online": 34
           }
         }
       },
       "top_services": [
         {
           "name": "PKE AdBlueOFF",
-          "count": 42
-        },
-        {
-          "name": "Substituição FAP",
-          "count": 18
+          "count": 48
         },
         {
           "name": "Diagnóstico Integral Sistema FAP",
-          "count": 16
+          "count": 21
         },
         {
           "name": "PKE SuperSPORT",
-          "count": 15
+          "count": 19
+        },
+        {
+          "name": "Substituição FAP",
+          "count": 19
         },
         {
           "name": "Diagnóstico Eletrónico",
+          "count": 18
+        },
+        {
+          "name": "PKE FlexDRIVE",
           "count": 14
         },
         {
-          "name": "PKE EGRoff",
+          "name": "APV - Solução Definitiva PKE FAPoff",
           "count": 13
         },
         {
           "name": "Limpeza Especializada FAP (serviço com desmontagem e montagem)",
-          "count": 11
+          "count": 13
         },
         {
-          "name": "APV - Solução Definitiva PKE FAPoff",
-          "count": 10
+          "name": "PKE EGRoff",
+          "count": 12
         },
         {
-          "name": "PKE FlexDRIVE",
-          "count": 10
-        },
-        {
-          "name": "APV - PKE FlexDRIVE",
-          "count": 7
+          "name": "(Cross-sell) Substituição FAP",
+          "count": 8
         }
       ],
       "utm_attribution": [
         {
           "source": "METAADS",
-          "leads": 436,
-          "converted": 630,
-          "rate": 144.5
+          "leads": 483,
+          "converted": 644,
+          "rate": 133.3
         },
         {
           "source": "GADS",
-          "leads": 149,
-          "converted": 8,
-          "rate": 5.4
+          "leads": 170,
+          "converted": 11,
+          "rate": 6.5
         },
         {
           "source": "fb",
@@ -833,9 +772,9 @@
         },
         {
           "source": "chatgpt.com",
-          "leads": 8,
-          "converted": 0,
-          "rate": 0
+          "leads": 10,
+          "converted": 1,
+          "rate": 10
         },
         {
           "source": "fapoff.pt",
@@ -852,49 +791,49 @@
       ],
       "time_to_convert": {
         "Nelson Dias": {
-          "avg_hours": 63.9,
-          "count": 13,
+          "avg_hours": 50,
+          "count": 19,
           "min_hours": 0,
           "max_hours": 365.6
         },
         "Tiago Cruz": {
-          "avg_hours": 189.3,
-          "count": 9,
-          "min_hours": 18.2,
+          "avg_hours": 193,
+          "count": 11,
+          "min_hours": 0.7,
           "max_hours": 507.7
         },
         "Website": {
-          "avg_hours": 0.9,
-          "count": 2,
+          "avg_hours": 8.1,
+          "count": 3,
           "min_hours": 0.2,
-          "max_hours": 1.7
+          "max_hours": 22.5
         },
         "Flávio Patinha": {
-          "avg_hours": 47.4,
-          "count": 10,
+          "avg_hours": 54.1,
+          "count": 12,
           "min_hours": 1.2,
           "max_hours": 244.9
         },
         "Bruno Magarreiro": {
-          "avg_hours": 86.2,
-          "count": 7,
+          "avg_hours": 84.3,
+          "count": 8,
           "min_hours": 0.1,
           "max_hours": 266.6
         },
         "Verónica Almeida": {
-          "avg_hours": 187.2,
-          "count": 4,
+          "avg_hours": 211,
+          "count": 5,
           "min_hours": 120.3,
           "max_hours": 318.3
         }
       },
       "projection": {
-        "projected_cars": 264,
-        "projected_revenue": 108101,
-        "revenue_actual": 79572,
+        "projected_cars": 283,
+        "projected_revenue": 117798,
+        "revenue_actual": 96441,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -4
+        "gap_cars_per_day": -10.3
       }
     },
     "month": {
@@ -907,57 +846,57 @@
         },
         {
           "hour": 9,
-          "total": 133,
-          "effective": 89,
-          "answered": 92
+          "total": 146,
+          "effective": 96,
+          "answered": 100
         },
         {
           "hour": 10,
-          "total": 189,
-          "effective": 109,
-          "answered": 117
+          "total": 203,
+          "effective": 118,
+          "answered": 126
         },
         {
           "hour": 11,
-          "total": 208,
-          "effective": 131,
-          "answered": 135
+          "total": 221,
+          "effective": 142,
+          "answered": 146
         },
         {
           "hour": 12,
-          "total": 149,
-          "effective": 99,
-          "answered": 101
+          "total": 163,
+          "effective": 109,
+          "answered": 112
         },
         {
           "hour": 13,
-          "total": 25,
-          "effective": 16,
-          "answered": 16
+          "total": 28,
+          "effective": 19,
+          "answered": 19
         },
         {
           "hour": 14,
-          "total": 149,
-          "effective": 95,
-          "answered": 97
+          "total": 179,
+          "effective": 114,
+          "answered": 116
         },
         {
           "hour": 15,
-          "total": 151,
-          "effective": 92,
-          "answered": 95
+          "total": 179,
+          "effective": 106,
+          "answered": 110
         },
         {
           "hour": 16,
-          "total": 188,
-          "effective": 104,
-          "answered": 108
+          "total": 213,
+          "effective": 111,
+          "answered": 116
         },
         {
           "hour": 17,
-          "total": 176,
-          "effective": 87,
-          "answered": 90
+          "total": 195,
+          "effective": 91,
+          "answered": 94
         },
         {
           "hour": 18,
@@ -1002,8 +941,8 @@
           "name": "Flávio Patinha",
           "days": {
             "Mon": {
-              "total": 77,
-              "effective": 54
+              "total": 111,
+              "effective": 79
             },
             "Tue": {
               "total": 54,
@@ -1014,12 +953,12 @@
               "effective": 46
             },
             "Thu": {
-              "total": 129,
-              "effective": 58
+              "total": 131,
+              "effective": 60
             },
             "Fri": {
-              "total": 100,
-              "effective": 56
+              "total": 128,
+              "effective": 64
             }
           }
         },
@@ -1027,8 +966,8 @@
           "name": "Nelson Dias",
           "days": {
             "Mon": {
-              "total": 147,
-              "effective": 101
+              "total": 192,
+              "effective": 131
             },
             "Tue": {
               "total": 143,
@@ -1039,12 +978,12 @@
               "effective": 98
             },
             "Thu": {
-              "total": 138,
-              "effective": 87
+              "total": 141,
+              "effective": 88
             },
             "Fri": {
-              "total": 118,
-              "effective": 64
+              "total": 165,
+              "effective": 82
             }
           }
         }
@@ -1367,182 +1306,216 @@
           "by_agent": {
             "105": {
               "name": "Flávio Patinha",
-              "avg": 3,
-              "count": 1
+              "avg": 4.1,
+              "count": 2
             },
             "106": {
               "name": "Nelson Dias",
-              "avg": 3.6,
-              "count": 15
+              "avg": 3.7,
+              "count": 16
             }
           },
-          "avg": 3.6,
-          "count": 16
+          "avg": 3.7,
+          "count": 18
+        },
+        {
+          "date": "2026-07-24",
+          "by_agent": {
+            "105": {
+              "name": "Flávio Patinha",
+              "avg": 5.7,
+              "count": 7
+            },
+            "106": {
+              "name": "Nelson Dias",
+              "avg": 3.7,
+              "count": 11
+            }
+          },
+          "avg": 4.5,
+          "count": 18
+        },
+        {
+          "date": "2026-07-27",
+          "by_agent": {
+            "105": {
+              "name": "Flávio Patinha",
+              "avg": 4.9,
+              "count": 12
+            },
+            "106": {
+              "name": "Nelson Dias",
+              "avg": 4,
+              "count": 24
+            }
+          },
+          "avg": 4.3,
+          "count": 36
         }
       ],
       "funnel": {
-        "leads_month": 1312,
-        "calls_total": 1385,
-        "calls_effective": 832,
-        "bookings_total": 272,
-        "bookings_finalized": 194,
-        "bookings_cancelled": 57,
-        "bookings_pending": 21,
-        "revenue_actual": 79572,
-        "revenue_projected": 108101,
+        "leads_month": 1443,
+        "calls_total": 1544,
+        "calls_effective": 916,
+        "bookings_total": 307,
+        "bookings_finalized": 232,
+        "bookings_cancelled": 63,
+        "bookings_pending": 12,
+        "revenue_actual": 96441,
+        "revenue_projected": 117798,
         "target_revenue": 120000,
         "target_cars": 240,
-        "cars_finalized": 194,
-        "cars_projected": 264,
-        "conversions": 59,
-        "conversion_rate": 7.1,
-        "cancellation_rate": 21,
-        "days_elapsed": 16.93,
-        "days_remaining": 6.07,
-        "daily_rate_effective": 49.1,
+        "cars_finalized": 232,
+        "cars_projected": 283,
+        "conversions": 70,
+        "conversion_rate": 7.6,
+        "cancellation_rate": 20.5,
+        "days_elapsed": 18.83,
+        "days_remaining": 4.170000000000002,
+        "daily_rate_effective": 48.6,
         "vendor_bookings": {
           "102": {
             "name": "Tiago Cruz",
-            "total": 25,
-            "finalized": 17,
+            "total": 27,
+            "finalized": 19,
             "cancelled": 6,
-            "conversions": 9
+            "conversions": 10
           },
           "105": {
             "name": "Flávio Patinha",
-            "total": 67,
-            "finalized": 45,
-            "cancelled": 17,
-            "conversions": 31
+            "total": 76,
+            "finalized": 55,
+            "cancelled": 18,
+            "conversions": 38
           },
           "106": {
             "name": "Nelson Dias",
-            "total": 62,
-            "finalized": 41,
+            "total": 73,
+            "finalized": 55,
             "cancelled": 14,
-            "conversions": 25
+            "conversions": 34
           }
         }
       },
       "cancel_by_vendor": {
         "102": {
           "name": "Tiago Cruz",
-          "total": 25,
+          "total": 27,
           "cancelled": 6,
-          "rate": 24
+          "rate": 22.2
         },
         "105": {
           "name": "Flávio Patinha",
-          "total": 67,
-          "cancelled": 17,
-          "rate": 25.4
+          "total": 76,
+          "cancelled": 18,
+          "rate": 23.7
         },
         "106": {
           "name": "Nelson Dias",
-          "total": 62,
+          "total": 73,
           "cancelled": 14,
-          "rate": 22.6
+          "rate": 19.2
         }
       },
       "value_by_vendor": {
         "102": {
           "name": "Tiago Cruz",
-          "count": 17,
-          "avg": 547,
-          "total": 9307
+          "count": 19,
+          "avg": 535,
+          "total": 10158
         },
         "105": {
           "name": "Flávio Patinha",
-          "count": 45,
-          "avg": 542,
-          "total": 24408
+          "count": 55,
+          "avg": 557,
+          "total": 30635
         },
         "106": {
           "name": "Nelson Dias",
-          "count": 41,
-          "avg": 485,
-          "total": 19871
+          "count": 55,
+          "avg": 495,
+          "total": 27241
         }
       },
       "payment_by_vendor": {
         "102": {
           "name": "Tiago Cruz",
           "types": {
-            "Pagamento Antecipado Completo": 9,
+            "Pagamento Antecipado Completo": 10,
             "Pagamento Sinal": 8,
-            "Sem Pagamento Online": 8
+            "Sem Pagamento Online": 9
           }
         },
         "105": {
           "name": "Flávio Patinha",
           "types": {
-            "Pagamento Antecipado Completo": 36,
-            "Pagamento Sinal": 4,
-            "Sem Pagamento Online": 27
+            "Pagamento Antecipado Completo": 41,
+            "Pagamento Sinal": 5,
+            "Sem Pagamento Online": 30
           }
         },
         "106": {
           "name": "Nelson Dias",
           "types": {
-            "Pagamento Antecipado Completo": 36,
-            "Sem Pagamento Online": 26
+            "Pagamento Antecipado Completo": 39,
+            "Sem Pagamento Online": 34
           }
         }
       },
       "top_services": [
         {
           "name": "PKE AdBlueOFF",
-          "count": 42
-        },
-        {
-          "name": "Substituição FAP",
-          "count": 18
+          "count": 48
         },
         {
           "name": "Diagnóstico Integral Sistema FAP",
-          "count": 16
+          "count": 21
         },
         {
           "name": "PKE SuperSPORT",
-          "count": 15
+          "count": 19
+        },
+        {
+          "name": "Substituição FAP",
+          "count": 19
         },
         {
           "name": "Diagnóstico Eletrónico",
+          "count": 18
+        },
+        {
+          "name": "PKE FlexDRIVE",
           "count": 14
         },
         {
-          "name": "PKE EGRoff",
+          "name": "APV - Solução Definitiva PKE FAPoff",
           "count": 13
         },
         {
           "name": "Limpeza Especializada FAP (serviço com desmontagem e montagem)",
-          "count": 11
+          "count": 13
         },
         {
-          "name": "APV - Solução Definitiva PKE FAPoff",
-          "count": 10
+          "name": "PKE EGRoff",
+          "count": 12
         },
         {
-          "name": "PKE FlexDRIVE",
-          "count": 10
-        },
-        {
-          "name": "APV - PKE FlexDRIVE",
-          "count": 7
+          "name": "(Cross-sell) Substituição FAP",
+          "count": 8
         }
       ],
       "utm_attribution": [
         {
           "source": "METAADS",
-          "leads": 436,
-          "converted": 630,
-          "rate": 144.5
+          "leads": 483,
+          "converted": 644,
+          "rate": 133.3
         },
         {
           "source": "GADS",
-          "leads": 149,
-          "converted": 8,
-          "rate": 5.4
+          "leads": 170,
+          "converted": 11,
+          "rate": 6.5
         },
         {
           "source": "fb",
@@ -1552,9 +1525,9 @@
         },
         {
           "source": "chatgpt.com",
-          "leads": 8,
-          "converted": 0,
-          "rate": 0
+          "leads": 10,
+          "converted": 1,
+          "rate": 10
         },
         {
           "source": "fapoff.pt",
@@ -1571,91 +1544,71 @@
       ],
       "time_to_convert": {
         "Nelson Dias": {
-          "avg_hours": 63.9,
-          "count": 13,
+          "avg_hours": 50,
+          "count": 19,
           "min_hours": 0,
           "max_hours": 365.6
         },
         "Tiago Cruz": {
-          "avg_hours": 189.3,
-          "count": 9,
-          "min_hours": 18.2,
+          "avg_hours": 193,
+          "count": 11,
+          "min_hours": 0.7,
           "max_hours": 507.7
         },
         "Website": {
-          "avg_hours": 0.9,
-          "count": 2,
+          "avg_hours": 8.1,
+          "count": 3,
           "min_hours": 0.2,
-          "max_hours": 1.7
+          "max_hours": 22.5
         },
         "Flávio Patinha": {
-          "avg_hours": 47.4,
-          "count": 10,
+          "avg_hours": 54.1,
+          "count": 12,
           "min_hours": 1.2,
           "max_hours": 244.9
         },
         "Bruno Magarreiro": {
-          "avg_hours": 86.2,
-          "count": 7,
+          "avg_hours": 84.3,
+          "count": 8,
           "min_hours": 0.1,
           "max_hours": 266.6
         },
         "Verónica Almeida": {
-          "avg_hours": 187.2,
-          "count": 4,
+          "avg_hours": 211,
+          "count": 5,
           "min_hours": 120.3,
           "max_hours": 318.3
         }
       },
       "projection": {
-        "projected_cars": 264,
-        "projected_revenue": 108101,
-        "revenue_actual": 79572,
+        "projected_cars": 283,
+        "projected_revenue": 117798,
+        "revenue_actual": 96441,
         "target_revenue": 120000,
         "on_track": false,
-        "gap_cars_per_day": -4
+        "gap_cars_per_day": -10.3
       }
     }
   },
   "funnel": {
     "today": {
       "period": "today",
-      "since": "2026-07-23",
-      "until": "2026-07-23",
+      "since": "2026-07-27",
+      "until": "2026-07-27",
       "working_days": 1,
-      "leads": 54,
-      "conv_started": 54,
+      "leads": 36,
+      "conv_started": 36,
       "responded": 22,
-      "alex_bookings": 5,
-      "connected": 0,
-      "total_calls_3min": 16,
+      "alex_bookings": 6,
+      "connected": 1,
+      "total_calls_3min": 38,
       "conversions": 0,
-      "conversions_total": 0,
-      "conversions_unique": 0,
-      "by_closer": []
-    },
-    "week": {
-      "period": "week",
-      "since": "2026-07-20",
-      "until": "2026-07-23",
-      "working_days": 4,
-      "leads": 248,
-      "conv_started": 248,
-      "responded": 139,
-      "alex_bookings": 5,
-      "connected": 0,
-      "total_calls_3min": 107,
-      "conversions": 0,
-      "conversions_total": 13,
-      "conversions_unique": 13,
+      "conversions_total": 5,
+      "conversions_unique": 5,
       "by_closer": [
         {
           "name": "Nelson Dias",
-          "count": 6
-        },
-        {
-          "name": "Bruno Magarreiro",
-          "count": 6
+          "count": 5
         },
         {
           "name": "Flávio Patinha",
@@ -1663,52 +1616,77 @@
         },
         {
           "name": "Verónica Almeida",
-          "count": 2
+          "count": 1
+        }
+      ]
+    },
+    "week": {
+      "period": "week",
+      "since": "2026-07-27",
+      "until": "2026-07-27",
+      "working_days": 1,
+      "leads": 36,
+      "conv_started": 36,
+      "responded": 22,
+      "alex_bookings": 6,
+      "connected": 1,
+      "total_calls_3min": 38,
+      "conversions": 0,
+      "conversions_total": 5,
+      "conversions_unique": 5,
+      "by_closer": [
+        {
+          "name": "Nelson Dias",
+          "count": 5
         },
         {
-          "name": "Tiago Cruz",
-          "count": 2
+          "name": "Flávio Patinha",
+          "count": 3
+        },
+        {
+          "name": "Verónica Almeida",
+          "count": 1
         }
       ]
     },
     "month": {
       "period": "month",
       "since": "2026-07-01",
-      "until": "2026-07-23",
-      "working_days": 17,
-      "leads": 1590,
-      "conv_started": 1590,
-      "responded": 1010,
-      "alex_bookings": 5,
-      "connected": 0,
-      "total_calls_3min": 519,
+      "until": "2026-07-27",
+      "working_days": 19,
+      "leads": 1776,
+      "conv_started": 1776,
+      "responded": 1148,
+      "alex_bookings": 6,
+      "connected": 1,
+      "total_calls_3min": 577,
       "conversions": 0,
-      "conversions_total": 59,
-      "conversions_unique": 59,
+      "conversions_total": 70,
+      "conversions_unique": 70,
       "by_closer": [
         {
           "name": "Flávio Patinha",
-          "count": 31
+          "count": 38
         },
         {
           "name": "Nelson Dias",
-          "count": 25
+          "count": 34
         },
         {
           "name": "Bruno Magarreiro",
-          "count": 16
+          "count": 17
         },
         {
           "name": "Verónica Almeida",
-          "count": 10
+          "count": 11
         },
         {
           "name": "Tiago Cruz",
-          "count": 9
+          "count": 10
         },
         {
           "name": "Website",
-          "count": 4
+          "count": 5
         }
       ]
     }
@@ -1730,7 +1708,7 @@
         "effective_rate": 0,
         "inbound_answered": 0,
         "outbound_rate": 0,
-        "bookings_finalized": 0,
+        "bookings_finalized": 1,
         "bookings_pending": 1,
         "bookings_cancelled": 0,
         "avg_ai_score": null,
@@ -1739,109 +1717,109 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 9,
-        "outbound": 8,
-        "inbound": 1,
-        "outbound_unique": 7,
-        "answered": 2,
-        "effective": 1,
-        "talk_sec": 295,
-        "talk_min": 5,
-        "answer_rate": 22,
-        "effective_rate": 22,
-        "inbound_answered": 1,
-        "outbound_rate": 14,
-        "bookings_finalized": 0,
+        "total": 34,
+        "outbound": 25,
+        "inbound": 9,
+        "outbound_unique": 23,
+        "answered": 26,
+        "effective": 17,
+        "talk_sec": 6455,
+        "talk_min": 108,
+        "answer_rate": 76,
+        "effective_rate": 74,
+        "inbound_answered": 9,
+        "outbound_rate": 65,
+        "bookings_finalized": 5,
         "bookings_pending": 0,
-        "bookings_cancelled": 0,
-        "avg_ai_score": 3,
-        "scored_calls": 1
+        "bookings_cancelled": 1,
+        "avg_ai_score": 4.9,
+        "scored_calls": 12
       },
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 48,
-        "outbound": 39,
+        "total": 45,
+        "outbound": 36,
         "inbound": 9,
-        "outbound_unique": 27,
+        "outbound_unique": 29,
         "answered": 30,
-        "effective": 20,
-        "talk_sec": 6938,
-        "talk_min": 116,
-        "answer_rate": 62,
-        "effective_rate": 60,
+        "effective": 21,
+        "talk_sec": 10337,
+        "talk_min": 172,
+        "answer_rate": 67,
+        "effective_rate": 67,
         "inbound_answered": 9,
         "outbound_rate": 59,
-        "bookings_finalized": 0,
-        "bookings_pending": 4,
+        "bookings_finalized": 7,
+        "bookings_pending": 1,
         "bookings_cancelled": 0,
-        "avg_ai_score": 3.6,
-        "scored_calls": 15
+        "avg_ai_score": 4,
+        "scored_calls": 24
       }
     },
     "week": {
       "102": {
         "name": "Tiago Cruz",
         "ext": "102",
-        "total": 21,
-        "outbound": 17,
-        "inbound": 4,
-        "outbound_unique": 11,
-        "answered": 14,
-        "effective": 9,
-        "talk_sec": 5683,
-        "talk_min": 95,
-        "answer_rate": 67,
-        "effective_rate": 62,
-        "inbound_answered": 4,
-        "outbound_rate": 73,
-        "bookings_finalized": 17,
+        "total": 0,
+        "outbound": 0,
+        "inbound": 0,
+        "outbound_unique": 0,
+        "answered": 0,
+        "effective": 0,
+        "talk_sec": 0,
+        "talk_min": 0,
+        "answer_rate": 0,
+        "effective_rate": 0,
+        "inbound_answered": 0,
+        "outbound_rate": 0,
+        "bookings_finalized": 19,
         "bookings_pending": 2,
         "bookings_cancelled": 6,
-        "avg_ai_score": 4.7,
-        "scored_calls": 9
+        "avg_ai_score": null,
+        "scored_calls": 0
       },
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 95,
-        "outbound": 82,
-        "inbound": 13,
-        "outbound_unique": 65,
-        "answered": 56,
-        "effective": 41,
-        "talk_sec": 22733,
-        "talk_min": 379,
-        "answer_rate": 59,
-        "effective_rate": 57,
-        "inbound_answered": 13,
-        "outbound_rate": 49,
-        "bookings_finalized": 45,
-        "bookings_pending": 5,
-        "bookings_cancelled": 17,
-        "avg_ai_score": 5.4,
-        "scored_calls": 38
+        "total": 34,
+        "outbound": 25,
+        "inbound": 9,
+        "outbound_unique": 23,
+        "answered": 26,
+        "effective": 17,
+        "talk_sec": 6455,
+        "talk_min": 108,
+        "answer_rate": 76,
+        "effective_rate": 74,
+        "inbound_answered": 9,
+        "outbound_rate": 65,
+        "bookings_finalized": 55,
+        "bookings_pending": 3,
+        "bookings_cancelled": 18,
+        "avg_ai_score": 4.9,
+        "scored_calls": 12
       },
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 145,
-        "outbound": 110,
-        "inbound": 35,
-        "outbound_unique": 81,
-        "answered": 104,
-        "effective": 67,
-        "talk_sec": 37085,
-        "talk_min": 618,
-        "answer_rate": 72,
-        "effective_rate": 70,
-        "inbound_answered": 35,
-        "outbound_rate": 63,
-        "bookings_finalized": 41,
-        "bookings_pending": 7,
+        "total": 45,
+        "outbound": 36,
+        "inbound": 9,
+        "outbound_unique": 29,
+        "answered": 30,
+        "effective": 21,
+        "talk_sec": 10337,
+        "talk_min": 172,
+        "answer_rate": 67,
+        "effective_rate": 67,
+        "inbound_answered": 9,
+        "outbound_rate": 59,
+        "bookings_finalized": 55,
+        "bookings_pending": 4,
         "bookings_cancelled": 14,
-        "avg_ai_score": 3.8,
-        "scored_calls": 54
+        "avg_ai_score": 4,
+        "scored_calls": 24
       }
     },
     "month": {
@@ -1860,7 +1838,7 @@
         "effective_rate": 60,
         "inbound_answered": 47,
         "outbound_rate": 63,
-        "bookings_finalized": 17,
+        "bookings_finalized": 19,
         "bookings_pending": 2,
         "bookings_cancelled": 6,
         "avg_ai_score": 4.9,
@@ -1869,175 +1847,165 @@
       "105": {
         "name": "Flávio Patinha",
         "ext": "105",
-        "total": 446,
-        "outbound": 365,
-        "inbound": 81,
-        "outbound_unique": 277,
-        "answered": 261,
-        "effective": 176,
-        "talk_sec": 94996,
-        "talk_min": 1583,
-        "answer_rate": 59,
-        "effective_rate": 57,
-        "inbound_answered": 81,
+        "total": 510,
+        "outbound": 417,
+        "inbound": 93,
+        "outbound_unique": 322,
+        "answered": 298,
+        "effective": 200,
+        "talk_sec": 105918,
+        "talk_min": 1765,
+        "answer_rate": 58,
+        "effective_rate": 56,
+        "inbound_answered": 93,
         "outbound_rate": 49,
-        "bookings_finalized": 45,
-        "bookings_pending": 5,
-        "bookings_cancelled": 17,
+        "bookings_finalized": 55,
+        "bookings_pending": 3,
+        "bookings_cancelled": 18,
         "avg_ai_score": 5.1,
-        "scored_calls": 164
+        "scored_calls": 184
       },
       "106": {
         "name": "Nelson Dias",
         "ext": "106",
-        "total": 713,
-        "outbound": 581,
-        "inbound": 132,
-        "outbound_unique": 444,
-        "answered": 452,
-        "effective": 312,
-        "talk_sec": 147564,
-        "talk_min": 2459,
-        "answer_rate": 63,
-        "effective_rate": 62,
-        "inbound_answered": 132,
-        "outbound_rate": 56,
-        "bookings_finalized": 41,
-        "bookings_pending": 7,
+        "total": 808,
+        "outbound": 662,
+        "inbound": 146,
+        "outbound_unique": 512,
+        "answered": 503,
+        "effective": 347,
+        "talk_sec": 162674,
+        "talk_min": 2711,
+        "answer_rate": 62,
+        "effective_rate": 61,
+        "inbound_answered": 146,
+        "outbound_rate": 54,
+        "bookings_finalized": 55,
+        "bookings_pending": 4,
         "bookings_cancelled": 14,
         "avg_ai_score": 3.8,
-        "scored_calls": 259
+        "scored_calls": 295
       }
     }
   },
   "dashboard": {
     "today": {
-      "total": 177,
-      "effective": 31,
-      "talk_sec": 7233,
-      "talk_min": 121,
-      "missed_count": 4,
-      "unanswered_count": 11,
+      "total": 261,
+      "effective": 55,
+      "talk_sec": 16792,
+      "talk_min": 280,
+      "missed_count": 1,
+      "unanswered_count": 19,
       "hourly": [
         {
-          "hour": 9,
-          "total": 6,
+          "hour": 8,
+          "total": 3,
           "effective": 0
         },
         {
-          "hour": 10,
-          "total": 22,
-          "effective": 5
-        },
-        {
-          "hour": 11,
-          "total": 8,
+          "hour": 9,
+          "total": 72,
           "effective": 3
         },
         {
+          "hour": 10,
+          "total": 47,
+          "effective": 9
+        },
+        {
+          "hour": 11,
+          "total": 23,
+          "effective": 7
+        },
+        {
           "hour": 12,
-          "total": 20,
-          "effective": 4
-        },
-        {
-          "hour": 13,
-          "total": 25,
-          "effective": 1
-        },
-        {
-          "hour": 14,
-          "total": 29,
+          "total": 14,
           "effective": 8
         },
         {
+          "hour": 13,
+          "total": 23,
+          "effective": 2
+        },
+        {
+          "hour": 14,
+          "total": 49,
+          "effective": 14
+        },
+        {
           "hour": 15,
-          "total": 44,
-          "effective": 5
+          "total": 17,
+          "effective": 8
         },
         {
           "hour": 16,
-          "total": 20,
+          "total": 13,
           "effective": 4
-        },
-        {
-          "hour": 17,
-          "total": 3,
-          "effective": 1
         }
       ]
     },
     "week": {
-      "total": 740,
-      "effective": 169,
-      "talk_sec": 65501,
-      "talk_min": 1092,
-      "missed_count": 13,
-      "unanswered_count": 44,
+      "total": 261,
+      "effective": 55,
+      "talk_sec": 16792,
+      "talk_min": 280,
+      "missed_count": 1,
+      "unanswered_count": 19,
       "hourly": [
         {
           "hour": 8,
-          "total": 7,
-          "effective": 2
+          "total": 3,
+          "effective": 0
         },
         {
           "hour": 9,
-          "total": 74,
-          "effective": 16
-        },
-        {
-          "hour": 10,
-          "total": 74,
-          "effective": 23
-        },
-        {
-          "hour": 11,
-          "total": 79,
-          "effective": 23
-        },
-        {
-          "hour": 12,
-          "total": 61,
-          "effective": 19
-        },
-        {
-          "hour": 13,
-          "total": 51,
+          "total": 72,
           "effective": 3
         },
         {
+          "hour": 10,
+          "total": 47,
+          "effective": 9
+        },
+        {
+          "hour": 11,
+          "total": 23,
+          "effective": 7
+        },
+        {
+          "hour": 12,
+          "total": 14,
+          "effective": 8
+        },
+        {
+          "hour": 13,
+          "total": 23,
+          "effective": 2
+        },
+        {
           "hour": 14,
-          "total": 92,
-          "effective": 18
+          "total": 49,
+          "effective": 14
         },
         {
           "hour": 15,
-          "total": 118,
-          "effective": 23
+          "total": 17,
+          "effective": 8
         },
         {
           "hour": 16,
-          "total": 97,
-          "effective": 23
-        },
-        {
-          "hour": 17,
-          "total": 83,
-          "effective": 17
-        },
-        {
-          "hour": 18,
-          "total": 4,
-          "effective": 2
+          "total": 13,
+          "effective": 4
         }
       ]
     },
     "month": {
-      "total": 3123,
-      "effective": 832,
-      "talk_sec": 289946,
-      "talk_min": 4832,
-      "missed_count": 29,
-      "unanswered_count": 300,
+      "total": 3504,
+      "effective": 916,
+      "talk_sec": 315978,
+      "talk_min": 5266,
+      "missed_count": 30,
+      "unanswered_count": 357,
       "hourly": [
         {
           "hour": 5,
@@ -2046,53 +2014,53 @@
         },
         {
           "hour": 8,
-          "total": 24,
+          "total": 27,
           "effective": 5
         },
         {
           "hour": 9,
-          "total": 412,
-          "effective": 89
+          "total": 498,
+          "effective": 96
         },
         {
           "hour": 10,
-          "total": 371,
-          "effective": 109
+          "total": 419,
+          "effective": 118
         },
         {
           "hour": 11,
-          "total": 422,
-          "effective": 131
+          "total": 450,
+          "effective": 142
         },
         {
           "hour": 12,
-          "total": 271,
-          "effective": 99
+          "total": 291,
+          "effective": 109
         },
         {
           "hour": 13,
-          "total": 130,
-          "effective": 16
+          "total": 166,
+          "effective": 19
         },
         {
           "hour": 14,
-          "total": 350,
-          "effective": 95
+          "total": 414,
+          "effective": 114
         },
         {
           "hour": 15,
-          "total": 377,
-          "effective": 92
+          "total": 413,
+          "effective": 106
         },
         {
           "hour": 16,
-          "total": 406,
-          "effective": 104
+          "total": 437,
+          "effective": 111
         },
         {
           "hour": 17,
-          "total": 342,
-          "effective": 87
+          "total": 371,
+          "effective": 91
         },
         {
           "hour": 18,
@@ -2109,32 +2077,32 @@
         "name": "Tiago",
         "perf": {
           "seller": "102",
-          "calls": 43,
+          "calls": 66,
           "answered": 0,
           "conversoes": 0,
           "nao_atribuido": 0,
-          "avg_gap_sec": 615
+          "avg_gap_sec": 400
         },
         "next": {
-          "assignment": "sticky",
+          "assignment": "new",
           "seller": "102",
           "seller_name": "Tiago",
           "lead": {
             "id": "lead-1",
             "name": "Lead 1",
-            "theme": "Indefinido",
+            "theme": "FAP",
             "ano": "",
             "stage": "Lead",
             "status": "pending",
-            "p": 2,
-            "score": 0.4783,
+            "p": 4,
+            "score": 0.7205,
             "value": 500,
             "owner_ext": "",
             "owner_name": "",
-            "age_hours": 6.2,
-            "age_label": "6h",
+            "age_hours": 2.6,
+            "age_label": "3h",
             "is_fresh": false,
-            "has_phone": false,
+            "has_phone": true,
             "has_vehicle": false
           }
         },
@@ -2150,11 +2118,11 @@
         "name": "Flávio",
         "perf": {
           "seller": "105",
-          "calls": 51,
-          "answered": 2,
+          "calls": 90,
+          "answered": 25,
           "conversoes": 0,
           "nao_atribuido": 0,
-          "avg_gap_sec": 533
+          "avg_gap_sec": 292
         },
         "next": {
           "assignment": "sticky",
@@ -2163,37 +2131,38 @@
           "lead": {
             "id": "lead-2",
             "name": "Lead 2",
-            "theme": "AdBlue",
-            "ano": "09/2017 a 2021 (Ph3)",
+            "theme": "FAP",
+            "ano": "",
             "stage": "Lead",
             "status": "pending",
-            "p": 3,
-            "score": 0.6122,
+            "p": 4,
+            "score": 0.7409,
             "value": 500,
-            "owner_ext": "105",
-            "owner_name": "Flávio",
-            "age_hours": 3.5,
-            "age_label": "4h",
+            "owner_ext": "",
+            "owner_name": "",
+            "age_hours": 1,
+            "age_label": "1h",
             "is_fresh": false,
             "has_phone": true,
-            "has_vehicle": true
+            "has_vehicle": false
           }
         },
         "agenda": {
-          "count": 6,
+          "count": 15,
           "byStatus": {
-            "confirmed": 4,
-            "noshow": 2
+            "new": 4,
+            "confirmed": 3,
+            "noshow": 8
           },
           "byType": {
-            "Alex": 6
+            "Alex": 15
           },
           "preview": [
             {
               "time": "",
               "lead": "Lead 1",
               "tipo": "Alex",
-              "status": "confirmed",
+              "status": "new",
               "has_context": false,
               "call_time": ""
             },
@@ -2201,7 +2170,7 @@
               "time": "",
               "lead": "Lead 2",
               "tipo": "Alex",
-              "status": "noshow",
+              "status": "confirmed",
               "has_context": false,
               "call_time": ""
             },
@@ -2209,7 +2178,7 @@
               "time": "",
               "lead": "Lead 3",
               "tipo": "Alex",
-              "status": "confirmed",
+              "status": "new",
               "has_context": false,
               "call_time": ""
             },
@@ -2217,7 +2186,7 @@
               "time": "",
               "lead": "Lead 4",
               "tipo": "Alex",
-              "status": "confirmed",
+              "status": "noshow",
               "has_context": false,
               "call_time": ""
             },
@@ -2225,7 +2194,7 @@
               "time": "",
               "lead": "Lead 5",
               "tipo": "Alex",
-              "status": "noshow",
+              "status": "new",
               "has_context": false,
               "call_time": ""
             },
@@ -2233,7 +2202,23 @@
               "time": "",
               "lead": "Lead 6",
               "tipo": "Alex",
-              "status": "confirmed",
+              "status": "noshow",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 7",
+              "tipo": "Alex",
+              "status": "new",
+              "has_context": false,
+              "call_time": ""
+            },
+            {
+              "time": "",
+              "lead": "Lead 8",
+              "tipo": "Alex",
+              "status": "noshow",
               "has_context": false,
               "call_time": ""
             }
@@ -2245,14 +2230,14 @@
         "name": "Nelson",
         "perf": {
           "seller": "106",
-          "calls": 83,
-          "answered": 29,
+          "calls": 105,
+          "answered": 30,
           "conversoes": 0,
           "nao_atribuido": 0,
-          "avg_gap_sec": 320
+          "avg_gap_sec": 256
         },
         "next": {
-          "assignment": "sticky",
+          "assignment": "new",
           "seller": "106",
           "seller_name": "Nelson",
           "lead": {
@@ -2260,14 +2245,14 @@
             "name": "Lead 3",
             "theme": "FAP",
             "ano": "",
-            "stage": "Não Atendeu 1",
-            "status": "connected",
+            "stage": "Lead",
+            "status": "pending",
             "p": 3,
-            "score": 0.647,
+            "score": 0.6662,
             "value": 500,
-            "owner_ext": "106",
-            "owner_name": "Nelson",
-            "age_hours": 4.9,
+            "owner_ext": "",
+            "owner_name": "",
+            "age_hours": 5.1,
             "age_label": "5h",
             "is_fresh": false,
             "has_phone": true,
@@ -2275,13 +2260,12 @@
           }
         },
         "agenda": {
-          "count": 8,
+          "count": 15,
           "byStatus": {
-            "noshow": 6,
-            "confirmed": 2
+            "noshow": 15
           },
           "byType": {
-            "Alex": 8
+            "Alex": 15
           },
           "preview": [
             {
@@ -2336,7 +2320,7 @@
               "time": "",
               "lead": "Lead 7",
               "tipo": "Alex",
-              "status": "confirmed",
+              "status": "noshow",
               "has_context": false,
               "call_time": ""
             },
@@ -2344,7 +2328,7 @@
               "time": "",
               "lead": "Lead 8",
               "tipo": "Alex",
-              "status": "confirmed",
+              "status": "noshow",
               "has_context": false,
               "call_time": ""
             }
@@ -2354,19 +2338,19 @@
     ],
     "pipeline": {
       "fresh": 1579,
-      "na1": 373,
-      "na2": 5,
-      "falou_aberto": 0,
+      "na1": 339,
+      "na2": 6,
+      "falou_aberto": 1,
       "fu_pendentes": 0,
       "fu_hoje": 0,
-      "novos_7d": 517,
-      "nutrir_7d": 14,
-      "prontos_agora": 1916,
-      "leads_30d": 2155,
-      "taxa_contacto_30d": 19.4,
-      "convertidos_30d": 50,
-      "conv_30d": 2.3,
-      "speed_to_lead_min": 713
+      "novos_7d": 445,
+      "nutrir_7d": 15,
+      "prontos_agora": 1878,
+      "leads_30d": 2123,
+      "taxa_contacto_30d": 19.3,
+      "convertidos_30d": 54,
+      "conv_30d": 2.5,
+      "speed_to_lead_min": 749
     },
     "adoption": {
       "sellers": [
@@ -2384,59 +2368,60 @@
           "ext": "105",
           "name": "Flávio",
           "dials_cockpit": 0,
-          "outbound_total": 8,
-          "fora_cockpit": 8,
+          "outbound_total": 25,
+          "fora_cockpit": 25,
           "pct_cockpit": 0,
-          "despachos": 1,
+          "despachos": 0,
           "ultimo_dial": null
         },
         {
           "ext": "106",
           "name": "Nelson",
           "dials_cockpit": 0,
-          "outbound_total": 39,
-          "fora_cockpit": 39,
+          "outbound_total": 36,
+          "fora_cockpit": 36,
           "pct_cockpit": 0,
-          "despachos": 18,
+          "despachos": 0,
           "ultimo_dial": null
         }
       ],
-      "date": "2026-07-23",
+      "date": "2026-07-27",
       "conv_by_p": {
         "2": {
-          "leads": 11,
+          "leads": 20,
           "conv": 0,
           "pct": 0
         },
         "3": {
-          "leads": 123,
-          "conv": 1,
-          "pct": 0.8
+          "leads": 148,
+          "conv": 3,
+          "pct": 2
         },
         "4": {
-          "leads": 67,
-          "conv": 1,
-          "pct": 1.5
+          "leads": 77,
+          "conv": 2,
+          "pct": 2.6
         }
       }
     },
     "queue": {
-      "total": 1916,
+      "total": 1878,
       "by_theme": {
         "FAP": 639,
-        "AdBlue": 198,
-        "Performance": 822,
-        "Indefinido": 257
+        "AdBlue": 190,
+        "Indefinido": 274,
+        "Performance": 775
       },
       "by_p": {
-        "1": 1504,
-        "2": 397,
-        "3": 15
+        "1": 1498,
+        "2": 360,
+        "3": 18,
+        "4": 2
       },
       "by_status": {
-        "connected": 242,
-        "attempted": 371,
-        "pending": 1303
+        "pending": 1290,
+        "connected": 241,
+        "attempted": 347
       },
       "preview": [
         {
@@ -2444,15 +2429,15 @@
           "name": "Lead 1",
           "theme": "FAP",
           "ano": "",
-          "stage": "Não Atendeu 1",
-          "status": "connected",
-          "p": 3,
-          "score": 0.647,
+          "stage": "Lead",
+          "status": "pending",
+          "p": 4,
+          "score": 0.7409,
           "value": 500,
-          "owner_ext": "106",
-          "owner_name": "Nelson",
-          "age_hours": 4.9,
-          "age_label": "5h",
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 1,
+          "age_label": "1h",
           "is_fresh": false,
           "has_phone": true,
           "has_vehicle": false
@@ -2460,71 +2445,71 @@
         {
           "id": "lead-2",
           "name": "Lead 2",
-          "theme": "AdBlue",
-          "ano": "06/2015 a 2017",
+          "theme": "FAP",
+          "ano": "",
           "stage": "Lead",
-          "status": "attempted",
+          "status": "pending",
+          "p": 4,
+          "score": 0.7205,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 2.6,
+          "age_label": "3h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-3",
+          "name": "Lead 3",
+          "theme": "FAP",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
           "p": 3,
-          "score": 0.643,
-          "value": 484,
-          "owner_ext": "106",
-          "owner_name": "Nelson",
-          "age_hours": 2,
+          "score": 0.6662,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 5.1,
+          "age_label": "5h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-4",
+          "name": "Lead 4",
+          "theme": "AdBlue",
+          "ano": "2015 a 2021 (IV Ph1)",
+          "stage": "Lead",
+          "status": "connected",
+          "p": 3,
+          "score": 0.6501,
+          "value": 500,
+          "owner_ext": "105",
+          "owner_name": "Flávio",
+          "age_hours": 1.7,
           "age_label": "2h",
           "is_fresh": false,
           "has_phone": true,
           "has_vehicle": true
         },
         {
-          "id": "lead-3",
-          "name": "Lead 3",
-          "theme": "AdBlue",
-          "ano": "09/2017 a 2021 (Ph3)",
-          "stage": "Lead",
-          "status": "pending",
-          "p": 3,
-          "score": 0.6122,
-          "value": 500,
-          "owner_ext": "105",
-          "owner_name": "Flávio",
-          "age_hours": 3.5,
-          "age_label": "4h",
-          "is_fresh": false,
-          "has_phone": true,
-          "has_vehicle": true
-        },
-        {
-          "id": "lead-4",
-          "name": "Lead 4",
-          "theme": "Performance",
-          "ano": "2005 a 2012 (1P)",
-          "stage": "Lead",
-          "status": "pending",
-          "p": 3,
-          "score": 0.609,
-          "value": 610,
-          "owner_ext": "",
-          "owner_name": "",
-          "age_hours": 0.4,
-          "age_label": "24min",
-          "is_fresh": true,
-          "has_phone": true,
-          "has_vehicle": true
-        },
-        {
           "id": "lead-5",
           "name": "Lead 5",
-          "theme": "Indefinido",
+          "theme": "FAP",
           "ano": "",
           "stage": "Lead",
           "status": "pending",
           "p": 3,
-          "score": 0.5962,
+          "score": 0.6487,
           "value": 500,
           "owner_ext": "",
           "owner_name": "",
-          "age_hours": 0.8,
-          "age_label": "48min",
+          "age_hours": 6.6,
+          "age_label": "7h",
           "is_fresh": false,
           "has_phone": true,
           "has_vehicle": false
@@ -2532,38 +2517,38 @@
         {
           "id": "lead-6",
           "name": "Lead 6",
-          "theme": "Performance",
-          "ano": "2007 a 2010 (W204)",
-          "stage": "Lead",
-          "status": "pending",
-          "p": 3,
-          "score": 0.5957,
-          "value": 810,
-          "owner_ext": "",
-          "owner_name": "",
-          "age_hours": 1.1,
-          "age_label": "1h",
-          "is_fresh": false,
-          "has_phone": true,
-          "has_vehicle": true
-        },
-        {
-          "id": "lead-7",
-          "name": "Lead 7",
           "theme": "Indefinido",
           "ano": "",
           "stage": "Lead",
           "status": "pending",
           "p": 3,
-          "score": 0.5588,
+          "score": 0.6153,
           "value": 500,
           "owner_ext": "",
           "owner_name": "",
-          "age_hours": 2.3,
-          "age_label": "2h",
-          "is_fresh": false,
+          "age_hours": 0.1,
+          "age_label": "6min",
+          "is_fresh": true,
           "has_phone": false,
           "has_vehicle": false
+        },
+        {
+          "id": "lead-7",
+          "name": "Lead 7",
+          "theme": "Performance",
+          "ano": "2005 a 2008 (V)",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.602,
+          "value": 340,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 0.7,
+          "age_label": "42min",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
         },
         {
           "id": "lead-8",
@@ -2571,32 +2556,32 @@
           "theme": "Indefinido",
           "ano": "",
           "stage": "Lead",
-          "status": "pending",
+          "status": "connected",
           "p": 3,
-          "score": 0.5586,
+          "score": 0.5811,
           "value": 500,
-          "owner_ext": "",
-          "owner_name": "",
-          "age_hours": 2.3,
-          "age_label": "2h",
+          "owner_ext": "106",
+          "owner_name": "Nelson",
+          "age_hours": 1.4,
+          "age_label": "1h",
           "is_fresh": false,
-          "has_phone": false,
+          "has_phone": true,
           "has_vehicle": false
         },
         {
           "id": "lead-9",
           "name": "Lead 9",
           "theme": "Performance",
-          "ano": "2005 a 2008 (8P-1)",
+          "ano": "2007 a 2014 (R56)",
           "stage": "Lead",
           "status": "pending",
           "p": 3,
-          "score": 0.5547,
-          "value": 340,
+          "score": 0.5752,
+          "value": 850,
           "owner_ext": "",
           "owner_name": "",
-          "age_hours": 2.6,
-          "age_label": "3h",
+          "age_hours": 1.9,
+          "age_label": "2h",
           "is_fresh": false,
           "has_phone": true,
           "has_vehicle": true
@@ -2607,9 +2592,117 @@
           "theme": "Indefinido",
           "ano": "",
           "stage": "Lead",
+          "status": "connected",
+          "p": 3,
+          "score": 0.5736,
+          "value": 500,
+          "owner_ext": "106",
+          "owner_name": "Nelson",
+          "age_hours": 1.7,
+          "age_label": "2h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-11",
+          "name": "Lead 11",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "connected",
+          "p": 3,
+          "score": 0.5686,
+          "value": 500,
+          "owner_ext": "105",
+          "owner_name": "Flávio",
+          "age_hours": 1.9,
+          "age_label": "2h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-12",
+          "name": "Lead 12",
+          "theme": "Performance",
+          "ano": "10/2016 a 06/2020 (G3x)",
+          "stage": "Lead",
+          "status": "attempted",
+          "p": 3,
+          "score": 0.5655,
+          "value": 1020,
+          "owner_ext": "105",
+          "owner_name": "Flávio",
+          "age_hours": 3,
+          "age_label": "3h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-13",
+          "name": "Lead 13",
+          "theme": "Performance",
+          "ano": "2016 a 2018",
+          "stage": "Lead",
           "status": "pending",
           "p": 3,
-          "score": 0.5355,
+          "score": 0.5625,
+          "value": 350,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 3.7,
+          "age_label": "4h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": true
+        },
+        {
+          "id": "lead-14",
+          "name": "Lead 14",
+          "theme": "FAP",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5589,
+          "value": 500,
+          "owner_ext": "",
+          "owner_name": "",
+          "age_hours": 18.7,
+          "age_label": "19h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-15",
+          "name": "Lead 15",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "connected",
+          "p": 3,
+          "score": 0.5558,
+          "value": 500,
+          "owner_ext": "106",
+          "owner_name": "Nelson",
+          "age_hours": 2.4,
+          "age_label": "2h",
+          "is_fresh": false,
+          "has_phone": true,
+          "has_vehicle": false
+        },
+        {
+          "id": "lead-16",
+          "name": "Lead 16",
+          "theme": "Indefinido",
+          "ano": "",
+          "stage": "Lead",
+          "status": "pending",
+          "p": 3,
+          "score": 0.5365,
           "value": 500,
           "owner_ext": "",
           "owner_name": "",
@@ -2620,129 +2713,21 @@
           "has_vehicle": false
         },
         {
-          "id": "lead-11",
-          "name": "Lead 11",
-          "theme": "Performance",
-          "ano": "10/2011 a 06/2015 (F3x)",
-          "stage": "Lead",
-          "status": "pending",
-          "p": 3,
-          "score": 0.5346,
-          "value": 390,
-          "owner_ext": "",
-          "owner_name": "",
-          "age_hours": 4,
-          "age_label": "4h",
-          "is_fresh": false,
-          "has_phone": true,
-          "has_vehicle": true
-        },
-        {
-          "id": "lead-12",
-          "name": "Lead 12",
-          "theme": "Performance",
-          "ano": "2005 a 2007",
-          "stage": "Lead",
-          "status": "pending",
-          "p": 3,
-          "score": 0.5313,
-          "value": 310,
-          "owner_ext": "",
-          "owner_name": "",
-          "age_hours": 3.7,
-          "age_label": "4h",
-          "is_fresh": false,
-          "has_phone": true,
-          "has_vehicle": true
-        },
-        {
-          "id": "lead-13",
-          "name": "Lead 13",
-          "theme": "Performance",
-          "ano": "2005 a 2010",
-          "stage": "Lead",
-          "status": "pending",
-          "p": 3,
-          "score": 0.5053,
-          "value": 440,
-          "owner_ext": "",
-          "owner_name": "",
-          "age_hours": 4.9,
-          "age_label": "5h",
-          "is_fresh": false,
-          "has_phone": true,
-          "has_vehicle": true
-        },
-        {
-          "id": "lead-14",
-          "name": "Lead 14",
-          "theme": "Performance",
-          "ano": "2005 a 2012 (1P)",
-          "stage": "Lead",
-          "status": "pending",
-          "p": 3,
-          "score": 0.5033,
-          "value": 340,
-          "owner_ext": "",
-          "owner_name": "",
-          "age_hours": 5,
-          "age_label": "5h",
-          "is_fresh": false,
-          "has_phone": true,
-          "has_vehicle": true
-        },
-        {
-          "id": "lead-15",
-          "name": "Lead 15",
-          "theme": "Indefinido",
-          "ano": "",
-          "stage": "Lead",
-          "status": "pending",
-          "p": 3,
-          "score": 0.5002,
-          "value": 500,
-          "owner_ext": "",
-          "owner_name": "",
-          "age_hours": 5,
-          "age_label": "5h",
-          "is_fresh": false,
-          "has_phone": true,
-          "has_vehicle": false
-        },
-        {
-          "id": "lead-16",
-          "name": "Lead 16",
-          "theme": "FAP",
-          "ano": "2014 a 2016",
-          "stage": "Lead",
-          "status": "connected",
-          "p": 2,
-          "score": 0.4994,
-          "value": 500,
-          "owner_ext": "106",
-          "owner_name": "Nelson",
-          "age_hours": 698.4,
-          "age_label": "29d",
-          "is_fresh": false,
-          "has_phone": true,
-          "has_vehicle": true
-        },
-        {
           "id": "lead-17",
           "name": "Lead 17",
-          "theme": "Indefinido",
+          "theme": "FAP",
           "ano": "",
           "stage": "Lead",
           "status": "pending",
-          "p": 2,
-          "score": 0.4783,
+          "p": 3,
+          "score": 0.5318,
           "value": 500,
           "owner_ext": "",
           "owner_name": "",
-          "age_hours": 6.2,
-          "age_label": "6h",
+          "age_hours": 21.9,
+          "age_label": "22h",
           "is_fresh": false,
-          "has_phone": false,
+          "has_phone": true,
           "has_vehicle": false
         },
         {
@@ -2751,16 +2736,16 @@
           "theme": "Indefinido",
           "ano": "",
           "stage": "Lead",
-          "status": "pending",
-          "p": 2,
-          "score": 0.4783,
+          "status": "connected",
+          "p": 3,
+          "score": 0.5269,
           "value": 500,
-          "owner_ext": "",
-          "owner_name": "",
-          "age_hours": 6.2,
-          "age_label": "6h",
+          "owner_ext": "105",
+          "owner_name": "Flávio",
+          "age_hours": 3.7,
+          "age_label": "4h",
           "is_fresh": false,
-          "has_phone": false,
+          "has_phone": true,
           "has_vehicle": false
         },
         {
@@ -2770,33 +2755,33 @@
           "ano": "",
           "stage": "Lead",
           "status": "pending",
-          "p": 2,
-          "score": 0.4783,
+          "p": 3,
+          "score": 0.5268,
           "value": 500,
           "owner_ext": "",
           "owner_name": "",
-          "age_hours": 6.2,
-          "age_label": "6h",
+          "age_hours": 3.7,
+          "age_label": "4h",
           "is_fresh": false,
-          "has_phone": false,
+          "has_phone": true,
           "has_vehicle": false
         },
         {
           "id": "lead-20",
           "name": "Lead 20",
-          "theme": "Indefinido",
+          "theme": "FAP",
           "ano": "",
           "stage": "Lead",
           "status": "pending",
-          "p": 2,
-          "score": 0.4782,
+          "p": 3,
+          "score": 0.5158,
           "value": 500,
           "owner_ext": "",
           "owner_name": "",
-          "age_hours": 6.2,
-          "age_label": "6h",
+          "age_hours": 14.3,
+          "age_label": "14h",
           "is_fresh": false,
-          "has_phone": false,
+          "has_phone": true,
           "has_vehicle": false
         }
       ]
@@ -2805,58 +2790,6 @@
       "daily": {
         "range": "daily",
         "rows": [
-          {
-            "label": "23/06",
-            "leads": 59,
-            "contacted": 39,
-            "converted": 1,
-            "FAP": 25,
-            "Performance": 0,
-            "AdBlue": 3,
-            "Indefinido": 31,
-            "uncalled": 20,
-            "contact_rate": 66.1,
-            "conv_rate": 1.7
-          },
-          {
-            "label": "24/06",
-            "leads": 61,
-            "contacted": 38,
-            "converted": 2,
-            "FAP": 14,
-            "Performance": 0,
-            "AdBlue": 1,
-            "Indefinido": 46,
-            "uncalled": 23,
-            "contact_rate": 62.3,
-            "conv_rate": 3.3
-          },
-          {
-            "label": "25/06",
-            "leads": 48,
-            "contacted": 26,
-            "converted": 3,
-            "FAP": 10,
-            "Performance": 0,
-            "AdBlue": 1,
-            "Indefinido": 37,
-            "uncalled": 22,
-            "contact_rate": 54.2,
-            "conv_rate": 6.2
-          },
-          {
-            "label": "26/06",
-            "leads": 53,
-            "contacted": 27,
-            "converted": 2,
-            "FAP": 11,
-            "Performance": 0,
-            "AdBlue": 1,
-            "Indefinido": 41,
-            "uncalled": 26,
-            "contact_rate": 50.9,
-            "conv_rate": 3.8
-          },
           {
             "label": "27/06",
             "leads": 41,
@@ -2951,14 +2884,14 @@
           {
             "label": "04/07",
             "leads": 62,
-            "contacted": 19,
+            "contacted": 20,
             "converted": 0,
             "FAP": 23,
             "Performance": 0,
             "AdBlue": 4,
             "Indefinido": 35,
-            "uncalled": 43,
-            "contact_rate": 30.6,
+            "uncalled": 42,
+            "contact_rate": 32.3,
             "conv_rate": 0
           },
           {
@@ -2977,14 +2910,14 @@
           {
             "label": "06/07",
             "leads": 67,
-            "contacted": 24,
+            "contacted": 25,
             "converted": 3,
             "FAP": 21,
             "Performance": 0,
             "AdBlue": 4,
             "Indefinido": 42,
-            "uncalled": 43,
-            "contact_rate": 35.8,
+            "uncalled": 42,
+            "contact_rate": 37.3,
             "conv_rate": 4.5
           },
           {
@@ -3016,27 +2949,27 @@
           {
             "label": "09/07",
             "leads": 71,
-            "contacted": 16,
+            "contacted": 17,
             "converted": 0,
             "FAP": 27,
             "Performance": 0,
             "AdBlue": 5,
             "Indefinido": 39,
-            "uncalled": 55,
-            "contact_rate": 22.5,
+            "uncalled": 54,
+            "contact_rate": 23.9,
             "conv_rate": 0
           },
           {
             "label": "10/07",
             "leads": 100,
-            "contacted": 30,
+            "contacted": 31,
             "converted": 3,
             "FAP": 27,
             "Performance": 0,
             "AdBlue": 31,
             "Indefinido": 42,
-            "uncalled": 70,
-            "contact_rate": 30,
+            "uncalled": 69,
+            "contact_rate": 31,
             "conv_rate": 3
           },
           {
@@ -3095,14 +3028,14 @@
             "label": "15/07",
             "leads": 53,
             "contacted": 26,
-            "converted": 2,
+            "converted": 3,
             "FAP": 26,
             "Performance": 0,
             "AdBlue": 2,
             "Indefinido": 25,
             "uncalled": 27,
             "contact_rate": 49.1,
-            "conv_rate": 3.8
+            "conv_rate": 5.7
           },
           {
             "label": "16/07",
@@ -3133,99 +3066,138 @@
           {
             "label": "18/07",
             "leads": 64,
-            "contacted": 12,
+            "contacted": 13,
             "converted": 2,
             "FAP": 33,
             "Performance": 0,
             "AdBlue": 1,
             "Indefinido": 30,
-            "uncalled": 52,
-            "contact_rate": 18.8,
+            "uncalled": 51,
+            "contact_rate": 20.3,
             "conv_rate": 3.1
           },
           {
             "label": "19/07",
             "leads": 62,
-            "contacted": 11,
+            "contacted": 13,
             "converted": 0,
             "FAP": 27,
             "Performance": 0,
             "AdBlue": 5,
             "Indefinido": 30,
-            "uncalled": 51,
-            "contact_rate": 17.7,
+            "uncalled": 49,
+            "contact_rate": 21,
             "conv_rate": 0
           },
           {
             "label": "20/07",
             "leads": 74,
-            "contacted": 18,
-            "converted": 0,
+            "contacted": 21,
+            "converted": 1,
             "FAP": 29,
             "Performance": 0,
             "AdBlue": 3,
             "Indefinido": 42,
-            "uncalled": 56,
-            "contact_rate": 24.3,
-            "conv_rate": 0
+            "uncalled": 53,
+            "contact_rate": 28.4,
+            "conv_rate": 1.4
           },
           {
             "label": "21/07",
             "leads": 70,
-            "contacted": 23,
+            "contacted": 26,
             "converted": 3,
             "FAP": 33,
             "Performance": 0,
             "AdBlue": 2,
             "Indefinido": 35,
-            "uncalled": 47,
-            "contact_rate": 32.9,
+            "uncalled": 44,
+            "contact_rate": 37.1,
             "conv_rate": 4.3
           },
           {
             "label": "22/07",
             "leads": 50,
-            "contacted": 14,
+            "contacted": 20,
             "converted": 0,
             "FAP": 18,
             "Performance": 0,
             "AdBlue": 2,
             "Indefinido": 30,
-            "uncalled": 36,
-            "contact_rate": 28,
+            "uncalled": 30,
+            "contact_rate": 40,
             "conv_rate": 0
           },
           {
             "label": "23/07",
-            "leads": 54,
-            "contacted": 12,
-            "converted": 0,
-            "FAP": 9,
+            "leads": 68,
+            "contacted": 27,
+            "converted": 2,
+            "FAP": 12,
+            "Performance": 0,
+            "AdBlue": 3,
+            "Indefinido": 53,
+            "uncalled": 41,
+            "contact_rate": 39.7,
+            "conv_rate": 2.9
+          },
+          {
+            "label": "24/07",
+            "leads": 49,
+            "contacted": 24,
+            "converted": 2,
+            "FAP": 11,
             "Performance": 0,
             "AdBlue": 2,
-            "Indefinido": 43,
-            "uncalled": 42,
-            "contact_rate": 22.2,
+            "Indefinido": 36,
+            "uncalled": 25,
+            "contact_rate": 49,
+            "conv_rate": 4.1
+          },
+          {
+            "label": "25/07",
+            "leads": 43,
+            "contacted": 8,
+            "converted": 0,
+            "FAP": 15,
+            "Performance": 0,
+            "AdBlue": 0,
+            "Indefinido": 28,
+            "uncalled": 35,
+            "contact_rate": 18.6,
             "conv_rate": 0
+          },
+          {
+            "label": "26/07",
+            "leads": 44,
+            "contacted": 14,
+            "converted": 0,
+            "FAP": 18,
+            "Performance": 0,
+            "AdBlue": 1,
+            "Indefinido": 25,
+            "uncalled": 30,
+            "contact_rate": 31.8,
+            "conv_rate": 0
+          },
+          {
+            "label": "27/07",
+            "leads": 36,
+            "contacted": 19,
+            "converted": 5,
+            "FAP": 8,
+            "Performance": 0,
+            "AdBlue": 1,
+            "Indefinido": 27,
+            "uncalled": 17,
+            "contact_rate": 52.8,
+            "conv_rate": 13.9
           }
         ]
       },
       "weekly": {
         "range": "weekly",
         "rows": [
-          {
-            "label": "27/04",
-            "leads": 176,
-            "contacted": 121,
-            "converted": 6,
-            "FAP": 28,
-            "Performance": 0,
-            "AdBlue": 16,
-            "Indefinido": 132,
-            "uncalled": 55,
-            "contact_rate": 68.8,
-            "conv_rate": 3.4
-          },
           {
             "label": "04/05",
             "leads": 423,
@@ -3281,14 +3253,14 @@
           {
             "label": "01/06",
             "leads": 347,
-            "contacted": 137,
+            "contacted": 138,
             "converted": 5,
             "FAP": 0,
             "Performance": 0,
             "AdBlue": 16,
             "Indefinido": 331,
-            "uncalled": 210,
-            "contact_rate": 39.5,
+            "uncalled": 209,
+            "contact_rate": 39.8,
             "conv_rate": 1.4
           },
           {
@@ -3307,14 +3279,14 @@
           {
             "label": "15/06",
             "leads": 470,
-            "contacted": 225,
+            "contacted": 226,
             "converted": 13,
             "FAP": 131,
             "Performance": 0,
             "AdBlue": 23,
             "Indefinido": 316,
-            "uncalled": 245,
-            "contact_rate": 47.9,
+            "uncalled": 244,
+            "contact_rate": 48.1,
             "conv_rate": 2.8
           },
           {
@@ -3333,54 +3305,67 @@
           {
             "label": "29/06",
             "leads": 478,
-            "contacted": 236,
+            "contacted": 237,
             "converted": 12,
             "FAP": 165,
             "Performance": 0,
             "AdBlue": 22,
             "Indefinido": 291,
-            "uncalled": 242,
-            "contact_rate": 49.4,
+            "uncalled": 241,
+            "contact_rate": 49.6,
             "conv_rate": 2.5
           },
           {
             "label": "06/07",
             "leads": 504,
-            "contacted": 146,
+            "contacted": 149,
             "converted": 12,
             "FAP": 163,
             "Performance": 0,
             "AdBlue": 79,
             "Indefinido": 262,
-            "uncalled": 358,
-            "contact_rate": 29,
+            "uncalled": 355,
+            "contact_rate": 29.6,
             "conv_rate": 2.4
           },
           {
             "label": "13/07",
             "leads": 494,
-            "contacted": 174,
-            "converted": 11,
+            "contacted": 177,
+            "converted": 12,
             "FAP": 188,
             "Performance": 0,
             "AdBlue": 53,
             "Indefinido": 253,
-            "uncalled": 320,
-            "contact_rate": 35.2,
-            "conv_rate": 2.2
+            "uncalled": 317,
+            "contact_rate": 35.8,
+            "conv_rate": 2.4
           },
           {
             "label": "20/07",
-            "leads": 248,
-            "contacted": 67,
-            "converted": 3,
-            "FAP": 89,
+            "leads": 398,
+            "contacted": 140,
+            "converted": 8,
+            "FAP": 136,
             "Performance": 0,
-            "AdBlue": 9,
-            "Indefinido": 150,
-            "uncalled": 181,
-            "contact_rate": 27,
-            "conv_rate": 1.2
+            "AdBlue": 13,
+            "Indefinido": 249,
+            "uncalled": 258,
+            "contact_rate": 35.2,
+            "conv_rate": 2
+          },
+          {
+            "label": "27/07",
+            "leads": 36,
+            "contacted": 19,
+            "converted": 5,
+            "FAP": 8,
+            "Performance": 0,
+            "AdBlue": 1,
+            "Indefinido": 27,
+            "uncalled": 17,
+            "contact_rate": 52.8,
+            "conv_rate": 13.9
           }
         ]
       },
@@ -3417,14 +3402,14 @@
             "label": "04/2026",
             "leads": 2048,
             "contacted": 1040,
-            "converted": 83,
+            "converted": 82,
             "FAP": 69,
             "Performance": 93,
             "AdBlue": 23,
             "Indefinido": 1863,
             "uncalled": 1008,
             "contact_rate": 50.8,
-            "conv_rate": 4.1
+            "conv_rate": 4
           },
           {
             "label": "05/2026",
@@ -3442,34 +3427,280 @@
           {
             "label": "06/2026",
             "leads": 1680,
-            "contacted": 777,
+            "contacted": 779,
             "converted": 46,
             "FAP": 306,
             "Performance": 1,
             "AdBlue": 72,
             "Indefinido": 1301,
-            "uncalled": 903,
-            "contact_rate": 46.2,
+            "uncalled": 901,
+            "contact_rate": 46.4,
             "conv_rate": 2.7
           },
           {
             "label": "07/2026",
-            "leads": 1590,
-            "contacted": 546,
-            "converted": 33,
-            "FAP": 560,
+            "leads": 1776,
+            "contacted": 645,
+            "converted": 44,
+            "FAP": 615,
             "Performance": 0,
-            "AdBlue": 159,
-            "Indefinido": 871,
-            "uncalled": 1044,
-            "contact_rate": 34.3,
-            "conv_rate": 2.1
+            "AdBlue": 164,
+            "Indefinido": 997,
+            "uncalled": 1131,
+            "contact_rate": 36.3,
+            "conv_rate": 2.5
           }
         ]
       }
     },
     "kpiHistory": {
       "rows": [
+        {
+          "fresh": 1586,
+          "na1": 336,
+          "na2": 6,
+          "falou_aberto": 1,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 449,
+          "nutrir_7d": 16,
+          "prontos_agora": 1896,
+          "leads_30d": 2114,
+          "taxa_contacto_30d": 18.3,
+          "convertidos_30d": 48,
+          "conv_30d": 2.3,
+          "speed_to_lead_min": 499,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 20,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 148,
+              "conv": 3,
+              "pct": 2
+            },
+            "4": {
+              "leads": 75,
+              "conv": 1,
+              "pct": 1.3
+            }
+          },
+          "punctuality": {},
+          "date": "2026-07-26"
+        },
+        {
+          "fresh": 1566,
+          "na1": 354,
+          "na2": 6,
+          "falou_aberto": 1,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 462,
+          "nutrir_7d": 16,
+          "prontos_agora": 1895,
+          "leads_30d": 2123,
+          "taxa_contacto_30d": 18.9,
+          "convertidos_30d": 48,
+          "conv_30d": 2.3,
+          "speed_to_lead_min": 733,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 20,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 148,
+              "conv": 1,
+              "pct": 0.7
+            },
+            "4": {
+              "leads": 75,
+              "conv": 1,
+              "pct": 1.3
+            }
+          },
+          "punctuality": {},
+          "date": "2026-07-25"
+        },
+        {
+          "fresh": 1549,
+          "na1": 372,
+          "na2": 6,
+          "falou_aberto": 1,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 487,
+          "nutrir_7d": 16,
+          "prontos_agora": 1894,
+          "leads_30d": 2130,
+          "taxa_contacto_30d": 19.4,
+          "convertidos_30d": 49,
+          "conv_30d": 2.3,
+          "speed_to_lead_min": 811,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 26,
+              "despachos": 9
+            },
+            "106": {
+              "dials": 9,
+              "outbound": 43,
+              "despachos": 36
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 20,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 148,
+              "conv": 1,
+              "pct": 0.7
+            },
+            "4": {
+              "leads": 75,
+              "conv": 1,
+              "pct": 1.3
+            }
+          },
+          "punctuality": {
+            "105": {
+              "marcacoes": 6,
+              "ligadas": 6,
+              "atraso_total": 564,
+              "on_time": 0,
+              "late": 6,
+              "early": 0,
+              "atraso_medio": 94
+            },
+            "106": {
+              "marcacoes": 5,
+              "ligadas": 5,
+              "atraso_total": -20,
+              "on_time": 2,
+              "late": 0,
+              "early": 3,
+              "atraso_medio": -4
+            }
+          },
+          "date": "2026-07-24"
+        },
+        {
+          "fresh": 1580,
+          "na1": 367,
+          "na2": 5,
+          "falou_aberto": 0,
+          "fu_pendentes": 0,
+          "fu_hoje": 0,
+          "novos_7d": 503,
+          "nutrir_7d": 14,
+          "prontos_agora": 1918,
+          "leads_30d": 2150,
+          "taxa_contacto_30d": 19.3,
+          "convertidos_30d": 51,
+          "conv_30d": 2.4,
+          "speed_to_lead_min": 502,
+          "usage": {
+            "102": {
+              "dials": 0,
+              "outbound": 0,
+              "despachos": 0
+            },
+            "105": {
+              "dials": 0,
+              "outbound": 9,
+              "despachos": 1
+            },
+            "106": {
+              "dials": 0,
+              "outbound": 41,
+              "despachos": 18
+            }
+          },
+          "conv_by_p": {
+            "2": {
+              "leads": 13,
+              "conv": 0,
+              "pct": 0
+            },
+            "3": {
+              "leads": 124,
+              "conv": 1,
+              "pct": 0.8
+            },
+            "4": {
+              "leads": 68,
+              "conv": 1,
+              "pct": 1.5
+            }
+          },
+          "punctuality": {
+            "105": {
+              "marcacoes": 6,
+              "ligadas": 2,
+              "atraso_total": 165,
+              "on_time": 0,
+              "late": 2,
+              "early": 0,
+              "atraso_medio": 82
+            },
+            "106": {
+              "marcacoes": 8,
+              "ligadas": 8,
+              "atraso_total": 20,
+              "on_time": 1,
+              "late": 6,
+              "early": 1,
+              "atraso_medio": 2
+            }
+          },
+          "date": "2026-07-23"
+        },
         {
           "fresh": 1564,
           "na1": 383,
@@ -4133,9 +4364,9 @@
     }
   },
   "manualRevenue": {
-    "sales": 65619.97,
+    "sales": 71260.76,
     "receipts": 0,
-    "updated_at": "2026-07-23 12:30",
+    "updated_at": "2026-07-27 16:30",
     "auto": true
   },
   "leadsPanel": {
@@ -4171,14 +4402,14 @@
         "label": "04/2026",
         "leads": 2048,
         "contacted": 1040,
-        "converted": 83,
+        "converted": 82,
         "FAP": 69,
         "Performance": 93,
         "AdBlue": 23,
         "Indefinido": 1863,
         "uncalled": 1008,
         "contact_rate": 50.8,
-        "conv_rate": 4.1
+        "conv_rate": 4
       },
       {
         "label": "05/2026",
@@ -4196,28 +4427,28 @@
       {
         "label": "06/2026",
         "leads": 1680,
-        "contacted": 777,
+        "contacted": 779,
         "converted": 46,
         "FAP": 306,
         "Performance": 1,
         "AdBlue": 72,
         "Indefinido": 1301,
-        "uncalled": 903,
-        "contact_rate": 46.2,
+        "uncalled": 901,
+        "contact_rate": 46.4,
         "conv_rate": 2.7
       },
       {
         "label": "07/2026",
-        "leads": 1590,
-        "contacted": 546,
-        "converted": 33,
-        "FAP": 560,
+        "leads": 1776,
+        "contacted": 645,
+        "converted": 44,
+        "FAP": 615,
         "Performance": 0,
-        "AdBlue": 159,
-        "Indefinido": 871,
-        "uncalled": 1044,
-        "contact_rate": 34.3,
-        "conv_rate": 2.1
+        "AdBlue": 164,
+        "Indefinido": 997,
+        "uncalled": 1131,
+        "contact_rate": 36.3,
+        "conv_rate": 2.5
       }
     ]
   },

@@ -247,7 +247,7 @@ async function main() {
   await mkdir("assets", { recursive: true });
   const previous = await readPreviousPayload();
 
-  if (process.env.GITHUB_ACTIONS === "true" && !CONFIGURED_BASE_URL) {
+  if (process.env.GITHUB_ACTIONS === "true" && !CONFIGURED_BASE_URL && process.env.RUNNER_ENVIRONMENT !== "self-hosted") {
     if (previous) {
       await writeFile(OUT_FILE, JSON.stringify({
         ...previous,
