@@ -8080,7 +8080,7 @@ input::placeholder { color: #7f93b3; }
     const [activeDeepPanel, setActiveDeepPanel] = useState("Resultados Totais");
     const [activeToolPanel, setActiveToolPanel] = useState("UTM Creator");
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
-    const [selectedMonths, setSelectedMonths] = useState(new Set(ALL_MONTHS));
+    const [selectedMonths, setSelectedMonths] = useState(() => new Set([new Date().getMonth()]));
     const [alertThreshold, setAlertThreshold] = useState(80);
     const [fromStage, setFromStage] = useState("encReal");
     const [toStage, setToStage] = useState("fatReal");
