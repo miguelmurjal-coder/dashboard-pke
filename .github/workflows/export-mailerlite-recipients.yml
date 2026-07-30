@@ -1,0 +1,41 @@
+name: Export MailerLite Recipients
+
+on:
+  workflow_dispatch:
+    inputs:
+      campaign_name:
+        description: "Nome da campanha MailerLite"
+        required: true
+        default: "NL MultiChoice 1"
+      campaign_subject:
+        description: "Subject exato do email"
+        required: true
+        default: '{$name}, uma pergunta rápida'
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter ficheiros
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Exportar destinatarios da campanha
+        env:
+          MAILERLITE_API_KEY: ${{ secrets.MAILERLITE_API_KEY || secrets.API_MAILERLITE || secrets.MAILERLITE_API || secrets.API_MAILERLITE_KEY }}
+          MAILERLITE_CAMPAIGN_NAME: ${{ inputs.campaign_name }}
+          MAILERLITE_CAMPAIGN_SUBJECT: ${{ inputs.campaign_subject }}
+        run: node scripts/export-mailerlite-campaign-recipients.mjs
+
+      - name: Guardar CSV como artifact privado da Action
+        uses: actions/upload-artifact@v4
+        with:
+          name: mailerlite-recipients
+          path: exports/mailerlite-nl-multichoice-1-recipients.csv
+          if-no-files-found: error
+          retention-days: 7
