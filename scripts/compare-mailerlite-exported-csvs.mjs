@@ -37,7 +37,7 @@ function parseCsv(text) {
       i += 1;
     } else if (char === '"') {
       inQuotes = !inQuotes;
-    } else if (char === "," && !inQuotes) {
+    } else if ((char === "," || char === "\t") && !inQuotes) {
       row.push(cell);
       cell = "";
     } else if ((char === "\n" || char === "\r") && !inQuotes) {
@@ -79,8 +79,28 @@ function boolFromCountOrText(value) {
   return ["yes", "sim", "true", "opened", "clicked", "aberto", "clicado"].some((word) => text.includes(word));
 }
 
+function valueIndicatesPositive(value) {
+  const text = lower(value);
+  if (!text || ["no", "nao", "não", "false", "0", "-"].includes(text)) return false;
+  if (["yes", "sim", "true"].includes(text)) return true;
+  return parseNumber(text) > 0 || ["opened", "clicked", "aberto", "clicado"].some((word) => text.includes(word));
+}
+
+function decodeText(buffer) {
+  if (buffer[0] === 0xff && buffer[1] === 0xfe) return buffer.toString("utf16le").replace(/^\uFEFF/, "");
+  if (buffer[0] === 0xfe && buffer[1] === 0xff) {
+    const swapped = Buffer.alloc(buffer.length - 2);
+    for (let i = 2; i + 1 < buffer.length; i += 2) {
+      swapped[i - 2] = buffer[i + 1];
+      swapped[i - 1] = buffer[i];
+    }
+    return swapped.toString("utf16le").replace(/^\uFEFF/, "");
+  }
+  return buffer.toString("utf8").replace(/^\uFEFF/, "");
+}
+
 async function loadRecipients(file) {
-  const csv = await readFile(file, "utf8");
+  const csv = decodeText(await readFile(file));
   const rows = parseCsv(csv);
   if (rows.length < 2) throw new Error(`CSV vazio ou sem dados: ${file}`);
 
@@ -117,11 +137,11 @@ async function loadRecipients(file) {
     existing.sentAt ||= sentCol >= 0 ? clean(raw[sentCol]) : "";
 
     if (opensCol >= 0) {
-      existing.opensCount += parseNumber(raw[opensCol]);
+      if (valueIndicatesPositive(raw[opensCol])) existing.opensCount += Math.max(1, parseNumber(raw[opensCol]));
       existing.opened = existing.opened || boolFromCountOrText(raw[opensCol]);
     }
     if (clicksCol >= 0) {
-      existing.clicksCount += parseNumber(raw[clicksCol]);
+      if (valueIndicatesPositive(raw[clicksCol])) existing.clicksCount += Math.max(1, parseNumber(raw[clicksCol]));
       existing.clicked = existing.clicked || boolFromCountOrText(raw[clicksCol]);
     }
 
