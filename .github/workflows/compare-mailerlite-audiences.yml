@@ -1,0 +1,51 @@
+name: Compare MailerLite Audiences
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline_campaign_name:
+        description: "Newsletter antiga/base"
+        required: true
+        default: "NL MultiChoice 1"
+      baseline_campaign_subject:
+        description: "Subject da newsletter antiga/base"
+        required: true
+        default: '{$name}, uma pergunta rápida'
+      current_campaign_id:
+        description: "ID da newsletter recente"
+        required: true
+        default: "1278396688"
+      current_campaign_name:
+        description: "Nome da newsletter recente"
+        required: true
+        default: "NL_LuzPainelFAP_28-07-26"
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obter ficheiros
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Comparar audiencias MailerLite
+        env:
+          MAILERLITE_API_KEY: ${{ secrets.MAILERLITE_API_KEY || secrets.API_MAILERLITE || secrets.MAILERLITE_API || secrets.API_MAILERLITE_KEY }}
+          MAILERLITE_BASELINE_CAMPAIGN_NAME: ${{ inputs.baseline_campaign_name }}
+          MAILERLITE_BASELINE_CAMPAIGN_SUBJECT: ${{ inputs.baseline_campaign_subject }}
+          MAILERLITE_CURRENT_CAMPAIGN_ID: ${{ inputs.current_campaign_id }}
+          MAILERLITE_CURRENT_CAMPAIGN_NAME: ${{ inputs.current_campaign_name }}
+        run: node scripts/compare-mailerlite-campaign-audiences.mjs
+
+      - name: Guardar comparacao como artifact privado
+        uses: actions/upload-artifact@v4
+        with:
+          name: mailerlite-audience-comparison
+          path: exports/mailerlite-audience-comparison
+          if-no-files-found: error
+          retention-days: 7
