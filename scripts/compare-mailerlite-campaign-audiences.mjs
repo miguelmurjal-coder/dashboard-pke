@@ -66,6 +66,7 @@ async function fetchCurrentApiCampaigns() {
 
   do {
     const url = new URL("https://connect.mailerlite.com/api/campaigns");
+    url.searchParams.set("filter[status]", "sent");
     url.searchParams.set("limit", "100");
     url.searchParams.set("page", String(page));
     const data = await requestJson(url, headers);
@@ -167,6 +168,8 @@ function normalizeActivity(activity, includedMap = new Map()) {
     sentAt: attributes.sent_at || activity.sent_at || (event.includes("sent") ? date : ""),
     openedAt: attributes.opened_at || activity.opened_at || (event.includes("open") ? date : ""),
     clickedAt: attributes.clicked_at || activity.clicked_at || (event.includes("click") ? date : ""),
+    opensCount: Number(activity.opens_count ?? attributes.opens_count ?? 0) || 0,
+    clicksCount: Number(activity.clicks_count ?? attributes.clicks_count ?? 0) || 0,
     bouncedAt: attributes.bounced_at || activity.bounced_at || (event.includes("bounce") ? date : ""),
     unsubscribedAt: attributes.unsubscribed_at || activity.unsubscribed_at || (event.includes("unsub") ? date : "")
   };
@@ -185,6 +188,8 @@ function mergeRecipientActivity(rows) {
       sentAt: "",
       openedAt: "",
       clickedAt: "",
+      opensCount: 0,
+      clicksCount: 0,
       bouncedAt: "",
       unsubscribedAt: "",
       received: false,
@@ -197,11 +202,13 @@ function mergeRecipientActivity(rows) {
     current.sentAt ||= clean(row.sentAt);
     current.openedAt ||= clean(row.openedAt);
     current.clickedAt ||= clean(row.clickedAt);
+    current.opensCount += Number(row.opensCount || 0);
+    current.clicksCount += Number(row.clicksCount || 0);
     current.bouncedAt ||= clean(row.bouncedAt);
     current.unsubscribedAt ||= clean(row.unsubscribedAt);
     current.received = current.received || Boolean(row.sentAt || !row.bouncedAt);
-    current.opened = current.opened || Boolean(row.openedAt);
-    current.clicked = current.clicked || Boolean(row.clickedAt);
+    current.opened = current.opened || Boolean(row.openedAt) || current.opensCount > 0;
+    current.clicked = current.clicked || Boolean(row.clickedAt) || current.clicksCount > 0;
 
     map.set(email, current);
   }
@@ -268,7 +275,7 @@ function rowsFromRecipients(recipients) {
 }
 
 function writeCsv(name, rows) {
-  const header = ["email", "name", "status", "received", "opened", "clicked", "sent_at", "opened_at", "clicked_at", "bounced_at", "unsubscribed_at"];
+  const header = ["email", "name", "status", "received", "opened", "clicked", "opens_count", "clicks_count", "sent_at", "opened_at", "clicked_at", "bounced_at", "unsubscribed_at"];
   const csv = [
     header.join(","),
     ...rows.map((row) => [
@@ -278,6 +285,8 @@ function writeCsv(name, rows) {
       row.received ? "yes" : "no",
       row.opened ? "yes" : "no",
       row.clicked ? "yes" : "no",
+      row.opensCount,
+      row.clicksCount,
       row.sentAt,
       row.openedAt,
       row.clickedAt,
@@ -373,4 +382,10 @@ async function main() {
   console.log(`Ficheiros gerados em ${OUT_DIR}`);
 }
 
-await main();
+try {
+  await main();
+} catch (error) {
+  await mkdir(OUT_DIR, { recursive: true });
+  await writeFile(`${OUT_DIR}/error.txt`, `${error?.stack || error?.message || error}\n`);
+  throw error;
+}

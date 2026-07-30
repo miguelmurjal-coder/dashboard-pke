@@ -14,6 +14,11 @@ function lower(value) {
   return clean(value).toLowerCase();
 }
 
+function num(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function csvCell(value) {
   const text = clean(value);
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
@@ -59,6 +64,7 @@ async function fetchCurrentApiCampaigns() {
 
   do {
     const url = new URL("https://connect.mailerlite.com/api/campaigns");
+    url.searchParams.set("filter[status]", "sent");
     url.searchParams.set("limit", "100");
     url.searchParams.set("page", String(page));
     const data = await requestJson(url, headers);
@@ -132,6 +138,8 @@ function normalizeActivity(activity, includedMap = new Map()) {
     sentAt: attributes.sent_at || activity.sent_at || activity.date || "",
     openedAt: attributes.opened_at || activity.opened_at || "",
     clickedAt: attributes.clicked_at || activity.clicked_at || "",
+    opensCount: num(activity.opens_count ?? attributes.opens_count),
+    clicksCount: num(activity.clicks_count ?? attributes.clicks_count),
     bouncedAt: attributes.bounced_at || activity.bounced_at || "",
     unsubscribedAt: attributes.unsubscribed_at || activity.unsubscribed_at || ""
   };
@@ -217,8 +225,8 @@ async function main() {
 
   const rows = Array.from(unique.values()).sort((a, b) => lower(a.email).localeCompare(lower(b.email)));
   const csv = [
-    ["email", "name", "status", "sent_at", "opened_at", "clicked_at", "bounced_at", "unsubscribed_at"].join(","),
-    ...rows.map((row) => [row.email, row.name, row.status, row.sentAt, row.openedAt, row.clickedAt, row.bouncedAt, row.unsubscribedAt].map(csvCell).join(","))
+    ["email", "name", "status", "sent_at", "opened_at", "clicked_at", "opens_count", "clicks_count", "bounced_at", "unsubscribed_at"].join(","),
+    ...rows.map((row) => [row.email, row.name, row.status, row.sentAt, row.openedAt, row.clickedAt, row.opensCount, row.clicksCount, row.bouncedAt, row.unsubscribedAt].map(csvCell).join(","))
   ].join("\n");
 
   await writeFile(OUT_FILE, `${csv}\n`);
