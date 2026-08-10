@@ -2412,6 +2412,8 @@ input::placeholder { color: #7f93b3; }
   const TASK_LOG_LAST_REMINDER_KEY = "pke.taskLog.lastReminderKey.v1";
   const UTM_CREATOR_STORAGE_KEY = "pke.utmCreator.options.v1";
   const TODO_STORAGE_KEY = "pke.todos.v1";
+  const TODO_SHEET_NAME = "To-do's MCP";
+  const TODO_SHEET_GID = 1919192026;
   const DASHBOARD_PASSWORD = "2860";
   const TASK_LOG_SHEET_NAME = "Log Tarefas";
   const TASK_LOG_WRITE_ENDPOINT = "https://script.google.com/macros/s/AKfycbz03yvvNyozEZjKOD0NBcv5RDz0YeSqaRnr8Ye67CC-MRFB-BACmHGaZYMcxcvrUZQH/exec";
@@ -7936,6 +7938,85 @@ input::placeholder { color: #7f93b3; }
     if (typeof localStorage === "undefined") return;
     localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(items));
   }
+  function normalizeTodoItem(item = {}) {
+    const status = String(item.status || (item.done ? "Concluída" : "Aberta"));
+    return {
+      id: item.id || `todo-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      title: item.title || item.task || "",
+      priority: ["Alta", "Normal", "Baixa"].includes(item.priority) ? item.priority : "Normal",
+      dueDate: item.dueDate || item.deadline || "",
+      notes: item.notes || "",
+      done: item.done !== void 0 ? Boolean(item.done) : normalizeSearchText(status).includes("conclu"),
+      createdAt: item.createdAt || "",
+      completedAt: item.completedAt || "",
+      updatedAt: item.updatedAt || ""
+    };
+  }
+  function parseTodoSheetTable(table) {
+    if (!table || !Array.isArray(table.rows)) return [];
+    return table.rows.map((row, idx) => normalizeTodoItem({
+      id: textValue(row, 0) || `todo-sheet-${idx + 2}`,
+      title: textValue(row, 1),
+      priority: textValue(row, 2) || "Normal",
+      dueDate: textValue(row, 3),
+      status: textValue(row, 4),
+      notes: textValue(row, 5),
+      createdAt: textValue(row, 6),
+      completedAt: textValue(row, 7),
+      updatedAt: textValue(row, 8)
+    })).filter((item) => item.title);
+  }
+  async function readTodoItemsFromSheet() {
+    const table = await fetchSheet(TODO_SHEET_NAME, { gid: TODO_SHEET_GID, headers: 1 });
+    return parseTodoSheetTable(table);
+  }
+  function todoAppsScriptRequest(action, item = {}, extra = {}) {
+    if (!TASK_LOG_WRITE_ENDPOINT) {
+      return Promise.reject(new Error("Endpoint Apps Script por configurar."));
+    }
+    return new Promise((resolve, reject) => {
+      const cbName = `__todoWrite${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      const params = new URLSearchParams({
+        action,
+        callback: cbName,
+        token: TASK_LOG_WRITE_TOKEN,
+        sheetName: TODO_SHEET_NAME,
+        id: item.id || "",
+        title: item.title || "",
+        priority: item.priority || "Normal",
+        dueDate: item.dueDate || "",
+        status: item.done ? "Concluída" : "Aberta",
+        notes: item.notes || "",
+        createdAt: item.createdAt || "",
+        completedAt: item.completedAt || "",
+        updatedAt: item.updatedAt || new Date().toISOString(),
+        ...extra
+      });
+      const script = document.createElement("script");
+      let timeoutId;
+      function cleanup() {
+        clearTimeout(timeoutId);
+        delete window[cbName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+      window[cbName] = (payload) => {
+        cleanup();
+        if (payload && payload.ok) resolve(payload);
+        else reject(new Error(payload && payload.error || "Erro ao sincronizar To-do's com Google Sheets."));
+      };
+      script.src = `${TASK_LOG_WRITE_ENDPOINT}?${params.toString()}`;
+      script.async = true;
+      script.onerror = () => {
+        cleanup();
+        reject(new Error("Não foi possível contactar o Apps Script para sincronizar To-do's."));
+      };
+      timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error("Tempo limite excedido a sincronizar To-do's com Google Sheets."));
+      }, 15000);
+      document.head.appendChild(script);
+    });
+  }
   function todoPriorityTone(priority) {
     if (priority === "Alta") return "bad";
     if (priority === "Baixa") return "neutral";
@@ -7950,6 +8031,8 @@ input::placeholder { color: #7f93b3; }
   }
   function TodoListView() {
     const [items, setItems] = useState(loadTodoItems);
+    const [loadingTodos, setLoadingTodos] = useState(false);
+    const [syncMessage, setSyncMessage] = useState("");
     const [title, setTitle] = useState("");
     const [priority, setPriority] = useState("Normal");
     const [dueDate, setDueDate] = useState("");
@@ -7958,6 +8041,24 @@ input::placeholder { color: #7f93b3; }
     const [priorityFilter, setPriorityFilter] = useState("Todas");
     const [query, setQuery] = useState("");
     useEffect(() => saveTodoItems(items), [items]);
+    const refreshTodos = useCallback(async () => {
+      setLoadingTodos(true);
+      setSyncMessage("");
+      try {
+        const sheetItems = await readTodoItemsFromSheet();
+        setItems(sheetItems);
+        setSyncMessage(`Sincronizado com Google Sheets às ${new Date().toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })}.`);
+      } catch (e) {
+        setSyncMessage(`${e && e.message || "Não foi possível ler os To-do's partilhados."} A mostrar a cópia local deste browser.`);
+      } finally {
+        setLoadingTodos(false);
+      }
+    }, []);
+    useEffect(() => {
+      refreshTodos();
+      const id = setInterval(refreshTodos, 5 * 60 * 1000);
+      return () => clearInterval(id);
+    }, [refreshTodos]);
 
     const stats = useMemo(() => {
       const active = items.filter((item) => !item.done);
@@ -7983,12 +8084,12 @@ input::placeholder { color: #7f93b3; }
         });
     }, [items, filter, priorityFilter, query]);
 
-    const addItem = (event) => {
+    const addItem = async (event) => {
       event.preventDefault();
       const text = title.trim();
       if (!text) return;
       const now = new Date().toISOString();
-      setItems((prev) => [{
+      const nextItem = {
         id: `todo-${Date.now()}-${Math.random().toString(16).slice(2)}`,
         title: text,
         priority,
@@ -7996,18 +8097,65 @@ input::placeholder { color: #7f93b3; }
         notes: notes.trim(),
         done: false,
         createdAt: now,
-        completedAt: ""
-      }, ...prev]);
+        completedAt: "",
+        updatedAt: now
+      };
+      setItems((prev) => [nextItem, ...prev]);
       setTitle("");
       setNotes("");
       setPriority("Normal");
       setDueDate("");
+      try {
+        await todoAppsScriptRequest("todoAppend", nextItem);
+        await refreshTodos();
+      } catch (e) {
+        setSyncMessage(`${e && e.message || "Não foi possível gravar no Google Sheets."} A tarefa ficou guardada localmente neste browser.`);
+      }
     };
-    const updateItem = (id, patch) => setItems((prev) => prev.map((item) => item.id === id ? { ...item, ...patch } : item));
+    const updateItem = async (id, patch) => {
+      const original = items.find((item) => item.id === id);
+      const updatedAt = new Date().toISOString();
+      const nextItem = original ? { ...original, ...patch, updatedAt } : null;
+      setItems((prev) => prev.map((item) => item.id === id ? { ...item, ...patch, updatedAt } : item));
+      if (!nextItem) return;
+      try {
+        await todoAppsScriptRequest("todoUpdate", nextItem);
+        await refreshTodos();
+      } catch (e) {
+        setSyncMessage(`${e && e.message || "Não foi possível atualizar no Google Sheets."} A alteração ficou local neste browser.`);
+      }
+    };
     const toggleDone = (item) => updateItem(item.id, { done: !item.done, completedAt: item.done ? "" : new Date().toISOString() });
-    const duplicateItem = (item) => setItems((prev) => [{ ...item, id: `todo-${Date.now()}-${Math.random().toString(16).slice(2)}`, done: false, completedAt: "", createdAt: new Date().toISOString() }, ...prev]);
-    const deleteItem = (id) => setItems((prev) => prev.filter((item) => item.id !== id));
-    const clearDone = () => setItems((prev) => prev.filter((item) => !item.done));
+    const duplicateItem = async (item) => {
+      const now = new Date().toISOString();
+      const nextItem = { ...item, id: `todo-${Date.now()}-${Math.random().toString(16).slice(2)}`, done: false, completedAt: "", createdAt: now, updatedAt: now };
+      setItems((prev) => [nextItem, ...prev]);
+      try {
+        await todoAppsScriptRequest("todoAppend", nextItem);
+        await refreshTodos();
+      } catch (e) {
+        setSyncMessage(`${e && e.message || "Não foi possível duplicar no Google Sheets."} A cópia ficou local neste browser.`);
+      }
+    };
+    const deleteItem = async (id) => {
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      try {
+        await todoAppsScriptRequest("todoDelete", { id });
+        await refreshTodos();
+      } catch (e) {
+        setSyncMessage(`${e && e.message || "Não foi possível apagar no Google Sheets."} A tarefa foi removida apenas da cópia local.`);
+      }
+    };
+    const clearDone = async () => {
+      const doneIds = items.filter((item) => item.done).map((item) => item.id);
+      setItems((prev) => prev.filter((item) => !item.done));
+      try {
+        await todoAppsScriptRequest("todoClearDone", {}, { ids: doneIds.join("|") });
+        await refreshTodos();
+      } catch (e) {
+        setSyncMessage(`${e && e.message || "Não foi possível limpar concluídas no Google Sheets."} A limpeza ficou local neste browser.`);
+      }
+    };
     const exportCsv = () => {
       const escape = (value) => {
         const text = String(value || "");
@@ -8037,7 +8185,11 @@ input::placeholder { color: #7f93b3; }
         h("div", null,
           h("div", { className: "section-kicker" }, "TO-DO'S"),
           h("h2", { className: "section-heading" }, "Lista de tarefas"),
-          h("p", { className: "section-subtitle" }, "Aponta rapidamente o que tens para fazer, marca prioridades e fecha o ciclo quando estiver concluído.")
+          h("p", { className: "section-subtitle" }, "Lista partilhada no Google Sheets: as tarefas criadas aqui ficam visíveis para ti e para o teu colega.")
+        ),
+        h("div", { className: "flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sky-900/60 bg-slate-950/30 px-4 py-3" },
+          h("p", { className: `text-xs font-semibold ${syncMessage && syncMessage.includes("local") ? "text-amber-300" : "text-slate-300"}` }, loadingTodos ? "A sincronizar com Google Sheets..." : syncMessage || "A carregar To-do's partilhados..."),
+          h("button", { type: "button", className: "task-secondary-btn", onClick: refreshTodos, disabled: loadingTodos }, loadingTodos ? "A atualizar..." : "Atualizar")
         ),
         h("form", { className: "todo-form-grid", onSubmit: addItem },
           h("label", { className: "task-field mb-0 todo-form-title" },
@@ -8074,6 +8226,7 @@ input::placeholder { color: #7f93b3; }
           h("div", { className: "todo-toolbar-actions" },
             h("select", { className: "funnel-select", value: priorityFilter, onChange: (e) => setPriorityFilter(e.target.value) }, ["Todas", "Alta", "Normal", "Baixa"].map((value) => h("option", { key: value, value }, value))),
             h("input", { className: "funnel-select max-w-none w-56", value: query, onChange: (e) => setQuery(e.target.value), placeholder: "Pesquisar tarefa..." }),
+            h("button", { type: "button", className: "task-secondary-btn", onClick: refreshTodos, disabled: loadingTodos }, "Atualizar"),
             h("button", { type: "button", className: "task-secondary-btn", onClick: exportCsv, disabled: !items.length }, "Exportar CSV"),
             h("button", { type: "button", className: "task-ghost-btn", onClick: clearDone, disabled: !stats.done }, "Limpar concluídas")
           )
