@@ -2298,6 +2298,7 @@ input::placeholder { color: #7f93b3; }
   ];
   const TOOL_PANELS = [
     { name: "UTM Creator", label: "UTM Creator" },
+    { name: "To-do's", label: "To-do's" },
     { name: "Gerador de Relatórios", label: "Gerador de Relatórios" },
     { name: "Log Tarefas", label: "Log Tarefas" }
   ];
@@ -2317,6 +2318,7 @@ input::placeholder { color: #7f93b3; }
     { title: "Ficheiro JM", location: "Aprofundar Dados", target: "Ficheiro JM", description: "Dados JM, faturação, sinais, VMT e informação operacional por linha.", keywords: ["jm", "ficheiro jm", "vmt", "sinal", "sinais", "ft", "faturacao jm", "adb", "fo"] },
     { title: "Leads Diários", location: "Aprofundar Dados", target: "Leads Di\xE1rios", description: "Leads por dia, origem e apoio ao funil de conversão.", keywords: ["leads diarios", "leads diários", "leads", "diario", "diário", "origem leads"] },
     { title: "UTM Creator", location: "Ferramentas", target: "UTM Creator", description: "Gerar links com utm_source, utm_medium, utm_campaign e utm_content.", keywords: ["utm creator", "criador utm", "gerar utm", "link utm", "source", "medium", "campaign", "content"] },
+    { title: "To-do's", location: "Ferramentas", target: "To-do's", description: "Lista simples de tarefas por fazer, prioridades, prazos, pesquisa e tarefas concluídas.", keywords: ["todo", "to-do", "todos", "to dos", "tarefas", "lista", "afazeres", "prioridade", "prazo", "fazer"] },
     { title: "Gerador de Relatórios", location: "Ferramentas", target: "Gerador de Relatórios", description: "Gerar relatório executivo em PDF com dados do Dashboard, VSP, BO, UTMs, funil e plano de ação.", keywords: ["relatorio", "relatório", "pdf", "gerador", "analise", "análise", "exportar", "imprimir"] },
     { title: "Log Tarefas", location: "Ferramentas", target: "Log Tarefas", description: "Registar horas, tarefas, categorias, estados e notas de trabalho.", keywords: ["log", "tarefas", "horas", "tempo", "registo", "categoria", "estado", "notas"] },
     { title: "Campanhas", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Campanhas com volume, valor, conversão e campanhas a rever.", keywords: ["campanha", "campanhas", "meta", "google", "ads", "qualidade campanha", "campanhas a rever"] },
@@ -2338,6 +2340,7 @@ input::placeholder { color: #7f93b3; }
   const TASK_LOG_REMINDER_KEY = "pke.taskLog.nextReminderAt.v1";
   const TASK_LOG_LAST_REMINDER_KEY = "pke.taskLog.lastReminderKey.v1";
   const UTM_CREATOR_STORAGE_KEY = "pke.utmCreator.options.v1";
+  const TODO_STORAGE_KEY = "pke.todos.v1";
   const DASHBOARD_PASSWORD = "2860";
   const TASK_LOG_SHEET_NAME = "Log Tarefas";
   const TASK_LOG_WRITE_ENDPOINT = "https://script.google.com/macros/s/AKfycbz03yvvNyozEZjKOD0NBcv5RDz0YeSqaRnr8Ye67CC-MRFB-BACmHGaZYMcxcvrUZQH/exec";
@@ -7849,6 +7852,182 @@ input::placeholder { color: #7f93b3; }
       )
     );
   }
+  function loadTodoItems() {
+    if (typeof localStorage === "undefined") return [];
+    try {
+      const items = JSON.parse(localStorage.getItem(TODO_STORAGE_KEY) || "[]");
+      return Array.isArray(items) ? items : [];
+    } catch {
+      return [];
+    }
+  }
+  function saveTodoItems(items) {
+    if (typeof localStorage === "undefined") return;
+    localStorage.setItem(TODO_STORAGE_KEY, JSON.stringify(items));
+  }
+  function todoPriorityTone(priority) {
+    if (priority === "Alta") return "bad";
+    if (priority === "Baixa") return "neutral";
+    return "warn";
+  }
+  function todoDateStatus(item) {
+    if (!item.dueDate || item.done) return "";
+    const today = dateKey(new Date());
+    if (item.dueDate < today) return "Atrasada";
+    if (item.dueDate === today) return "Hoje";
+    return "";
+  }
+  function TodoListView() {
+    const [items, setItems] = useState(loadTodoItems);
+    const [title, setTitle] = useState("");
+    const [priority, setPriority] = useState("Normal");
+    const [dueDate, setDueDate] = useState("");
+    const [notes, setNotes] = useState("");
+    const [filter, setFilter] = useState("active");
+    const [priorityFilter, setPriorityFilter] = useState("Todas");
+    const [query, setQuery] = useState("");
+    useEffect(() => saveTodoItems(items), [items]);
+
+    const stats = useMemo(() => {
+      const active = items.filter((item) => !item.done);
+      const done = items.filter((item) => item.done);
+      const overdue = active.filter((item) => todoDateStatus(item) === "Atrasada");
+      const today = active.filter((item) => todoDateStatus(item) === "Hoje");
+      return { active: active.length, done: done.length, overdue: overdue.length, today: today.length };
+    }, [items]);
+
+    const visibleItems = useMemo(() => {
+      const q = normalizeSearchText(query);
+      return items
+        .filter((item) => filter === "all" ? true : filter === "done" ? item.done : !item.done)
+        .filter((item) => priorityFilter === "Todas" || item.priority === priorityFilter)
+        .filter((item) => !q || normalizeSearchText(`${item.title} ${item.notes} ${item.priority}`).includes(q))
+        .sort((a, b) => {
+          if (a.done !== b.done) return a.done ? 1 : -1;
+          const dueA = a.dueDate || "9999-12-31";
+          const dueB = b.dueDate || "9999-12-31";
+          if (dueA !== dueB) return dueA.localeCompare(dueB);
+          const rank = { Alta: 0, Normal: 1, Baixa: 2 };
+          return (rank[a.priority] ?? 1) - (rank[b.priority] ?? 1) || new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        });
+    }, [items, filter, priorityFilter, query]);
+
+    const addItem = (event) => {
+      event.preventDefault();
+      const text = title.trim();
+      if (!text) return;
+      const now = new Date().toISOString();
+      setItems((prev) => [{
+        id: `todo-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        title: text,
+        priority,
+        dueDate,
+        notes: notes.trim(),
+        done: false,
+        createdAt: now,
+        completedAt: ""
+      }, ...prev]);
+      setTitle("");
+      setNotes("");
+      setPriority("Normal");
+      setDueDate("");
+    };
+    const updateItem = (id, patch) => setItems((prev) => prev.map((item) => item.id === id ? { ...item, ...patch } : item));
+    const toggleDone = (item) => updateItem(item.id, { done: !item.done, completedAt: item.done ? "" : new Date().toISOString() });
+    const duplicateItem = (item) => setItems((prev) => [{ ...item, id: `todo-${Date.now()}-${Math.random().toString(16).slice(2)}`, done: false, completedAt: "", createdAt: new Date().toISOString() }, ...prev]);
+    const deleteItem = (id) => setItems((prev) => prev.filter((item) => item.id !== id));
+    const clearDone = () => setItems((prev) => prev.filter((item) => !item.done));
+    const exportCsv = () => {
+      const escape = (value) => {
+        const text = String(value || "");
+        return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+      };
+      const rows = [
+        ["tarefa", "prioridade", "prazo", "estado", "notas", "criada_em", "concluida_em"],
+        ...items.map((item) => [item.title, item.priority, item.dueDate, item.done ? "Concluida" : "Aberta", item.notes, item.createdAt, item.completedAt])
+      ];
+      const blob = new Blob([`${rows.map((row) => row.map(escape).join(",")).join("\n")}\n`], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `mcp-todos-${dateKey(new Date())}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
+    const statusTabs = [
+      { key: "active", label: "Por fazer" },
+      { key: "done", label: "Concluídas" },
+      { key: "all", label: "Todas" }
+    ];
+
+    return h("div", { className: "space-y-5", "data-help": "To-do's: lista operacional de tarefas por fazer. Serve para apontar ações soltas, prioridades e prazos sem misturar com o Log Tarefas, que é usado para registar tempo de trabalho." },
+      h("section", { className: "section-shell section-shell-hero space-y-4" },
+        h("div", null,
+          h("div", { className: "section-kicker" }, "TO-DO'S"),
+          h("h2", { className: "section-heading" }, "Lista de tarefas"),
+          h("p", { className: "section-subtitle" }, "Aponta rapidamente o que tens para fazer, marca prioridades e fecha o ciclo quando estiver concluído.")
+        ),
+        h("form", { className: "grid lg:grid-cols-[1fr_10rem_10rem_auto] gap-3 items-end", onSubmit: addItem },
+          h("label", { className: "task-field mb-0" },
+            h("span", null, "Nova tarefa"),
+            h("input", { value: title, onChange: (e) => setTitle(e.target.value), placeholder: "Ex: Rever campanha FAP da semana", autoFocus: true })
+          ),
+          h("label", { className: "task-field mb-0" },
+            h("span", null, "Prioridade"),
+            h("select", { value: priority, onChange: (e) => setPriority(e.target.value) }, ["Alta", "Normal", "Baixa"].map((value) => h("option", { key: value, value }, value)))
+          ),
+          h("label", { className: "task-field mb-0" },
+            h("span", null, "Prazo"),
+            h("input", { type: "date", value: dueDate, onChange: (e) => setDueDate(e.target.value) })
+          ),
+          h("button", { type: "submit", className: "task-primary-btn h-[2.75rem]" }, "Adicionar")
+        ),
+        h("label", { className: "task-field mb-0" },
+          h("span", null, "Notas opcionais"),
+          h("textarea", { value: notes, onChange: (e) => setNotes(e.target.value), rows: 2, placeholder: "Contexto, link, dependência ou próxima ação." })
+        )
+      ),
+      h("section", { className: "grid sm:grid-cols-2 xl:grid-cols-4 gap-3" },
+        h("div", { className: "diagnosis-tile", "data-help": "Por fazer: tarefas abertas que ainda não foram concluídas." }, h("div", { className: "text-xs text-slate-400 font-bold" }, "Por fazer"), h("div", { className: "text-2xl font-black text-slate-100" }, fmtNumber(stats.active))),
+        h("div", { className: "diagnosis-tile", "data-help": "Hoje: tarefas abertas cujo prazo é hoje." }, h("div", { className: "text-xs text-slate-400 font-bold" }, "Para hoje"), h("div", { className: "text-2xl font-black text-sky-300" }, fmtNumber(stats.today))),
+        h("div", { className: "diagnosis-tile", "data-help": "Atrasadas: tarefas abertas cujo prazo já passou." }, h("div", { className: "text-xs text-slate-400 font-bold" }, "Atrasadas"), h("div", { className: "text-2xl font-black text-rose-300" }, fmtNumber(stats.overdue))),
+        h("div", { className: "diagnosis-tile", "data-help": "Concluídas: tarefas fechadas nesta lista." }, h("div", { className: "text-xs text-slate-400 font-bold" }, "Concluídas"), h("div", { className: "text-2xl font-black text-emerald-300" }, fmtNumber(stats.done)))
+      ),
+      h("section", { className: "section-shell space-y-4" },
+        h("div", { className: "flex flex-wrap gap-3 items-center justify-between" },
+          h("div", { className: "flex flex-wrap gap-2" }, statusTabs.map((tab) => h("button", { key: tab.key, type: "button", className: `deep-tab ${filter === tab.key ? "deep-tab-active" : ""}`, onClick: () => setFilter(tab.key) }, tab.label))),
+          h("div", { className: "flex flex-wrap gap-2" },
+            h("select", { className: "funnel-select", value: priorityFilter, onChange: (e) => setPriorityFilter(e.target.value) }, ["Todas", "Alta", "Normal", "Baixa"].map((value) => h("option", { key: value, value }, value))),
+            h("input", { className: "funnel-select max-w-none w-56", value: query, onChange: (e) => setQuery(e.target.value), placeholder: "Pesquisar tarefa..." }),
+            h("button", { type: "button", className: "task-secondary-btn", onClick: exportCsv, disabled: !items.length }, "Exportar CSV"),
+            h("button", { type: "button", className: "task-ghost-btn", onClick: clearDone, disabled: !stats.done }, "Limpar concluídas")
+          )
+        ),
+        visibleItems.length ? h("div", { className: "space-y-3" }, visibleItems.map((item) => {
+          const dateStatus = todoDateStatus(item);
+          return h("div", { key: item.id, className: `diagnosis-tile ${item.done ? "opacity-60" : ""}`, "data-help": `Tarefa "${item.title}". Prioridade ${item.priority}. ${item.dueDate ? `Prazo: ${item.dueDate}.` : "Sem prazo definido."} ${item.done ? "Já está concluída." : "Ainda está por fazer."}` },
+            h("div", { className: "flex flex-wrap items-start justify-between gap-3" },
+              h("div", { className: "min-w-0" },
+                h("div", { className: `text-base font-black text-slate-100 ${item.done ? "line-through" : ""}` }, item.title),
+                item.notes && h("p", { className: "text-xs text-slate-400 mt-1 whitespace-pre-wrap" }, item.notes),
+                h("div", { className: "flex flex-wrap gap-2 mt-3" },
+                  h(MetricBadge, { tone: todoPriorityTone(item.priority) }, item.priority),
+                  item.dueDate && h(MetricBadge, { tone: dateStatus === "Atrasada" ? "bad" : dateStatus === "Hoje" ? "warn" : "neutral" }, dateStatus || item.dueDate),
+                  item.done && h(MetricBadge, { tone: "good" }, "Concluída")
+                )
+              ),
+              h("div", { className: "flex flex-wrap gap-2 shrink-0" },
+                h("button", { type: "button", className: item.done ? "task-secondary-btn" : "task-primary-btn", onClick: () => toggleDone(item) }, item.done ? "Reabrir" : "Concluir"),
+                h("button", { type: "button", className: "task-secondary-btn", onClick: () => duplicateItem(item) }, "Duplicar"),
+                h("button", { type: "button", className: "task-inline-btn", onClick: () => deleteItem(item.id) }, "Apagar")
+              )
+            )
+          );
+        })) : h(EmptyState, { text: query || priorityFilter !== "Todas" ? "Não há tarefas para estes filtros." : "Ainda não há tarefas nesta lista." })
+      )
+    );
+  }
   function FerramentasView({ activePanel, setActivePanel, taskProps, selectedMonths }) {
     const current = TOOL_PANELS.some((panel) => panel.name === activePanel) ? activePanel : TOOL_PANELS[0].name;
     return h("div", { className: "space-y-6" },
@@ -7856,7 +8035,7 @@ input::placeholder { color: #7f93b3; }
         h("div", null,
           h("div", { className: "section-kicker" }, "FERRAMENTAS"),
           h("h2", { className: "section-heading" }, "Escolhe a ferramenta que queres usar"),
-          h("p", { className: "section-subtitle" }, "Aqui ficam as ferramentas operacionais: criador de UTMs, relatórios PDF e registo de tarefas.")
+          h("p", { className: "section-subtitle" }, "Aqui ficam as ferramentas operacionais: criador de UTMs, to-do's, relatórios PDF e registo de tarefas.")
         ),
         h("div", { className: "deep-tabs" }, TOOL_PANELS.map((panel) => h("button", {
           key: panel.name,
@@ -7866,6 +8045,7 @@ input::placeholder { color: #7f93b3; }
         }, panel.label)))
       ),
       current === "UTM Creator" ? h(UtmCreatorView, null) :
+      current === "To-do's" ? h(TodoListView, null) :
       current === "Gerador de Relatórios" ? h(ReportGeneratorView, { selectedMonths }) :
       current === "Log Tarefas" ? h(TaskLogView, taskProps) :
       h(UtmCreatorView, null)
