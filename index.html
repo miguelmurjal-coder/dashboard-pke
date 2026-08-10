@@ -7426,7 +7426,7 @@ input::placeholder { color: #7f93b3; }
     const bestSource = topSources[0] || null;
     const weakestMetric = diagnosis.metrics.find((item) => item.label === "Linha mais fraca");
     const paceMetric = diagnosis.metrics.find((item) => /^Ritmo/.test(item.label));
-    const statusIntro = primaryTone === "good" ? "O marketing está saudável" : primaryTone === "warn" ? "O marketing precisa de atenção" : "O marketing está em risco";
+    const statusIntro = primaryTone === "good" ? "Indicadores principais saudáveis" : primaryTone === "warn" ? "Indicadores principais pedem atenção" : "Indicadores principais em zona crítica";
     const mainReason = primaryTone === "good" ? "Os principais indicadores estão dentro de uma zona aceitável. A prioridade é manter cadência e proteger os canais que estão a converter." : `${weakestMetric ? `${weakestMetric.value} é a linha mais fraca` : "Existe desvio nos indicadores principais"} e a faturação está a ${fmtPercent(pctAtingido)} do objetivo.`;
     const biggestRisk = revenueGap < 0 ? `Faltam ${fmtCurrency(Math.abs(revenueGap))} para o objetivo do período selecionado.` : `Existe margem positiva de ${fmtCurrency(revenueGap)} face ao objetivo.`;
     const bestOpportunity = bestSource ? `${bestSource.label} está a puxar ${fmtNumber(bestSource.total || bestSource.value || 0)} registos/valor no período.` : "Ainda não há uma origem dominante clara neste período.";
