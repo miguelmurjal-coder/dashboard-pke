@@ -4664,7 +4664,7 @@ input::placeholder { color: #7f93b3; }
     if (lower.includes("vsp") || lower.includes("fap")) return `${raw}: VSP/FAP refere-se aos leads vindos do ficheiro PKE Leads FAP. Pensa nisto como contactos ou pedidos que entraram antes de sabermos se viraram proposta, encomenda ou faturação.`;
     if (lower.includes("bo") || lower.includes("backoffice")) return `${raw}: BO significa BackOffice PKE. São dados que vêm do sistema interno/site, sobretudo propostas e encomendas. É a parte mais próxima do resultado comercial real.`;
     if (lower.includes("fatur")) return `${raw}: fala de faturação, ou seja, dinheiro efetivamente faturado/realizado. Quando aparece em percentagem, normalmente compara o realizado com o objetivo. Quando aparece em euros, é valor monetário.`;
-    if (lower.includes("objetivo") || lower.includes("meta")) return `${raw}: objetivo/meta é o valor esperado para o período. O dashboard compara o resultado real contra esta referência para dizer se estamos saudáveis, em atenção ou em risco.`;
+    if (lower.includes("objetivo") || lower.includes("meta")) return `${raw}: objetivo/meta é o valor esperado para o período. O dashboard compara o resultado real contra esta referência para dizer se estamos saudáveis, em atenção ou com desvio crítico.`;
     if (lower.includes("encomenda")) return `${raw}: encomenda é uma oportunidade que avançou para pedido/compra no BackOffice. É mais forte do que uma lead ou proposta, porque já indica conversão comercial.`;
     if (lower.includes("proposta")) return `${raw}: proposta é uma oportunidade comercial registada no BackOffice. Ainda não quer dizer venda fechada; quer dizer que existe valor proposto e possibilidade de virar encomenda.`;
     if (lower.includes("lead")) return `${raw}: lead é um contacto/pedido de potencial cliente. O dashboard acompanha se esse contacto evolui para proposta, encomenda e valor real.`;
@@ -4692,7 +4692,7 @@ input::placeholder { color: #7f93b3; }
     if (target.matches && target.matches("td")) return `${text || "Célula da tabela"}: isto é um valor bruto vindo de uma das folhas. Deve ser lido em conjunto com o cabeçalho da coluna e a linha onde aparece.`;
     if (target.matches && target.matches("svg, .chart-scroll")) return "Gráfico visual: transforma uma tabela de números numa leitura rápida. Barras maiores, fatias maiores ou linhas mais altas indicam maior peso relativo. Passa o cursor pelos elementos do gráfico para ver valores específicos quando disponível.";
     if (target.matches && target.matches(".section-shell, .detail-disclosure")) return `${text || "Secção"}: este bloco agrupa informação relacionada. Primeiro lê o título, depois os indicadores principais, e só depois entra no detalhe se precisares de explicar a causa.`;
-    return "Este elemento faz parte da leitura do Marketing Control Panel. O painel junta dados de faturação, objetivos, leads VSP/FAP, propostas BO, encomendas BO e UTMs para mostrar onde estamos bem, onde há risco e que ação faz sentido a seguir.";
+    return "Este elemento faz parte da leitura do Marketing Control Panel. O painel junta dados de faturação, objetivos, leads VSP/FAP, propostas BO, encomendas BO e UTMs para mostrar onde estamos bem, onde há desvio e que ação faz sentido a seguir.";
   }
   function UniversalHelpLens({ active }) {
     const [tip, setTip] = useState(null);
@@ -5365,7 +5365,7 @@ input::placeholder { color: #7f93b3; }
     ))))));
   }
   function AlertThresholdControl({ threshold, setThreshold }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "alert-threshold flex items-center gap-1.5", "data-help": "Limiar de alerta: define a partir de que percentagem do objetivo o dashboard deve considerar que estamos em risco. Exemplo: se estiver em 80%, tudo abaixo de 80% do objetivo fica sinalizado como atenção/risco." }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 whitespace-nowrap" }, "Alertar abaixo de"), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "alert-threshold flex items-center gap-1.5", "data-help": "Limiar de alerta: define a partir de que percentagem do objetivo o dashboard deve considerar que há desvio crítico. Exemplo: se estiver em 80%, tudo abaixo de 80% do objetivo fica sinalizado como atenção/desvio." }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 whitespace-nowrap" }, "Alertar abaixo de"), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "number",
@@ -5923,7 +5923,7 @@ input::placeholder { color: #7f93b3; }
           key,
           className: `kpi-card kpi-card-money kpi-card-${badgeTone} bg-white rounded-xl border border-slate-200 p-4 ${isAlert ? "alert-card" : ""}`
         },
-        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(LineDot, { line: key }), key), !!valueObj && /* @__PURE__ */ React.createElement(MetricBadge, { tone: badgeTone }, badgeTone === "good" ? "Meta" : badgeTone === "bad" ? "Risco" : "Atenção", " · ", fmtPercent(pct))),
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-3" }, /* @__PURE__ */ React.createElement("span", { className: "font-semibold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(LineDot, { line: key }), key), !!valueObj && /* @__PURE__ */ React.createElement(MetricBadge, { tone: badgeTone }, badgeTone === "good" ? "Meta" : badgeTone === "bad" ? "Crítico" : "Atenção", " · ", fmtPercent(pct))),
         /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, "€ real / objetivo"),
         /* @__PURE__ */ React.createElement("div", { className: "text-lg font-bold text-slate-900 tabular-nums" }, fmtCurrency(valueReal), " ", /* @__PURE__ */ React.createElement("span", { className: "text-sm font-normal text-slate-400" }, "/ ", fmtCurrency(valueObj))),
         /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-500" }, "Nº real / objetivo"),
@@ -6305,7 +6305,7 @@ input::placeholder { color: #7f93b3; }
     }
     if (riskiest) {
       sentences.push(
-        `${riskiest.key} \xE9 a linha em maior risco, a ${fmtPercent(riskiest.pct)} do objetivo de fatura\xE7\xE3o.`
+        `${riskiest.key} \xE9 a linha com maior desvio, a ${fmtPercent(riskiest.pct)} do objetivo de fatura\xE7\xE3o.`
       );
       worstPct = riskiest.pct;
     }
@@ -6327,7 +6327,7 @@ input::placeholder { color: #7f93b3; }
       warn: "bg-amber-50 text-amber-700",
       bad: "bg-red-50 text-red-800"
     };
-    return /* @__PURE__ */ React.createElement("div", { className: `executive-card rounded-xl p-3 ${styles[tone] || styles.warn}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-semibold", style: { opacity: 0.75 } }, "RESUMO"), /* @__PURE__ */ React.createElement(MetricBadge, { tone }, tone === "good" ? "Estável" : tone === "warn" ? "Atenção" : "Risco")), /* @__PURE__ */ React.createElement("ul", { className: "executive-list" }, sentences.map((sentence, i) => /* @__PURE__ */ React.createElement("li", { key: i }, sentence))));
+    return /* @__PURE__ */ React.createElement("div", { className: `executive-card rounded-xl p-3 ${styles[tone] || styles.warn}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-semibold", style: { opacity: 0.75 } }, "RESUMO"), /* @__PURE__ */ React.createElement(MetricBadge, { tone }, tone === "good" ? "Estável" : tone === "warn" ? "Atenção" : "Crítico")), /* @__PURE__ */ React.createElement("ul", { className: "executive-list" }, sentences.map((sentence, i) => /* @__PURE__ */ React.createElement("li", { key: i }, sentence))));
   }
   function MonthPaceCard({ model }) {
     const now = /* @__PURE__ */ new Date();
@@ -7445,7 +7445,7 @@ input::placeholder { color: #7f93b3; }
     return h("div", { className: "space-y-6" },
       h(SheetTopBar, { updatedAt, loading, onRefresh: reload }),
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Uma das fontes não carregou totalmente: ", error),
-      h("section", { className: "section-shell section-shell-hero mcp-briefing", "data-help": "Briefing do Marketing Control Panel: esta é a leitura mais rápida do estado do marketing. Junta faturação, objetivo, propostas BO, leads VSP, encomendas, tracking UTM e recomendações para dizer o que está bem, o que está em risco e o que deve ser feito a seguir." },
+      h("section", { className: "section-shell section-shell-hero mcp-briefing", "data-help": "Briefing do Marketing Control Panel: esta é a leitura mais rápida do estado dos indicadores. Junta faturação, objetivo, propostas BO, leads VSP, encomendas, tracking UTM e recomendações para dizer o que está bem, onde há desvio e o que deve ser feito a seguir." },
         h("div", { className: "mcp-briefing-grid" },
           h("div", { className: "mcp-briefing-copy" },
             h("div", null,
@@ -7458,8 +7458,8 @@ input::placeholder { color: #7f93b3; }
                 h("div", { className: "mcp-command-label" }, "Decisão agora"),
                 h("div", { className: "mcp-command-value" }, actionItems[0])
               ),
-              h("div", { className: "mcp-command-card", "data-help": "Maior risco: o ponto que mais pode impedir o cumprimento do objetivo no período selecionado." },
-                h("div", { className: "mcp-command-label" }, "Maior risco"),
+              h("div", { className: "mcp-command-card", "data-help": "Maior bloqueio: o ponto que mais pode impedir o cumprimento do objetivo no período selecionado." },
+                h("div", { className: "mcp-command-label" }, "Maior bloqueio"),
                 h("div", { className: "mcp-command-value" }, biggestRisk)
               ),
               h("div", { className: "mcp-command-card", "data-help": "Melhor oportunidade: canal ou origem que mais justifica atenção por estar a puxar volume ou valor no período." },
@@ -7468,7 +7468,7 @@ input::placeholder { color: #7f93b3; }
               )
             )
           ),
-          h("aside", { className: "mcp-health-card", "data-help": "Estado geral: avaliação automática calculada por faturação vs objetivo, ritmo do mês, linha mais fraca e sinais de risco. Não é AI paga; é diagnóstico calculado pelos dados do MCP." },
+          h("aside", { className: "mcp-health-card", "data-help": "Estado geral dos indicadores: avaliação automática calculada por faturação vs objetivo, ritmo do mês, linha mais fraca e sinais de desvio. Não é AI paga; é diagnóstico calculado pelos dados do MCP." },
             h("div", { className: `mcp-health-status ${primaryTone}` }, diagnosis.status),
             h("div", { className: "mcp-health-number" }, fmtPercent(pctAtingido)),
             h("div", { className: "mcp-health-detail" }, "da faturação objetivo no período · ", periodFilterLabel(selectedMonths)),
@@ -7733,12 +7733,12 @@ input::placeholder { color: #7f93b3; }
     if (!actions.length) actions.push("Manter investimento e acompanhamento comercial, com revisão diária de faturação, funil e qualidade dos leads.");
     return {
       tone,
-      status: tone === "good" ? "Saudável" : tone === "warn" ? "Atenção" : "Risco",
+      status: tone === "good" ? "Saudável" : tone === "warn" ? "Atenção" : "Crítico",
       metrics: [
         { label: "Faturação vs objetivo", value: fmtPercent(pctAtingido), detail: `${fmtCurrency(model.revenue.real ? sumByMonths(model.revenue.real.monthly, selectedMonths) : 0)} realizados`, tone: toneForPercent(pctAtingido, alertThreshold) },
         { label: `Ritmo de ${MONTH_NAMES[pace.month]}`, value: fmtPercent(pace.actual), detail: pace.diff >= 0 ? `${fmtPercent(pace.diff)} acima do esperado` : `${fmtPercent(Math.abs(pace.diff))} abaixo do esperado`, tone: pace.tone },
         { label: "Linha mais fraca", value: weakest ? weakest.key : "Sem dados", detail: weakest ? `${fmtPercent(weakest.pct)} do objetivo` : "Sem objetivo por linha", tone: weakest ? weakest.pct >= 0.8 ? "warn" : "bad" : "neutral" },
-        { label: "Estado geral", value: tone === "good" ? "Saudável" : tone === "warn" ? "Atenção" : "Risco", detail: `${periodFilterLabel(selectedMonths)} analisado`, tone }
+        { label: "Estado geral", value: tone === "good" ? "Saudável" : tone === "warn" ? "Atenção" : "Crítico", detail: `${periodFilterLabel(selectedMonths)} analisado`, tone }
       ],
       insights: [
         { label: "Melhor canal", value: vsp.bestSource ? vsp.bestSource.label : "Sem dados VSP", detail: vsp.bestSource ? `${fmtNumber(vsp.bestSource.leads)} leads · ${fmtPercent(vsp.bestSource.completion)} scorecard` : "A aguardar dados", tone: "good" },
@@ -8147,7 +8147,7 @@ input::placeholder { color: #7f93b3; }
         h(KpiCard, { label: "Pre\xE7o m\xE9dio limpeza", numeric: avgCleanPrice, format: "currency", icon: Euro, kind: "money" }),
         h(KpiCard, { label: "Pre\xE7o m\xE9dio substitui\xE7\xE3o", numeric: avgReplacePrice, format: "currency", icon: Euro, kind: "money" })
       ),
-      h(Card, { title: "Leads priorit\xE1rios", subtitle: "Sem dados pessoais: ordenado por gravidade, urg\xEAncia, tend\xEAncia e sintomas de risco." },
+      h(Card, { title: "Leads priorit\xE1rios", subtitle: "Sem dados pessoais: ordenado por gravidade, urg\xEAncia, tend\xEAncia e sintomas priorit\xE1rios." },
         h(VspDataTable, {
           rows: criticalRows,
           rowKey: ({ row, score }) => `${dateKey(parseRowDate(row, VSP_DATE_COL))}-${vehicleLabel(row)}-${score}`,
