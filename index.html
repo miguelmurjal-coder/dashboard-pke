@@ -262,11 +262,15 @@ table { border-collapse: collapse; }
   margin-top: 0.15rem;
 }
 .brand-logo-panel {
+  width: fit-content;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  min-height: 5.1rem;
-  padding: 0.8rem;
+  padding: 0.15rem 0.25rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }
 .brand-logo-img {
   width: 4.35rem;
@@ -388,7 +392,6 @@ table { border-collapse: collapse; }
   box-shadow: inset -1px 0 #00f5d4;
 }
 .theme-neon-flat .brand-panel,
-.theme-neon-flat .brand-logo-panel,
 .theme-neon-flat .page-title-pill,
 .theme-neon-flat .section-shell,
 .theme-neon-flat .diagnosis-tile,
@@ -490,7 +493,6 @@ table { border-collapse: collapse; }
   box-shadow: 0 12px 34px rgba(0,0,0,0.44);
 }
 .theme-deep-dark .brand-panel,
-.theme-deep-dark .brand-logo-panel,
 .theme-deep-dark .page-title-pill,
 .theme-deep-dark .section-shell,
 .theme-deep-dark .diagnosis-tile,
@@ -552,7 +554,6 @@ table { border-collapse: collapse; }
   box-shadow: 0 12px 32px rgba(15,23,42,0.08);
 }
 .theme-executive-light .brand-panel,
-.theme-executive-light .brand-logo-panel,
 .theme-executive-light .page-title-pill,
 .theme-executive-light .section-shell,
 .theme-executive-light .diagnosis-tile,
@@ -9369,7 +9370,7 @@ input::placeholder { color: #7f93b3; }
             }
           }
         ),
-        /* @__PURE__ */ React.createElement("div", { className: "relative brand-panel brand-logo-panel" }, /* @__PURE__ */ React.createElement("img", { className: "brand-logo-img", src: "assets/pke-logo.png", alt: "PKE" }))
+        /* @__PURE__ */ React.createElement("div", { className: "relative brand-logo-panel" }, /* @__PURE__ */ React.createElement("img", { className: "brand-logo-img", src: "assets/pke-logo.png", alt: "PKE" }))
       ),
       /* @__PURE__ */ React.createElement("nav", { className: "px-3 py-4 space-y-1 flex-shrink-0" }, SHEETS.map((s) => /* @__PURE__ */ React.createElement(
         "button",
