@@ -307,6 +307,313 @@ table { border-collapse: collapse; }
 .page-title-pill .text-slate-900 { color: #f5f8fc; }
 .app-header .text-slate-700 { color: #dbeafe; }
 .app-header .text-slate-500 { color: #99acc9; }
+.theme-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  border-radius: 9999px;
+  background: rgba(10, 18, 32, 0.72);
+  padding: 0.25rem;
+  box-shadow: inset 0 1px rgba(255,255,255,0.04), 0 12px 28px rgba(0,0,0,0.18);
+}
+.theme-switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 9999px;
+  color: #9fc8ef;
+  border: 1px solid transparent;
+}
+.theme-switcher-btn:hover {
+  color: #f8fafc;
+  border-color: rgba(125, 211, 252, 0.18);
+  background: rgba(125, 211, 252, 0.07);
+}
+.theme-switcher-current {
+  min-width: 8.75rem;
+  border-radius: 9999px;
+  background: rgba(7, 13, 25, 0.76);
+  color: #e7ecf3;
+  border: 1px solid rgba(125, 211, 252, 0.12);
+  padding: 0.42rem 0.7rem;
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1rem;
+  font-weight: 900;
+}
+.theme-switcher-current span {
+  display: block;
+  color: #7f93b3;
+  font-size: 0.58rem;
+  line-height: 0.8rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------------------------ */
+/* Visual themes                                                       */
+/* ------------------------------------------------------------------ */
+.theme-neon-flat {
+  color: #f8fafc;
+  background: #05060a;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.theme-neon-flat.app-shell {
+  background:
+    linear-gradient(90deg, rgba(0, 245, 212, 0.045) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 0, 204, 0.035) 1px, transparent 1px),
+    #05060a;
+  background-size: 64px 64px;
+}
+.theme-neon-flat .app-sidebar {
+  background: #030508 !important;
+  border-right-color: #00f5d4;
+  box-shadow: inset -1px 0 #00f5d4;
+}
+.theme-neon-flat .brand-panel,
+.theme-neon-flat .page-title-pill,
+.theme-neon-flat .section-shell,
+.theme-neon-flat .diagnosis-tile,
+.theme-neon-flat .kpi-card,
+.theme-neon-flat .mcp-command-card,
+.theme-neon-flat .mcp-health-card,
+.theme-neon-flat .mcp-signal-card,
+.theme-neon-flat .mcp-action-card,
+.theme-neon-flat .bg-white {
+  background: #090d14;
+  border-color: rgba(0, 245, 212, 0.36);
+  border-radius: 0.38rem;
+  box-shadow: none;
+}
+.theme-neon-flat .app-header {
+  background: rgba(3, 5, 8, 0.96);
+  border-bottom-color: rgba(0, 245, 212, 0.36);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+.theme-neon-flat .section-shell-hero,
+.theme-neon-flat .mcp-briefing {
+  background: #070a10;
+  border-color: #00f5d4;
+}
+.theme-neon-flat .section-kicker,
+.theme-neon-flat .mcp-command-label,
+.theme-neon-flat .mcp-signal-label,
+.theme-neon-flat .text-blue-900 {
+  color: #00f5d4;
+}
+.theme-neon-flat .section-heading,
+.theme-neon-flat .mcp-briefing-title,
+.theme-neon-flat .brand-title,
+.theme-neon-flat .text-slate-900,
+.theme-neon-flat .text-slate-800 {
+  color: #ffffff;
+  font-weight: 950;
+}
+.theme-neon-flat .section-subtitle,
+.theme-neon-flat .text-slate-500,
+.theme-neon-flat .text-slate-400 {
+  color: #8fa3b8;
+}
+.theme-neon-flat .nav-item {
+  border-radius: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.72rem;
+}
+.theme-neon-flat .nav-item-active {
+  background: #00f5d4;
+  color: #020617;
+  border-color: #00f5d4;
+  box-shadow: none;
+}
+.theme-neon-flat .nav-active-bar { background: #ff00cc !important; box-shadow: none; }
+.theme-neon-flat .task-header-btn,
+.theme-neon-flat .task-primary-btn,
+.theme-neon-flat .theme-switcher,
+.theme-neon-flat .alert-chip,
+.theme-neon-flat .metric-badge {
+  border-radius: 0.28rem;
+  box-shadow: none;
+}
+.theme-neon-flat .task-header-btn,
+.theme-neon-flat .task-primary-btn {
+  background: #00a3ff;
+  color: #020617;
+  font-weight: 950;
+}
+.theme-neon-flat .task-secondary-btn,
+.theme-neon-flat .task-ghost-btn,
+.theme-neon-flat .task-field input,
+.theme-neon-flat .task-field select,
+.theme-neon-flat .task-field textarea {
+  border-radius: 0.28rem;
+}
+.theme-neon-flat .chart-svg rect,
+.theme-neon-flat .chart-svg-sm rect {
+  filter: none;
+}
+
+.theme-deep-dark {
+  color: #e5e7eb;
+  background: #000000;
+}
+.theme-deep-dark.app-shell {
+  background: #000000;
+}
+.theme-deep-dark .app-sidebar {
+  background: #030303 !important;
+  border-right-color: rgba(255,255,255,0.08);
+  box-shadow: 14px 0 34px rgba(0,0,0,0.62);
+}
+.theme-deep-dark .app-header {
+  background: rgba(0,0,0,0.92);
+  border-bottom-color: rgba(255,255,255,0.08);
+  box-shadow: 0 12px 34px rgba(0,0,0,0.44);
+}
+.theme-deep-dark .brand-panel,
+.theme-deep-dark .page-title-pill,
+.theme-deep-dark .section-shell,
+.theme-deep-dark .diagnosis-tile,
+.theme-deep-dark .kpi-card,
+.theme-deep-dark .mcp-command-card,
+.theme-deep-dark .mcp-health-card,
+.theme-deep-dark .mcp-signal-card,
+.theme-deep-dark .mcp-action-card,
+.theme-deep-dark .bg-white {
+  background: linear-gradient(180deg, #101114 0%, #090a0d 100%);
+  border-color: rgba(255,255,255,0.08);
+  border-radius: 0.75rem;
+  box-shadow: 0 18px 44px rgba(0,0,0,0.42);
+}
+.theme-deep-dark .section-shell-hero,
+.theme-deep-dark .mcp-briefing {
+  background:
+    linear-gradient(135deg, rgba(14, 165, 233, 0.07), transparent 44%),
+    #08090c;
+}
+.theme-deep-dark .nav-item-active {
+  background: #111318;
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: inset 3px 0 #e5e7eb;
+}
+.theme-deep-dark .nav-active-bar { background: #e5e7eb !important; box-shadow: none; }
+.theme-deep-dark .section-kicker,
+.theme-deep-dark .text-blue-900 {
+  color: #e5e7eb;
+}
+.theme-deep-dark .section-subtitle,
+.theme-deep-dark .text-slate-500,
+.theme-deep-dark .text-slate-400 {
+  color: #8b949e;
+}
+.theme-deep-dark .task-header-btn,
+.theme-deep-dark .task-primary-btn {
+  background: #e5e7eb;
+  color: #020617;
+}
+
+.theme-executive-light {
+  color: #172033;
+  background: #eef3f8;
+}
+.theme-executive-light.app-shell {
+  background:
+    radial-gradient(circle at 10% -10%, rgba(14,165,233,0.16), transparent 26rem),
+    linear-gradient(180deg, #f8fbff 0%, #eef3f8 100%);
+}
+.theme-executive-light .app-sidebar {
+  background: linear-gradient(180deg, #ffffff 0%, #eef4fb 100%) !important;
+  border-right-color: #d8e2ef;
+  box-shadow: 16px 0 40px rgba(15,23,42,0.08);
+}
+.theme-executive-light .app-header {
+  background: rgba(248, 251, 255, 0.9);
+  border-bottom-color: #d8e2ef;
+  box-shadow: 0 12px 32px rgba(15,23,42,0.08);
+}
+.theme-executive-light .brand-panel,
+.theme-executive-light .page-title-pill,
+.theme-executive-light .section-shell,
+.theme-executive-light .diagnosis-tile,
+.theme-executive-light .kpi-card,
+.theme-executive-light .mcp-command-card,
+.theme-executive-light .mcp-health-card,
+.theme-executive-light .mcp-signal-card,
+.theme-executive-light .mcp-action-card,
+.theme-executive-light .bg-white,
+.theme-executive-light .bg-slate-50 {
+  background: #ffffff;
+  border-color: #d8e2ef;
+  color: #172033;
+  box-shadow: 0 18px 38px rgba(15,23,42,0.08);
+}
+.theme-executive-light .section-shell-hero,
+.theme-executive-light .mcp-briefing {
+  background:
+    linear-gradient(135deg, rgba(14,165,233,0.12), rgba(242,169,59,0.08)),
+    #ffffff;
+}
+.theme-executive-light .brand-title,
+.theme-executive-light .page-title-pill .text-slate-900,
+.theme-executive-light .section-heading,
+.theme-executive-light .mcp-briefing-title,
+.theme-executive-light .text-slate-900,
+.theme-executive-light .text-slate-800,
+.theme-executive-light .text-slate-700 {
+  color: #172033;
+}
+.theme-executive-light .brand-subtitle,
+.theme-executive-light .section-subtitle,
+.theme-executive-light .mcp-briefing-lead,
+.theme-executive-light .text-slate-500,
+.theme-executive-light .text-slate-400 {
+  color: #64748b;
+}
+.theme-executive-light .section-kicker,
+.theme-executive-light .text-blue-900 {
+  color: #0369a1;
+}
+.theme-executive-light .nav-item {
+  color: #334155;
+}
+.theme-executive-light .nav-item-active {
+  background: #172033;
+  color: #ffffff;
+  border-color: #172033;
+  box-shadow: inset 4px 0 #F2A93B, 0 12px 28px rgba(15,23,42,0.12);
+}
+.theme-executive-light .nav-item-idle:hover {
+  background: #e8f1fb;
+  color: #172033;
+}
+.theme-executive-light .task-header-btn,
+.theme-executive-light .task-primary-btn {
+  background: #0369a1;
+  color: #ffffff;
+}
+.theme-executive-light .task-field input,
+.theme-executive-light .task-field select,
+.theme-executive-light .task-field textarea,
+.theme-executive-light input,
+.theme-executive-light select,
+.theme-executive-light textarea {
+  background: #ffffff;
+  color: #172033;
+  border-color: #cbd5e1;
+}
+.theme-executive-light .theme-switcher {
+  background: #ffffff;
+  border-color: #d8e2ef;
+}
+.theme-executive-light .theme-switcher-current {
+  background: #eef4fb;
+  color: #172033;
+  border-color: #d8e2ef;
+}
 .chart-scroll { width: 100%; overflow-x: auto; }
 .chart-svg { width: 100%; height: auto; min-width: 480px; display: block; }
 .chart-svg-sm { width: 100%; height: auto; display: block; }
@@ -2637,6 +2944,13 @@ input::placeholder { color: #7f93b3; }
   const TASK_LOG_LAST_REMINDER_KEY = "pke.taskLog.lastReminderKey.v1";
   const UTM_CREATOR_STORAGE_KEY = "pke.utmCreator.options.v1";
   const TODO_STORAGE_KEY = "pke.todos.v1";
+  const VISUAL_THEME_STORAGE_KEY = "pke.mcp.visualTheme.v1";
+  const VISUAL_THEMES = [
+    { key: "current", label: "MCP Atual", hint: "profundo" },
+    { key: "neon-flat", label: "Neon Flat", hint: "bold" },
+    { key: "deep-dark", label: "Deep Dark", hint: "preto" },
+    { key: "executive-light", label: "Executive Light", hint: "claro" }
+  ];
   const TODO_SHEET_NAME = "To-do's MCP";
   const TODO_SHEET_GID = 1919192026;
   const DASHBOARD_PASSWORD = "2860";
@@ -8769,6 +9083,19 @@ input::placeholder { color: #7f93b3; }
     });
     return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement(ExecutiveSummary, { sentences: summary.sentences, tone: summary.tone }), /* @__PURE__ */ React.createElement(MonthPaceCard, { model }));
   }
+  function ThemeSwitcher({ visualTheme, setVisualTheme }) {
+    const currentIndex = Math.max(0, VISUAL_THEMES.findIndex((theme) => theme.key === visualTheme));
+    const current = VISUAL_THEMES[currentIndex] || VISUAL_THEMES[0];
+    const moveTheme = (direction) => {
+      const nextIndex = (currentIndex + direction + VISUAL_THEMES.length) % VISUAL_THEMES.length;
+      setVisualTheme(VISUAL_THEMES[nextIndex].key);
+    };
+    return h("div", { className: "theme-switcher", "data-help": "Temas visuais: muda o aspeto geral do MCP sem alterar os dados. Cada tema mexe em cores, sombras, bordas, botões, densidade e peso visual. A escolha fica guardada neste browser." },
+      h("button", { type: "button", className: "theme-switcher-btn", onClick: () => moveTheme(-1), "aria-label": "Tema anterior" }, "‹"),
+      h("button", { type: "button", className: "theme-switcher-current", onClick: () => moveTheme(1), title: "Clique para mudar de tema" }, h("span", null, "Tema"), current.label),
+      h("button", { type: "button", className: "theme-switcher-btn", onClick: () => moveTheme(1), "aria-label": "Tema seguinte" }, "›")
+    );
+  }
   function App() {
     const [authenticated, setAuthenticated] = useState(false);
     const [selected, setSelected] = useState("Dashboard MKT");
@@ -8782,6 +9109,11 @@ input::placeholder { color: #7f93b3; }
     const [helpMode, setHelpMode] = useState(false);
     const [win98Mode, setWin98Mode] = useState(false);
     const [tiagoPrank, setTiagoPrank] = useState(false);
+    const [visualTheme, setVisualTheme] = useState(() => {
+      if (typeof localStorage === "undefined") return "current";
+      const saved = localStorage.getItem(VISUAL_THEME_STORAGE_KEY);
+      return VISUAL_THEMES.some((theme) => theme.key === saved) ? saved : "current";
+    });
     const [taskEntries, setTaskEntries] = useState(() => {
       if (typeof localStorage === "undefined") return [];
       try {
@@ -8802,6 +9134,10 @@ input::placeholder { color: #7f93b3; }
       if (typeof localStorage === "undefined") return;
       localStorage.setItem(TASK_LOG_STORAGE_KEY, JSON.stringify(taskEntries));
     }, [taskEntries]);
+    useEffect(() => {
+      if (typeof localStorage === "undefined") return;
+      localStorage.setItem(VISUAL_THEME_STORAGE_KEY, visualTheme);
+    }, [visualTheme]);
     useEffect(() => {
       if (!helpMode || typeof window === "undefined") return void 0;
       const closeHelpOnEscape = (event) => {
@@ -8997,11 +9333,11 @@ input::placeholder { color: #7f93b3; }
       return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true) });
     }
     const showPeriodFilter = selected !== "Ferramentas" || activeToolPanel === "Gerador de Relatórios";
-    return /* @__PURE__ */ React.createElement("div", { className: `min-h-screen bg-slate-100 flex app-shell ${helpMode ? "help-mode-on" : ""} ${win98Mode ? "win98-mode" : ""}`, style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: `min-h-screen bg-slate-100 flex app-shell theme-${visualTheme} ${helpMode ? "help-mode-on" : ""} ${win98Mode ? "win98-mode" : ""}`, style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
       "aside",
       {
         className: `app-sidebar fixed md:static z-30 inset-y-0 left-0 w-64 flex flex-col transform ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform`,
-        style: { background: "linear-gradient(180deg, rgba(9,21,41,0.98) 0%, rgba(7,17,34,0.99) 58%, rgba(5,12,24,1) 100%)" }
+        style: {}
       },
       /* @__PURE__ */ React.createElement(
         "div",
@@ -9048,7 +9384,7 @@ input::placeholder { color: #7f93b3; }
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "page-title-pill min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · escreve mcp"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), !["Ferramentas", "Newsletters", "Call Analytics"].includes(selected) && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), /* @__PURE__ */ React.createElement("div", { className: "page-title-pill min-w-max" }, /* @__PURE__ */ React.createElement("h1", { className: "text-lg font-bold text-slate-900" }, activeSheet.label)), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · escreve mcp"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, /* @__PURE__ */ React.createElement(ThemeSwitcher, { visualTheme, setVisualTheme }), selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), !["Ferramentas", "Newsletters", "Call Analytics"].includes(selected) && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
