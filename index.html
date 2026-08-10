@@ -1053,6 +1053,7 @@ table { border-collapse: collapse; }
   display: flex;
   flex-direction: column;
   justify-content: center;
+  overflow: hidden;
   border-radius: 1rem;
   border: 1px solid rgba(125, 211, 252, 0.13);
   background:
@@ -1084,10 +1085,12 @@ table { border-collapse: collapse; }
 .mcp-health-status.bad { color: #fca5a5; background: rgba(58, 22, 30, 0.78); }
 .mcp-health-number {
   color: #f8fafc;
-  font-size: clamp(4.6rem, 9vw, 8.2rem);
-  line-height: 0.86;
+  font-size: clamp(4rem, 6.4vw, 6.4rem);
+  line-height: 0.92;
   font-weight: 950;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.055em;
+  white-space: nowrap;
+  max-width: 100%;
 }
 .mcp-health-detail {
   margin-top: 0.85rem;
