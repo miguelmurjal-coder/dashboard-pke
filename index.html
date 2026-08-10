@@ -7484,6 +7484,9 @@ input::placeholder { color: #7f93b3; }
           h("div", { className: "mcp-signal-detail" }, item.detail)
         )))
       ),
+      h(DetailDisclosure, { title: "Funil", subtitle: "Objetivos, faturação por linha, funil configurável e tabelas completas.", defaultOpen: true, lockedOpen: true },
+        h(DashboardMKTView, { selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage })
+      ),
       h("section", { className: "section-shell space-y-4", "data-help": "O que precisa de decisão: estes alertas transformam números em decisões. Verde significa estável; amarelo significa investigar; vermelho significa ação prioritária." },
         h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
           h("div", null,
@@ -7516,9 +7519,6 @@ input::placeholder { color: #7f93b3; }
           h("p", { className: "section-subtitle" }, "Ranking das origens com mais volume ou valor no período selecionado.")
         ),
         h(CategoryBarChart, { data: topSources.map((row) => ({ label: row.label, value: row.value || row.total || 0 })), unit: topSources.some((row) => row.value) ? "currency" : "number" })
-      ),
-      h(DetailDisclosure, { title: "Funil", subtitle: "Objetivos, faturação por linha, funil configurável e tabelas completas.", defaultOpen: true, lockedOpen: true },
-        h(DashboardMKTView, { selectedMonths, alertThreshold, fromStage, setFromStage, toStage, setToStage })
       )
     );
   }
