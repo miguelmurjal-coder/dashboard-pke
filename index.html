@@ -1389,6 +1389,127 @@ table { border-collapse: collapse; }
   line-height: 1rem;
   margin-top: 0.2rem;
 }
+.visual-funnel-shell {
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 1rem;
+  padding: 1rem;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(14,165,233,0.16), transparent 20rem),
+    linear-gradient(135deg, rgba(14, 27, 48, 0.98), rgba(8, 15, 28, 0.98));
+  box-shadow: inset 0 1px rgba(255,255,255,0.04), 0 18px 38px rgba(0,0,0,0.22);
+}
+.visual-funnel-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0.85rem;
+}
+.visual-funnel-node {
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 0.9rem;
+  padding: 1rem;
+  background: rgba(5, 12, 24, 0.58);
+}
+.visual-funnel-label {
+  color: #90a4c4;
+  font-size: 0.7rem;
+  line-height: 1rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.visual-funnel-value {
+  color: #f8fafc;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+  line-height: 1.05;
+  font-weight: 950;
+  margin-top: 0.35rem;
+}
+.visual-funnel-detail {
+  color: #8ea2c1;
+  font-size: 0.8rem;
+  line-height: 1.15rem;
+  margin-top: 0.35rem;
+}
+.visual-funnel-bridge {
+  min-width: 8.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #9fb4d3;
+}
+.visual-funnel-arrow {
+  width: 100%;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #38bdf8, #34d399);
+  position: relative;
+}
+.visual-funnel-arrow::after {
+  content: "";
+  position: absolute;
+  right: -0.25rem;
+  top: 50%;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-top: 0.35rem solid #34d399;
+  border-right: 0.35rem solid #34d399;
+  transform: translateY(-50%) rotate(45deg);
+}
+.visual-funnel-rate {
+  border-radius: 999px;
+  padding: 0.35rem 0.65rem;
+  background: rgba(16, 185, 129, 0.12);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.26);
+  font-size: 0.75rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.visual-funnel-loss {
+  color: #fda4af;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+}
+.visual-funnel-service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+.visual-funnel-service {
+  border: 1px solid rgba(125, 211, 252, 0.14);
+  border-radius: 0.85rem;
+  padding: 0.85rem;
+  background: rgba(8, 17, 33, 0.62);
+}
+.visual-funnel-track {
+  height: 0.7rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.14);
+  overflow: hidden;
+  margin-top: 0.7rem;
+}
+.visual-funnel-bar {
+  height: 100%;
+  min-width: 0.35rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--line-color, #38bdf8), #34d399);
+}
+.visual-funnel-mini {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.4rem 0.75rem;
+  margin-top: 0.7rem;
+  color: #9fb4d3;
+  font-size: 0.75rem;
+}
+.visual-funnel-mini strong {
+  color: #f8fafc;
+  font-weight: 900;
+}
 .drill-link {
   display: inline-flex;
   align-items: center;
@@ -1472,6 +1593,9 @@ table { border-collapse: collapse; }
   .insight-strip { grid-template-columns: 1fr; }
   .funnel-steps { grid-template-columns: 1fr; }
   .funnel-step::after { display: none; }
+  .visual-funnel-hero { grid-template-columns: 1fr; }
+  .visual-funnel-bridge { min-width: 0; padding: 0.2rem 0; }
+  .visual-funnel-service-grid { grid-template-columns: 1fr; }
   .summary-grid-tight { grid-template-columns: 1fr; }
 }
 
@@ -6018,6 +6142,63 @@ input::placeholder { color: #7f93b3; }
     });
     return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4 relative", ref, "data-help": `Funil de conversão ${title}: mostra quantas oportunidades passam de uma fase para a seguinte. A primeira fase é a base. Cada fase seguinte mostra o que sobrou, a percentagem de conversão e a perda. Serve para descobrir em que ponto se perde mais volume ou valor.` }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2" }, LINE_COLORS[title] && /* @__PURE__ */ React.createElement(LineDot, { line: title }), title), /* @__PURE__ */ React.createElement("div", { className: "flex items-stretch gap-2" }, nodes), /* @__PURE__ */ React.createElement(ChartTooltip, { tip }));
   }
+  function VisualFunnelPanel({ total, lines, fromLabel, toLabel }) {
+    const totalFrom = total && total[0] ? total[0].value : 0;
+    const totalTo = total && total[1] ? total[1].value : 0;
+    const totalFromValue = total && total[0] ? total[0].valueEur : null;
+    const totalToValue = total && total[1] ? total[1].valueEur : null;
+    const conversion = totalFrom ? totalTo / totalFrom : 0;
+    const loss = Math.max(0, totalFrom - totalTo);
+    const maxFrom = Math.max(totalFrom, ...lines.map((line) => line.stages && line.stages[0] ? line.stages[0].value : 0), 1);
+    const rowFor = (line) => {
+      const from = line.stages[0] || { value: 0 };
+      const to = line.stages[1] || { value: 0 };
+      const pct = from.value ? to.value / from.value : 0;
+      const fromWidth = Math.max(6, Math.min(100, from.value / maxFrom * 100));
+      const toWidth = Math.max(to.value ? 5 : 0, Math.min(100, from.value ? to.value / from.value * fromWidth : 0));
+      const color = LINE_COLORS[line.key] || "#38bdf8";
+      return /* @__PURE__ */ React.createElement("div", { key: line.key, className: "visual-funnel-service", "data-help": `Funil ${line.key}: compara ${fromLabel} com ${toLabel} apenas neste serviço. A barra maior mostra a base de entrada e a barra colorida mostra o que chegou à fase seguinte. Quanto mais curta for a barra colorida, maior é a perda nesta passagem.` },
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3" },
+          /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 font-extrabold text-slate-100" }, LINE_COLORS[line.key] && /* @__PURE__ */ React.createElement(LineDot, { line: line.key }), line.key),
+          /* @__PURE__ */ React.createElement("span", { className: "visual-funnel-rate" }, fmtPercent(pct))
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-track", title: `${fromLabel}: ${fmtNumber(from.value)}` },
+          /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-bar", style: { width: `${fromWidth}%`, "--line-color": color, opacity: 0.34 } })
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-track", title: `${toLabel}: ${fmtNumber(to.value)}` },
+          /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-bar", style: { width: `${toWidth}%`, "--line-color": color } })
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-mini" },
+          /* @__PURE__ */ React.createElement("span", null, fromLabel),
+          /* @__PURE__ */ React.createElement("strong", null, fmtNumber(from.value)),
+          /* @__PURE__ */ React.createElement("span", null, toLabel),
+          /* @__PURE__ */ React.createElement("strong", null, fmtNumber(to.value)),
+          /* @__PURE__ */ React.createElement("span", null, "Perda"),
+          /* @__PURE__ */ React.createElement("strong", null, fmtNumber(Math.max(0, from.value - to.value)))
+        )
+      );
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-shell", "data-help": `Funil visual: mostra a passagem de ${fromLabel} para ${toLabel}. O bloco da esquerda é a base; o bloco da direita é o que chegou à fase seguinte. Ao centro está a taxa de conversão e a perda. Em baixo, cada serviço mostra onde a conversão está mais forte ou mais fraca.` },
+      /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-hero" },
+        /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-node" },
+          /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-label" }, fromLabel),
+          /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-value" }, fmtNumber(totalFrom)),
+          totalFromValue != null && /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-detail" }, fmtCurrency(totalFromValue), " associados")
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-bridge" },
+          /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-rate" }, fmtPercent(conversion), " passam"),
+          /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-arrow" }),
+          /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-loss" }, fmtNumber(loss), " ficam pelo caminho")
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-node" },
+          /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-label" }, toLabel),
+          /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-value" }, fmtNumber(totalTo)),
+          totalToValue != null && /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-detail" }, fmtCurrency(totalToValue), " associados")
+        )
+      ),
+      lines.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "visual-funnel-service-grid" }, lines.map(rowFor))
+    );
+  }
   const FJM_FATURACAO_EUR_COLS = {
     PS: { ft: 3, sinal: 4, nc: 5 },
     FO: { ft: 6, sinal: 7, nc: 8 },
@@ -8383,7 +8564,7 @@ input::placeholder { color: #7f93b3; }
         kind: "risk",
         trend: deltaTrend
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-2" }, "Fatura\xE7\xE3o: objetivo vs real"), revenueChartData.length ? /* @__PURE__ */ React.createElement(MonthlyComparisonChart, { data: revenueChartData, nameA: "Objetivo", nameB: "Real", variant: "bar-line" }) : /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem meses selecionados." })), (lineMix.length > 0 || encomendaMix.length > 0 || faturacaoRealMix.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" }, lineMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Propostas reais (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: lineMix, unit: "currency" })), encomendaMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Encomendas reais (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: encomendaMix, unit: "currency" })), faturacaoRealMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Fatura\xE7\xE3o real (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: faturacaoRealMix, unit: "currency" })))), section === "funil" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2 mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700" }, "Funil de convers\xE3o (N\xBA) \u2014 ", fromStageDef.shortLabel, " \u2192 ", toStageDef.shortLabel), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("select", { value: fromStage, onChange: (e) => setFromStage(e.target.value), className: "funnel-select" }, /* @__PURE__ */ React.createElement(FunnelStageOptions, null)), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 text-sm" }, "\u2192"), /* @__PURE__ */ React.createElement("select", { value: toStage, onChange: (e) => setToStage(e.target.value), className: "funnel-select" }, /* @__PURE__ */ React.createElement(FunnelStageOptions, null)))), funnelTotal || funnelLines.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, funnelTotal && /* @__PURE__ */ React.createElement(FunnelChart, { title: "Total", stages: funnelTotal }), funnelLines.map((f) => /* @__PURE__ */ React.createElement(FunnelChart, { key: f.key, title: f.key, stages: f.stages }))) : /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para esta combina\xE7\xE3o de fases." }))), section === "detalhe" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-px border-b border-slate-200" }, tabs.map((t) => /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-2" }, "Fatura\xE7\xE3o: objetivo vs real"), revenueChartData.length ? /* @__PURE__ */ React.createElement(MonthlyComparisonChart, { data: revenueChartData, nameA: "Objetivo", nameB: "Real", variant: "bar-line" }) : /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem meses selecionados." })), (lineMix.length > 0 || encomendaMix.length > 0 || faturacaoRealMix.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" }, lineMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Propostas reais (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: lineMix, unit: "currency" })), encomendaMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Encomendas reais (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: encomendaMix, unit: "currency" })), faturacaoRealMix.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Fatura\xE7\xE3o real (S/ IVA) \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement(DonutChart, { data: faturacaoRealMix, unit: "currency" })))), section === "funil" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-200" }, "Funil visual \u2014 ", fromStageDef.shortLabel, " \u2192 ", toStageDef.shortLabel), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("select", { value: fromStage, onChange: (e) => setFromStage(e.target.value), className: "funnel-select" }, /* @__PURE__ */ React.createElement(FunnelStageOptions, null)), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 text-sm" }, "\u2192"), /* @__PURE__ */ React.createElement("select", { value: toStage, onChange: (e) => setToStage(e.target.value), className: "funnel-select" }, /* @__PURE__ */ React.createElement(FunnelStageOptions, null)))), funnelTotal || funnelLines.length > 0 ? /* @__PURE__ */ React.createElement(VisualFunnelPanel, { total: funnelTotal, lines: funnelLines, fromLabel: fromStageDef.shortLabel, toLabel: toStageDef.shortLabel }) : /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para esta combina\xE7\xE3o de fases." }))), section === "detalhe" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-px border-b border-slate-200" }, tabs.map((t) => /* @__PURE__ */ React.createElement(
       "button",
       {
         key: t.key,
