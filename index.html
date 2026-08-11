@@ -988,6 +988,80 @@ table { border-collapse: collapse; }
   padding: 1rem;
   background: rgba(10, 18, 32, 0.50);
 }
+.marketing-vsp-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+.marketing-vsp-kpi {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(125, 211, 252, 0.13);
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, rgba(15, 25, 43, 0.72), rgba(7, 13, 24, 0.68));
+}
+.marketing-vsp-kpi-label {
+  color: #8fa4c2;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.marketing-vsp-kpi-value {
+  margin-top: 0.35rem;
+  color: #f8fafc;
+  font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+  line-height: 1;
+  font-weight: 950;
+}
+.marketing-vsp-kpi-detail {
+  margin-top: 0.45rem;
+  color: #8fa4c2;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+.marketing-vsp-split {
+  display: flex;
+  height: 0.55rem;
+  margin-top: 0.85rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: rgba(3, 7, 18, 0.65);
+}
+.marketing-vsp-split-meta { background: #38BDF8; }
+.marketing-vsp-split-google { background: #34D399; }
+.marketing-vsp-legend {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.7rem;
+  margin-top: 0.45rem;
+  color: #b9c8dc;
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+.marketing-vsp-flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.8rem;
+  color: #dbeafe;
+  font-size: 0.74rem;
+  font-weight: 850;
+}
+.marketing-vsp-flow-arrow { color: #34D399; font-size: 1rem; }
+.marketing-vsp-caution {
+  display: inline-flex;
+  margin-top: 0.7rem;
+  padding: 0.28rem 0.5rem;
+  border-radius: 9999px;
+  color: #fcd34d;
+  background: rgba(120, 53, 15, 0.22);
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+@media (max-width: 900px) {
+  .marketing-vsp-kpi-grid { grid-template-columns: 1fr; }
+}
 .marketing-chart-card {
   border: 1px solid rgba(125, 211, 252, 0.11);
   border-radius: 0.9rem;
@@ -7270,7 +7344,7 @@ input::placeholder { color: #7f93b3; }
     return Array.from(map.values()).sort((a, b) => b.value - a.value);
   }
   function buildVspInvestmentKpis(table, selectedMonths, potentialTable) {
-    if (!table) return { items: [], chartRows: [], pageRows: [] };
+    if (!table) return { items: [], chartRows: [], pageRows: [], summary: null };
     const metaTotalCol = findColumnByText(table, (text) => text.includes("investimento fap meta"));
     const googleTotalCol = findColumnByText(table, (text) => text.includes("investimento fap google"));
     const pageColumns = [...vspInvestmentPageColumns(table, "meta"), ...vspInvestmentPageColumns(table, "google")];
@@ -7305,10 +7379,11 @@ input::placeholder { color: #7f93b3; }
         { label: "Google VSP", value: googleCost, help: "Google VSP: investimento total em Google Ads associado às VSP/FAP na DATABASE PKE 2026, tab Visão VSP diária, respeitando o período selecionado." }
       ].filter((row) => row.value > 0),
       pageRows,
+      summary: { totalCost, metaCost, googleCost, cpl, leads, roasPotential, potential },
       items: [
         { label: "Investimento VSP", value: fmtCurrency(totalCost), detail: `${fmtCurrency(metaCost)} Meta · ${fmtCurrency(googleCost)} Google`, tone: totalCost ? "good" : "neutral", help: "Investimento VSP: soma dos custos de Meta e Google registados na DATABASE PKE 2026, tab Visão VSP diária. Quando existe uma coluna de Investimento FAP Total, essa coluna é usada como total principal. Respeita o período selecionado." },
         { label: "CPL VSP", value: fmtCurrency(cpl), detail: `${fmtNumber(leads)} leads VSP/FAP no período`, tone: cpl ? "neutral" : "warn", help: "CPL VSP: custo por lead das VSP. Se existir a coluna CPL FAP, usa a média dessa coluna; caso contrário calcula investimento Meta + Google das VSP dividido pelo número de leads VSP no período." },
-        { label: "ROAS potencial VSP", value: `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(roasPotential)}x`, detail: `${fmtCurrency(potential)} potencial estimado`, tone: roasPotential >= 4 ? "good" : roasPotential >= 2 ? "warn" : roasPotential > 0 ? "bad" : "neutral", help: "ROAS potencial VSP: compara o potencial estimado das leads VSP com o investimento Meta e Google associado. É uma leitura de potencial, não faturação confirmada." }
+        { label: "ROAS potencial VSP", value: new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(roasPotential), detail: `${fmtCurrency(potential)} potencial estimado`, tone: roasPotential >= 4 ? "good" : roasPotential >= 2 ? "warn" : roasPotential > 0 ? "bad" : "neutral", help: "ROAS potencial VSP: compara o potencial estimado das leads VSP com o investimento Meta e Google associado. É uma leitura de potencial, não faturação confirmada." }
       ]
     };
   }
@@ -8688,7 +8763,47 @@ input::placeholder { color: #7f93b3; }
     );
   }
 
-  function MarketingComparisonChart({ data, unit, direction = "none", context = "" }) {
+  function VspKpiStrip({ summary }) {
+  if (!summary) return null;
+  const { totalCost, metaCost, googleCost, cpl, leads, roasPotential, potential } = summary;
+  const channelCost = metaCost + googleCost;
+  const metaShare = channelCost ? metaCost / channelCost : 0;
+  const googleShare = channelCost ? googleCost / channelCost : 0;
+  return h("div", { className: "marketing-vsp-kpi-grid" },
+    h("article", { className: "marketing-vsp-kpi", "data-help": "Investimento VSP: total aplicado em publicidade Meta Ads e Google Ads para as VSP no período selecionado. Origem: DATABASE PKE 2026, tab Visão VSP diária." },
+      h("div", { className: "marketing-vsp-kpi-label" }, "Investimento publicitário"),
+      h("div", { className: "marketing-vsp-kpi-value tabular-nums" }, fmtCurrency(totalCost)),
+      h("div", { className: "marketing-vsp-split" },
+        h("div", { className: "marketing-vsp-split-meta", style: { width: `${metaShare * 100}%` } }),
+        h("div", { className: "marketing-vsp-split-google", style: { width: `${googleShare * 100}%` } })
+      ),
+      h("div", { className: "marketing-vsp-legend" },
+        h("span", null, `Meta ${fmtCurrency(metaCost)}`),
+        h("span", null, `Google ${fmtCurrency(googleCost)}`)
+      )
+    ),
+    h("article", { className: "marketing-vsp-kpi", "data-help": "Custo por Lead VSP: investimento publicitário das VSP dividido pelas leads VSP/FAP do período. Quanto mais baixo, melhor." },
+      h("div", { className: "marketing-vsp-kpi-label" }, "Custo por Lead"),
+      h("div", { className: "marketing-vsp-kpi-value tabular-nums" }, fmtCurrency(cpl)),
+      h("div", { className: "marketing-vsp-flow" },
+        h("span", null, fmtCurrency(totalCost)),
+        h("span", { className: "marketing-vsp-flow-arrow" }, "→"),
+        h("span", null, `${fmtNumber(leads)} leads`),
+        h("span", { className: "marketing-vsp-flow-arrow" }, "→"),
+        h("span", null, `${fmtCurrency(cpl)}/lead`)
+      ),
+      h("div", { className: "marketing-vsp-kpi-detail" }, "Quanto custa gerar uma lead através das VSP.")
+    ),
+    h("article", { className: "marketing-vsp-kpi", "data-help": "ROAS potencial VSP: potencial estimado das leads dividido pelo investimento publicitário. É uma projeção de oportunidade e não faturação confirmada." },
+      h("div", { className: "marketing-vsp-kpi-label" }, "ROAS potencial"),
+      h("div", { className: "marketing-vsp-kpi-value tabular-nums" }, new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(roasPotential)),
+      h("div", { className: "marketing-vsp-kpi-detail" }, `${fmtCurrency(potential)} de potencial estimado sobre ${fmtCurrency(totalCost)} investidos.`),
+      h("span", { className: "marketing-vsp-caution" }, "Estimativa, não faturação")
+    )
+  );
+}
+
+function MarketingComparisonChart({ data, unit, direction = "none", context = "" }) {
   const max = Math.max(1, ...data.map((row) => row.value || 0));
   const total = data.reduce((sum, row) => sum + (row.value || 0), 0) || 1;
   const eligible = data.filter((row) => row.value > 0);
@@ -8769,15 +8884,12 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
       ),
       hasServiceKpis ? h("div", { className: "marketing-service-board" }, snapshots.map((snapshot) => h(MarketingServiceVisualCard, { key: snapshot.group.key, snapshot, maxValues, bestRoas, bestCpl, bestCpa }))) : h(EmptyState, { text: "Ainda não encontrei linhas de ROAS, CPL, CPA ou investimento nas linhas 144 a 158." }),
       vspInvestment.items.length ? h("div", { className: "marketing-vsp-panel space-y-4", "data-help": "Bloco VSP: custos e potencial das VSP/FAP. Origem dos custos: DATABASE PKE 2026, tab Visão VSP diária. Origem do potencial: Resultados VSP." },
-        h("div", { className: "flex items-start justify-between gap-3 flex-wrap" },
-          h("div", null,
-            h("div", { className: "section-kicker" }, "VSP"),
-            h("h4", { className: "text-xl font-black text-slate-100" }, "Investimento e potencial das VSP"),
-            h("p", { className: "text-sm text-slate-400 mt-1" }, "Custos Meta/Google das VSP e leitura de potencial estimado.")
-          ),
-          h("span", { className: "marketing-data-status" }, "DATABASE PKE 2026")
+        h("div", null,
+          h("div", { className: "section-kicker" }, "VSP"),
+          h("h4", { className: "text-xl font-black text-slate-100" }, "Investimento e potencial das VSP"),
+          h("p", { className: "text-sm text-slate-400 mt-1" }, "Investimento publicitário, custo por lead e potencial estimado no período selecionado.")
         ),
-        h("div", { className: "grid md:grid-cols-3 gap-4" }, vspInvestment.items.map((item) => h(DiagnosisTile, { key: item.label, item }))),
+        h(VspKpiStrip, { summary: vspInvestment.summary }),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
           vspInvestment.chartRows.length ? h(MarketingChartCard, { title: "Investimento publicitário nas VSP", subtitle: `Total investido no período: ${fmtCurrency((vspMeta ? vspMeta.value : 0) + (vspGoogle ? vspGoogle.value : 0))}. Comparação entre Meta Ads e Google Ads.` }, h(MarketingComparisonChart, { data: vspInvestment.chartRows, unit: "currency", direction: "share", context: "Investimento publicitário nas VSP: soma do valor investido em anúncios Meta Ads e Google Ads para as páginas VSP no período selecionado. Origem: DATABASE PKE 2026, tab Visão VSP diária." })) : null,
           vspInvestment.pageRows.length ? h(MarketingChartCard, { title: "Investimento publicitário por VSP", subtitle: "Soma do investimento Meta Ads e Google Ads por página VSP no período." }, h(MarketingComparisonChart, { data: vspInvestment.pageRows.slice(0, 6), unit: "currency", direction: "share", context: "Investimento por VSP: mostra quanto foi investido em publicidade paga para cada página VSP, somando Meta Ads e Google Ads." })) : null
