@@ -994,6 +994,67 @@ table { border-collapse: collapse; }
   padding: 0.95rem;
   background: rgba(8, 14, 26, 0.46);
 }
+.marketing-comparison-chart {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.95rem;
+}
+.marketing-comparison-row {
+  display: grid;
+  gap: 0.4rem;
+  transition: opacity 160ms ease;
+}
+.marketing-comparison-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.marketing-comparison-label {
+  min-width: 0;
+  color: #dbeafe;
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+.marketing-comparison-value {
+  flex-shrink: 0;
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 950;
+}
+.marketing-comparison-track {
+  position: relative;
+  height: 0.85rem;
+  overflow: visible;
+  border-radius: 9999px;
+  background: rgba(3, 7, 18, 0.64);
+}
+.marketing-comparison-fill {
+  position: relative;
+  height: 100%;
+  min-width: 0.75rem;
+  border-radius: 9999px 0 0 9999px;
+  filter: saturate(1.08);
+}
+.marketing-comparison-fill::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -0.45rem;
+  width: 0;
+  height: 0;
+  border-top: 0.64rem solid transparent;
+  border-bottom: 0.64rem solid transparent;
+  border-left: 0.58rem solid var(--comparison-color, #34D399);
+  transform: translateY(-50%);
+}
+.marketing-comparison-note {
+  min-height: 1rem;
+  color: #7f93b3;
+  font-size: 0.7rem;
+  font-weight: 750;
+}
+.marketing-comparison-note-strong { color: #6ee7b7; }
 @media (max-width: 1100px) {
   .marketing-kpi-summary-grid,
   .marketing-service-board { grid-template-columns: 1fr; }
@@ -4056,7 +4117,7 @@ input::placeholder { color: #7f93b3; }
   function formatMarketingKpiValue(value, format) {
     if (format === "roas") {
       const normalized = value > 20 ? value / 100 : value;
-      return `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(normalized || 0)}x`;
+      return new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(normalized || 0);
     }
     if (format === "currency") return fmtCurrency(value);
     if (format === "percent") return fmtPercent(value > 1 ? value / 100 : value);
@@ -8592,7 +8653,7 @@ input::placeholder { color: #7f93b3; }
     return h("article", { className: `marketing-service-card marketing-service-card-${serviceSlug}`, "data-help": `${group.label}: leitura visual dos KPIs pagos deste serviço. ROAS é retorno sobre investimento; CPL é custo por lead; CPA é custo por aquisição/encomenda; média de investimento mostra o peso de orçamento desse serviço. Origem dos dados: MKT PKE 2026, linhas 144 a 158.` },
       h("div", { className: "marketing-service-title" },
         h("div", { className: "marketing-service-name" }, h(LineDot, { line: group.key }), group.label),
-        h(MetricBadge, { tone: roasTone }, bestRoas && bestRoas.group.key === group.key ? "Melhor ROAS" : `${group.metrics.length}/4`)
+        bestRoas && bestRoas.group.key === group.key ? h(MetricBadge, { tone: roasTone }, "Melhor ROAS") : null
       ),
       h("div", { className: "marketing-service-primary" },
         h("div", null,
@@ -8627,7 +8688,32 @@ input::placeholder { color: #7f93b3; }
     );
   }
 
-  function ExecutiveDiagnosisPanel({ diagnosis }) {
+  function MarketingComparisonChart({ data, unit, direction = "none", context = "" }) {
+  const max = Math.max(1, ...data.map((row) => row.value || 0));
+  const total = data.reduce((sum, row) => sum + (row.value || 0), 0) || 1;
+  const eligible = data.filter((row) => row.value > 0);
+  const bestValue = eligible.length ? (direction === "min" ? Math.min(...eligible.map((row) => row.value)) : Math.max(...eligible.map((row) => row.value))) : null;
+  const colors = ["#38BDF8", "#34D399", "#A78BFA", "#F2A93B", "#F472B6", "#60A5FA"];
+  return h("div", { className: "marketing-comparison-chart", "data-help": context }, data.map((row, index) => {
+    const color = colors[index % colors.length];
+    const width = row.value > 0 ? Math.max(7, Math.min(96, row.value / max * 91)) : 0;
+    const isBest = direction !== "none" && row.value > 0 && row.value === bestValue;
+    const share = row.value / total;
+    const note = direction === "min" ? (isBest ? "Menor custo no período" : `${fmtPercent(row.value / bestValue - 1)} acima do menor custo`) : direction === "share" ? `${fmtPercent(share)} do total apresentado` : "";
+    return h("div", { key: row.label, className: "marketing-comparison-row", "data-help": row.help || `${row.label}: ${fmtByUnit(row.value, unit)}.` },
+      h("div", { className: "marketing-comparison-head" },
+        h("span", { className: "marketing-comparison-label" }, row.label),
+        h("span", { className: "marketing-comparison-value tabular-nums" }, fmtByUnit(row.value, unit))
+      ),
+      h("div", { className: "marketing-comparison-track" },
+        h("div", { className: "marketing-comparison-fill", style: { width: `${width}%`, background: `linear-gradient(90deg, ${color}99, ${color})`, "--comparison-color": color } })
+      ),
+      h("div", { className: `marketing-comparison-note ${isBest ? "marketing-comparison-note-strong" : ""}` }, note)
+    );
+  }));
+}
+
+function ExecutiveDiagnosisPanel({ diagnosis }) {
     if (!diagnosis) return null;
     return h("section", { className: "section-shell space-y-4" },
       h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
@@ -8668,13 +8754,12 @@ input::placeholder { color: #7f93b3; }
     const vspMeta = vspInvestment.chartRows.find((row) => /meta/i.test(row.label));
     const vspGoogle = vspInvestment.chartRows.find((row) => /google/i.test(row.label));
     return h("section", { className: "section-shell marketing-performance-panel space-y-5", "data-help": "Performance paga: painel de leitura rápida para perceber como está o Marketing da PKE a comportar-se em ROAS, custo por lead, custo por aquisição e investimento por serviço. Os dados vêm das linhas 144 a 158 do MKT PKE 2026 e dos custos VSP da DATABASE PKE 2026, tab Visão VSP diária." },
-      h("div", { className: "flex items-start justify-between gap-3 flex-wrap" },
+      h("div", { className: "flex items-start gap-3 flex-wrap" },
         h("div", null,
           h("div", { className: "section-kicker" }, "PERFORMANCE PAGA"),
           h("h3", { className: "section-heading" }, "Como está o Marketing da PKE a comportar-se?"),
           h("p", { className: "section-subtitle" }, `ROAS, CPL, CPA e investimento por serviço · ${periodFilterLabel(selectedMonths)}`)
-        ),
-        h("span", { className: "marketing-data-status" }, visibleKpis.length ? "Dados lidos" : "A aguardar dados")
+        )
       ),
       h("div", { className: "marketing-kpi-summary-grid" },
         h(MarketingInsightCard, { label: "Melhor retorno", value: bestRoas ? bestRoas.group.label : "Sem dados", detail: bestRoas ? `${formatMarketingKpiValue(bestRoas.roasValue, "roas")} de ROAS` : "A aguardar ROAS", tone: "good", help: "Melhor retorno: serviço com ROAS mais alto entre PS, FAP e AdBlue. Origem: linhas ROAS PS/FAP/ADB no MKT PKE 2026." }),
@@ -8694,14 +8779,14 @@ input::placeholder { color: #7f93b3; }
         ),
         h("div", { className: "grid md:grid-cols-3 gap-4" }, vspInvestment.items.map((item) => h(DiagnosisTile, { key: item.label, item }))),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          vspInvestment.chartRows.length ? h(MarketingChartCard, { title: "Meta vs Google nas VSP", subtitle: `${vspMeta ? fmtCurrency(vspMeta.value) : fmtCurrency(0)} Meta · ${vspGoogle ? fmtCurrency(vspGoogle.value) : fmtCurrency(0)} Google` }, h(CategoryBarChart, { data: vspInvestment.chartRows, unit: "currency" })) : null,
-          vspInvestment.pageRows.length ? h(MarketingChartCard, { title: "VSPs com mais investimento", subtitle: "Top páginas/VSP por custo agregado no período." }, h(CategoryBarChart, { data: vspInvestment.pageRows.slice(0, 6), unit: "currency" })) : null
+          vspInvestment.chartRows.length ? h(MarketingChartCard, { title: "Investimento publicitário nas VSP", subtitle: `Total investido no período: ${fmtCurrency((vspMeta ? vspMeta.value : 0) + (vspGoogle ? vspGoogle.value : 0))}. Comparação entre Meta Ads e Google Ads.` }, h(MarketingComparisonChart, { data: vspInvestment.chartRows, unit: "currency", direction: "share", context: "Investimento publicitário nas VSP: soma do valor investido em anúncios Meta Ads e Google Ads para as páginas VSP no período selecionado. Origem: DATABASE PKE 2026, tab Visão VSP diária." })) : null,
+          vspInvestment.pageRows.length ? h(MarketingChartCard, { title: "Investimento publicitário por VSP", subtitle: "Soma do investimento Meta Ads e Google Ads por página VSP no período." }, h(MarketingComparisonChart, { data: vspInvestment.pageRows.slice(0, 6), unit: "currency", direction: "share", context: "Investimento por VSP: mostra quanto foi investido em publicidade paga para cada página VSP, somando Meta Ads e Google Ads." })) : null
         )
       ) : null,
       (averageInvestmentRows.length || cplRows.length || cpaRows.length) ? h("div", { className: "grid lg:grid-cols-3 gap-4" },
-        averageInvestmentRows.length ? h(MarketingChartCard, { title: "Peso de investimento", subtitle: "Percentagem média por serviço." }, h(CategoryBarChart, { data: averageInvestmentRows, unit: "percent" })) : null,
-        cplRows.length ? h(MarketingChartCard, { title: "CPL por serviço", subtitle: "Custo por lead. Menor é melhor." }, h(CategoryBarChart, { data: cplRows, unit: "currency" })) : null,
-        cpaRows.length ? h(MarketingChartCard, { title: "CPA por serviço", subtitle: "Custo por aquisição/encomenda. Menor é melhor." }, h(CategoryBarChart, { data: cpaRows, unit: "currency" })) : null
+        averageInvestmentRows.length ? h(MarketingChartCard, { title: "Distribuição média do investimento", subtitle: "Peso médio de cada serviço no investimento pago. Não representa faturação." }, h(MarketingComparisonChart, { data: averageInvestmentRows, unit: "percent", direction: "share", context: "Distribuição média do investimento: percentagem média do orçamento pago dedicada a PS, FAP e AdBlue no período selecionado." })) : null,
+        cplRows.length ? h(MarketingChartCard, { title: "Custo por Lead (CPL)", subtitle: "Quanto custa gerar uma lead em cada serviço. Menor é melhor." }, h(MarketingComparisonChart, { data: cplRows, unit: "currency", direction: "min", context: "CPL por serviço: investimento publicitário dividido pelo número de leads geradas. A opção assinalada tem o menor custo por lead." })) : null,
+        cpaRows.length ? h(MarketingChartCard, { title: "Custo por Aquisição (CPA)", subtitle: "Quanto custa gerar uma aquisição/encomenda em cada serviço. Menor é melhor." }, h(MarketingComparisonChart, { data: cpaRows, unit: "currency", direction: "min", context: "CPA por serviço: investimento publicitário dividido pelo número de aquisições ou encomendas. A opção assinalada tem o menor custo por aquisição." })) : null
       ) : null
     );
   }
