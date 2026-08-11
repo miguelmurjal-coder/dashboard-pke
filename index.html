@@ -661,6 +661,141 @@ table { border-collapse: collapse; }
 .chart-tooltip-row { display: flex; align-items: center; gap: 0.35rem; }
 .chart-tooltip-dot { width: 0.5rem; height: 0.5rem; border-radius: 9999px; display: inline-block; }
 
+.data-loading-bar {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.35rem 0 1rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 0.95rem;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.10), rgba(15, 23, 42, 0.18));
+  color: #9bdcff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.data-loading-track {
+  position: relative;
+  overflow: hidden;
+  height: 0.36rem;
+  border-radius: 9999px;
+  background: rgba(8, 13, 25, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.10);
+}
+.data-loading-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #1DADE8 0%, #5EEAD4 52%, #F2A93B 100%);
+  box-shadow: 0 0 22px rgba(34, 211, 238, 0.26);
+  animation: dataLoadingSweep 1.15s ease-in-out infinite;
+}
+.data-loading-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.data-loading-dot {
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 9999px;
+  background: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+}
+.sheet-topbar-stack { margin-bottom: 1rem; }
+.theme-neon-flat .data-loading-bar {
+  background: #07101f;
+  border-color: #20e0ff;
+  color: #20e0ff;
+  box-shadow: none;
+}
+.theme-deep-dark .data-loading-bar {
+  background: #050505;
+  border-color: #2f3338;
+  color: #e5e7eb;
+}
+.theme-executive-light .data-loading-bar {
+  background: #e8f6ff;
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+@keyframes dataLoadingSweep {
+  0% { transform: translateX(-125%); }
+  55% { transform: translateX(92%); }
+  100% { transform: translateX(245%); }
+}
+
+.global-data-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: min(28rem, calc(100vw - 2rem));
+  padding: 0.85rem 1rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  background: rgba(7, 13, 24, 0.92);
+  color: #e2e8f0;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.42), inset 0 1px rgba(255,255,255,0.06);
+  backdrop-filter: blur(16px);
+  font-size: 0.86rem;
+  font-weight: 800;
+  animation: globalDataToastIn .2s ease-out both;
+}
+.global-data-toast-icon {
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 9999px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  background: rgba(56, 189, 248, 0.14);
+  color: #7dd3fc;
+}
+.global-data-toast-loading .global-data-toast-icon svg { animation: spin 0.85s linear infinite; }
+.global-data-toast-done {
+  border-color: rgba(52, 211, 153, 0.36);
+}
+.global-data-toast-done .global-data-toast-icon {
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+}
+.global-data-toast-copy {
+  display: grid;
+  line-height: 1.15;
+}
+.global-data-toast-copy small {
+  margin-top: 0.18rem;
+  color: #8fa3c3;
+  font-weight: 700;
+}
+.theme-neon-flat .global-data-toast {
+  background: #050914;
+  border-color: #20e0ff;
+  box-shadow: none;
+}
+.theme-deep-dark .global-data-toast {
+  background: #020202;
+  border-color: #2f3338;
+  color: #f8fafc;
+}
+.theme-executive-light .global-data-toast {
+  background: rgba(255,255,255,0.94);
+  border-color: #bae6fd;
+  color: #172033;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14);
+}
+.theme-executive-light .global-data-toast-copy small { color: #64748b; }
+@keyframes globalDataToastIn {
+  from { opacity: 0; transform: translate(-50%, 0.65rem); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
 .kpi-card {
   position: relative;
   overflow: hidden;
@@ -3339,6 +3474,9 @@ input::placeholder { color: #7f93b3; }
   function RefreshCw({ className }) {
     return /* @__PURE__ */ React.createElement(Icon, { className }, /* @__PURE__ */ React.createElement("path", { d: "M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" }), /* @__PURE__ */ React.createElement("path", { d: "M3 3v5h5" }), /* @__PURE__ */ React.createElement("path", { d: "M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" }), /* @__PURE__ */ React.createElement("path", { d: "M16 16h5v5" }));
   }
+  function CheckCircle2({ className }) {
+    return /* @__PURE__ */ React.createElement(Icon, { className }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "10" }), /* @__PURE__ */ React.createElement("path", { d: "m9 12 2 2 4-4" }));
+  }
   function Search({ className }) {
     return /* @__PURE__ */ React.createElement(Icon, { className }, /* @__PURE__ */ React.createElement("circle", { cx: "11", cy: "11", r: "8" }), /* @__PURE__ */ React.createElement("path", { d: "m21 21-4.3-4.3" }));
   }
@@ -3779,6 +3917,10 @@ input::placeholder { color: #7f93b3; }
       document.head.appendChild(script);
     });
   }
+  function emitDataLoadStatus(id, phase) {
+    if (typeof window === "undefined" || !id || !phase) return;
+    window.dispatchEvent(new CustomEvent("pke:data-load", { detail: { id, phase } }));
+  }
   function useSheetData(sheetName, opts) {
     const [state, setState] = useState({
       table: null,
@@ -3787,8 +3929,10 @@ input::placeholder { color: #7f93b3; }
       updatedAt: null
     });
     const optsRef = useRef(opts);
+    const loadIdRef = useRef(`sheet:${sheetName}:${Math.random().toString(36).slice(2)}`);
     optsRef.current = opts;
     const load = useCallback(async () => {
+      emitDataLoadStatus(loadIdRef.current, "start");
       setState((s) => ({ ...s, loading: true, error: null }));
       try {
         const table = await fetchSheet(sheetName, optsRef.current);
@@ -3799,6 +3943,8 @@ input::placeholder { color: #7f93b3; }
           loading: false,
           error: e && e.message || "Erro ao carregar dados."
         }));
+      } finally {
+        emitDataLoadStatus(loadIdRef.current, "end");
       }
     }, [sheetName]);
     useEffect(() => {
@@ -3822,7 +3968,9 @@ input::placeholder { color: #7f93b3; }
   }
   function useStaticJson(path) {
     const [state, setState] = useState({ data: null, loading: true, error: null, updatedAt: null });
+    const loadIdRef = useRef(`json:${path}:${Math.random().toString(36).slice(2)}`);
     const load = useCallback(async () => {
+      emitDataLoadStatus(loadIdRef.current, "start");
       setState((s) => ({ ...s, loading: true, error: null }));
       try {
         const response = await fetch(`${path}?t=${Date.now()}`, { cache: "no-store" });
@@ -3831,6 +3979,8 @@ input::placeholder { color: #7f93b3; }
         setState({ data, loading: false, error: data && data.error || null, updatedAt: data && data.generatedAt ? new Date(data.generatedAt) : /* @__PURE__ */ new Date() });
       } catch (e) {
         setState((s) => ({ ...s, loading: false, error: e && e.message || "Erro ao carregar dados." }));
+      } finally {
+        emitDataLoadStatus(loadIdRef.current, "end");
       }
     }, [path]);
     useEffect(() => {
@@ -5758,6 +5908,13 @@ input::placeholder { color: #7f93b3; }
     if (!notice) return null;
     return h("div", { className: "task-reminder-toast bg-white border border-slate-200 rounded-xl" }, h("div", { className: "flex items-center justify-between gap-3" }, h("div", null, h("div", { className: "text-xs text-slate-500 font-semibold" }, "Log Tarefas"), h("div", { className: "text-sm font-bold text-slate-900" }, `Terminou o bloco ${notice.range}`)), h(MetricBadge, { tone: "warn" }, "Lembrete")), h("p", { className: "text-xs text-slate-400" }, "Regista o que fizeste neste per\xEDodo. Este lembrete aparece s\xF3 em hor\xE1rio \xFAtil."), h("div", { className: "task-reminder-actions" }, h("button", { className: "task-primary-btn", onClick: onOpen }, "Registar agora"), h("button", { className: "task-secondary-btn", onClick: onSnooze }, "Adiar 10 min"), h("button", { className: "task-ghost-btn", onClick: onDismiss }, "Ignorar")), notificationPermission === "default" && h("button", { className: "task-reminder-permission", onClick: onEnableNotifications }, "Ativar notifica\xE7\xF5es do sistema"));
   }
+  function DataLoadingBar({ loading, label }) {
+    if (!loading) return null;
+    return h("div", { className: "data-loading-bar", "data-help": "Indicador de atualização: aparece quando o MCP já está a pedir dados novos às fontes. Enquanto esta barra estiver visível, alguns valores no ecrã ainda podem ser o último snapshot carregado; quando desaparece, a leitura já terminou." },
+      h("div", { className: "data-loading-track", "aria-hidden": "true" }, h("div", { className: "data-loading-fill" })),
+      h("span", { className: "data-loading-text" }, h("span", { className: "data-loading-dot", "aria-hidden": "true" }), label || "A obter dados atualizados...")
+    );
+  }
   function LoadingState() {
     return /* @__PURE__ */ React.createElement("div", { className: "py-16 text-center text-slate-400 text-sm" }, "A carregar dados da folha...");
   }
@@ -5776,16 +5933,21 @@ input::placeholder { color: #7f93b3; }
     return /* @__PURE__ */ React.createElement("div", { className: "py-10 text-center text-slate-400 text-sm" }, text);
   }
   function SheetTopBar({ updatedAt, loading, onRefresh }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4", "data-help": "Estado da fonte de dados: mostra se a folha já carregou e a hora da última atualização nesta sessão. O botão Atualizar volta a pedir os dados às Google Sheets para garantir que estás a ver a informação mais recente disponível." }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500" }, updatedAt ? `Atualizado \xE0s ${updatedAt.toLocaleTimeString("pt-PT")}` : "A carregar..."), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: onRefresh,
-        disabled: loading,
-        className: "inline-flex items-center gap-1.5 text-xs font-medium text-blue-900 hover:text-blue-700 disabled:opacity-50"
-      },
-      /* @__PURE__ */ React.createElement(RefreshCw, { className: `w-3.5 h-3.5 ${loading ? "animate-spin" : ""}` }),
-      " Atualizar"
-    ));
+    const statusText = loading ? updatedAt ? `A obter dados atualizados... última leitura às ${updatedAt.toLocaleTimeString("pt-PT")}` : "A carregar dados..." : updatedAt ? `Atualizado às ${updatedAt.toLocaleTimeString("pt-PT")}` : "A carregar...";
+    return h("div", { className: "sheet-topbar-stack", "data-help": "Estado da fonte de dados: mostra se a folha já carregou, se está a atualizar e a hora da última leitura nesta sessão. Enquanto aparecer a barra de atualização, os valores visíveis podem ainda ser o snapshot anterior." },
+      h("div", { className: "flex items-center justify-between gap-3 flex-wrap" },
+        h("span", { className: `text-xs ${loading ? "text-sky-300 font-semibold" : "text-slate-500"}` }, statusText),
+        h("button", {
+          onClick: onRefresh,
+          disabled: loading,
+          className: "inline-flex items-center gap-1.5 text-xs font-medium text-blue-900 hover:text-blue-700 disabled:opacity-50"
+        },
+          h(RefreshCw, { className: `w-3.5 h-3.5 ${loading ? "animate-spin" : ""}` }),
+          loading ? " A atualizar" : " Atualizar"
+        )
+      ),
+      h(DataLoadingBar, { loading, label: updatedAt ? "A atualizar dados das fontes..." : "A carregar dados das fontes..." })
+    );
   }
   function normalizeSearchText(value) {
     return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -8536,6 +8698,7 @@ input::placeholder { color: #7f93b3; }
           h("button", { className: "task-secondary-btn", onClick: onRefresh, disabled: loading }, loading ? "A atualizar..." : "Atualizar")
         )
       ),
+      loading && payload ? h(DataLoadingBar, { loading, label: "A obter estatísticas MailerLite atualizadas..." }) : null,
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "MailerLite: ", error),
       loading && !payload ? h(LoadingState, null) :
       summary.campaigns.length ? h(React.Fragment, null,
@@ -8684,6 +8847,7 @@ input::placeholder { color: #7f93b3; }
     return h("div", { className: "space-y-4" },
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Call Analytics: ", error),
       data && data.stale && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Estes dados podem estar em snapshot: o endpoint local não ficou acessível na última atualização automática."),
+      loading && data ? h(DataLoadingBar, { loading, label: "A obter snapshot Call Analytics atualizado..." }) : null,
       loading && !data ? h(LoadingState, null) : data ? h("div", { className: "call-browser", "data-help": "Janela Call Analytics: réplica funcional e embutida da tab Analytics do dashboard PKE Call Analytics. Os dados vêm do snapshot assets/call-analytics.json." },
         h("div", { className: "call-browser-header" },
           h("div", { className: "call-browser-brand" },
@@ -9776,6 +9940,14 @@ input::placeholder { color: #7f93b3; }
     });
     return /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement(ExecutiveSummary, { sentences: summary.sentences, tone: summary.tone }), /* @__PURE__ */ React.createElement(MonthPaceCard, { model }));
   }
+  function GlobalDataStatusToast({ status }) {
+    if (status === "idle") return null;
+    const loading = status === "loading";
+    return h("div", { className: `global-data-toast ${loading ? "global-data-toast-loading" : "global-data-toast-done"}`, role: "status", "aria-live": "polite", "data-help": "Estado global de carregamento: avisa se o MCP ainda está a ir buscar dados às fontes. Quando muda para Dados atualizados, a leitura das fontes visíveis terminou." },
+      h("span", { className: "global-data-toast-icon" }, loading ? h(RefreshCw, { className: "w-4 h-4" }) : h(CheckCircle2, { className: "w-4 h-4" })),
+      h("span", { className: "global-data-toast-copy" }, loading ? "A carregar dados..." : "Dados atualizados!", h("small", null, loading ? "Os números visíveis podem ainda estar a ser substituídos." : "A informação disponível já foi carregada."))
+    );
+  }
   function ThemeSwitcher({ visualTheme, setVisualTheme }) {
     const currentIndex = Math.max(0, VISUAL_THEMES.findIndex((theme) => theme.key === visualTheme));
     const current = VISUAL_THEMES[currentIndex] || VISUAL_THEMES[0];
@@ -9823,6 +9995,34 @@ input::placeholder { color: #7f93b3; }
     const [taskSyncMessage, setTaskSyncMessage] = useState("");
     const [taskReminderNotice, setTaskReminderNotice] = useState(null);
     const [notificationPermission, setNotificationPermission] = useState(() => typeof Notification === "undefined" ? "unsupported" : Notification.permission);
+    const activeDataLoadsRef = useRef(/* @__PURE__ */ new Set());
+    const dataToastTimerRef = useRef(null);
+    const [dataToastStatus, setDataToastStatus] = useState("idle");
+    useEffect(() => {
+      if (typeof window === "undefined") return void 0;
+      const handleDataLoad = (event) => {
+        const id = event && event.detail && event.detail.id;
+        const phase = event && event.detail && event.detail.phase;
+        if (!id || !phase) return;
+        if (phase === "start") {
+          activeDataLoadsRef.current.add(id);
+          if (dataToastTimerRef.current) window.clearTimeout(dataToastTimerRef.current);
+          setDataToastStatus("loading");
+          return;
+        }
+        activeDataLoadsRef.current.delete(id);
+        if (activeDataLoadsRef.current.size === 0) {
+          setDataToastStatus("done");
+          if (dataToastTimerRef.current) window.clearTimeout(dataToastTimerRef.current);
+          dataToastTimerRef.current = window.setTimeout(() => setDataToastStatus("idle"), 2600);
+        }
+      };
+      window.addEventListener("pke:data-load", handleDataLoad);
+      return () => {
+        if (dataToastTimerRef.current) window.clearTimeout(dataToastTimerRef.current);
+        window.removeEventListener("pke:data-load", handleDataLoad);
+      };
+    }, []);
     useEffect(() => {
       if (typeof localStorage === "undefined") return;
       localStorage.setItem(TASK_LOG_STORAGE_KEY, JSON.stringify(taskEntries));
@@ -10108,7 +10308,7 @@ input::placeholder { color: #7f93b3; }
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
       scheduleTaskReminder(15 * 60 * 1000);
-    } }), /* @__PURE__ */ React.createElement(UniversalHelpLens, { active: helpMode }), helpMode && /* @__PURE__ */ React.createElement("div", { className: "help-mode-hint" }, "Modo Dúvidas ativo: passa o cursor por qualquer informação, gráfico, tabela, botão ou filtro. O dashboard explica de forma simples o que é, de onde vem e como ler."), /* @__PURE__ */ React.createElement("button", { type: "button", className: `help-floating-btn ${helpMode ? "help-floating-btn-active" : ""}`, onClick: () => setHelpMode((value) => !value), "aria-pressed": helpMode }, helpMode ? "Fechar dúvidas" : "Dúvidas?"), /* @__PURE__ */ React.createElement(TaskReminderToast, { notice: taskReminderNotice, notificationPermission, onOpen: openTaskReminderPrompt, onSnooze: snoozeTaskReminder, onDismiss: dismissTaskReminder, onEnableNotifications: enableBrowserNotifications }), tiagoPrank && /* @__PURE__ */ React.createElement("div", { className: "tiago-prank-overlay", "aria-hidden": "true" }, "🖕🏻"));
+    } }), /* @__PURE__ */ React.createElement(UniversalHelpLens, { active: helpMode }), helpMode && /* @__PURE__ */ React.createElement("div", { className: "help-mode-hint" }, "Modo Dúvidas ativo: passa o cursor por qualquer informação, gráfico, tabela, botão ou filtro. O dashboard explica de forma simples o que é, de onde vem e como ler."), /* @__PURE__ */ React.createElement("button", { type: "button", className: `help-floating-btn ${helpMode ? "help-floating-btn-active" : ""}`, onClick: () => setHelpMode((value) => !value), "aria-pressed": helpMode }, helpMode ? "Fechar dúvidas" : "Dúvidas?"), /* @__PURE__ */ React.createElement(TaskReminderToast, { notice: taskReminderNotice, notificationPermission, onOpen: openTaskReminderPrompt, onSnooze: snoozeTaskReminder, onDismiss: dismissTaskReminder, onEnableNotifications: enableBrowserNotifications }), /* @__PURE__ */ React.createElement(GlobalDataStatusToast, { status: dataToastStatus }), tiagoPrank && /* @__PURE__ */ React.createElement("div", { className: "tiago-prank-overlay", "aria-hidden": "true" }, "🖕🏻"));
   }
   const __root = ReactDOM.createRoot(document.getElementById("root"));
   __root.render(React.createElement(App));
