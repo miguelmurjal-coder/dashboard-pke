@@ -6922,6 +6922,21 @@ input::placeholder { color: #7f93b3; }
     const s = String(value || "").trim();
     return s || fallback;
   }
+  function normalizeMarketingSourceLabel(value, fallback = "Sem origem") {
+    const raw = compactLabel(value, fallback);
+    const normalized = raw
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[_-]+/g, " ")
+      .trim();
+    if (!normalized || normalized === fallback.toLowerCase()) return fallback;
+    if (normalized.includes("meta") || normalized === "fb" || normalized.includes("facebook") || normalized === "ig" || normalized.includes("instagram")) return "Meta Ads";
+    if (normalized.includes("google") || normalized === "gad" || normalized === "gads" || normalized.includes("gclid")) return "Google Ads";
+    if (normalized.includes("mail") || normalized.includes("newsletter")) return "Email/newsletter";
+    if (normalized.includes("pke.pt") || normalized.includes("direto") || normalized.includes("direct") || normalized.includes("website")) return "Direto/Website";
+    return raw;
+  }
   function landingPageLabel(url) {
     const raw = textValue({ c: [{ v: url }] }, 0);
     if (!raw) return "Sem landing page";
@@ -6939,7 +6954,7 @@ input::placeholder { color: #7f93b3; }
     if (source.includes("gad") || source.includes("google") || textValue(row, 16)) return "Google Ads";
     if (origin.includes("scorecard")) return "Scorecard";
     if (origin.includes("vsp")) return "VSP";
-    return compactLabel(textValue(row, VSP_UTM_SOURCE_COL) || textValue(row, VSP_ORIGIN_COL), "Sem origem");
+    return normalizeMarketingSourceLabel(textValue(row, VSP_UTM_SOURCE_COL) || textValue(row, VSP_ORIGIN_COL), "Sem origem");
   }
   function groupCount(rows, getLabel, limit = 6) {
     const map = new Map();
@@ -7056,16 +7071,12 @@ input::placeholder { color: #7f93b3; }
   const BO_SERVICES_COL = 18;
   const BO_ORDER_STATUS_COL = 19;
   function boSourceLabel(row) {
-    const source = textValue(row, BO_UTM_SOURCE_COL).toLowerCase();
+    const source = textValue(row, BO_UTM_SOURCE_COL);
+    const sourceKey = source.toLowerCase();
     const url = textValue(row, BO_URL_COL).toLowerCase();
-    if (source === "ig" || source.includes("instagram")) return "Instagram";
-    if (source === "fb" || source.includes("facebook")) return "Facebook";
-    if (source.includes("meta")) return "METAADS";
-    if (source.includes("google") || source === "gad" || source === "gads") return "Google";
-    if (source.includes("mail") || source.includes("newsletter")) return "Email/newsletter";
-    if (source) return textValue(row, BO_UTM_SOURCE_COL);
-    if (url.includes("fbclid")) return "Meta sem UTM";
-    if (url.includes("gclid")) return "Google sem UTM";
+    if (sourceKey) return normalizeMarketingSourceLabel(source, "Sem origem");
+    if (url.includes("fbclid")) return "Meta Ads";
+    if (url.includes("gclid")) return "Google Ads";
     if (url.includes("pke.pt")) return "Direto/Website";
     return "Sem origem";
   }
@@ -7206,7 +7217,7 @@ input::placeholder { color: #7f93b3; }
     );
   }
   function totalRecordSourceLabel(record) {
-    return record.channel || "Sem origem";
+    return normalizeMarketingSourceLabel(record.channel || "Sem origem", "Sem origem");
   }
   function totalGroupStats(records, getLabel, limit = 10, minCount = 1) {
     const map = new Map();
@@ -7941,8 +7952,8 @@ input::placeholder { color: #7f93b3; }
       h("section", { className: "section-shell space-y-3" },
         h("div", null,
           h("div", { className: "section-kicker" }, "CANAIS"),
-          h("h3", { className: "section-heading" }, "Quem está a puxar valor"),
-          h("p", { className: "section-subtitle" }, "Ranking das origens com mais volume ou valor no período selecionado.")
+          h("h3", { className: "section-heading" }, "Valor potencial por origem"),
+          h("p", { className: "section-subtitle" }, "Soma do valor estimado/proposto em BO + VSP no período selecionado. Não é faturação real.")
         ),
         h(CategoryBarChart, { data: topSources.map((row) => ({ label: row.label, value: row.value || row.total || 0 })), unit: topSources.some((row) => row.value) ? "currency" : "number" })
       )
