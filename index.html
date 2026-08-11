@@ -8883,11 +8883,23 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
         h(MarketingInsightCard, { label: "Maior peso de investimento", value: topInvest ? topInvest.group.label : "Sem dados", detail: topInvest ? `${formatMarketingKpiValue(topInvest.investValue, "percent")} do investimento médio` : "A aguardar investimento", tone: "neutral", help: "Maior peso de investimento: serviço com maior percentagem média de investimento. Origem: linhas Média Investimento PS/FAP/ADB no MKT PKE 2026." })
       ),
       hasServiceKpis ? h("div", { className: "marketing-service-board" }, snapshots.map((snapshot) => h(MarketingServiceVisualCard, { key: snapshot.group.key, snapshot, maxValues, bestRoas, bestCpl, bestCpa }))) : h(EmptyState, { text: "Ainda não encontrei linhas de ROAS, CPL, CPA ou investimento nas linhas 144 a 158." }),
+      (averageInvestmentRows.length || cplRows.length || cpaRows.length) ? h("div", { className: "marketing-general-kpis space-y-4", "data-help": "KPIs gerais por serviço: comparação de investimento, CPL e CPA de PS, FAP e AdBlue. Estes indicadores não pertencem às VSP." },
+        h("div", null,
+          h("div", { className: "section-kicker" }, "PS · FAP · ADBLUE"),
+          h("h4", { className: "text-xl font-black text-slate-100" }, "KPIs gerais por serviço"),
+          h("p", { className: "text-sm text-slate-400 mt-1" }, "Investimento, custo por lead e custo por aquisição de PS, FAP e AdBlue. Não inclui as métricas específicas das VSP.")
+        ),
+        h("div", { className: "grid lg:grid-cols-3 gap-4" },
+        averageInvestmentRows.length ? h(MarketingChartCard, { title: "Distribuição média do investimento", subtitle: "Peso médio de cada serviço no investimento pago. Não representa faturação." }, h(MarketingComparisonChart, { data: averageInvestmentRows, unit: "percent", direction: "share", context: "Distribuição média do investimento: percentagem média do orçamento pago dedicada a PS, FAP e AdBlue no período selecionado." })) : null,
+        cplRows.length ? h(MarketingChartCard, { title: "Custo por Lead (CPL)", subtitle: "Quanto custa gerar uma lead em cada serviço. Menor é melhor." }, h(MarketingComparisonChart, { data: cplRows, unit: "currency", direction: "min", context: "CPL por serviço: investimento publicitário dividido pelo número de leads geradas. A opção assinalada tem o menor custo por lead." })) : null,
+        cpaRows.length ? h(MarketingChartCard, { title: "Custo por Aquisição (CPA)", subtitle: "Quanto custa gerar uma aquisição/encomenda em cada serviço. Menor é melhor." }, h(MarketingComparisonChart, { data: cpaRows, unit: "currency", direction: "min", context: "CPA por serviço: investimento publicitário dividido pelo número de aquisições ou encomendas. A opção assinalada tem o menor custo por aquisição." })) : null
+        )
+      ) : null,
       vspInvestment.items.length ? h("div", { className: "marketing-vsp-panel space-y-4", "data-help": "Bloco VSP: custos e potencial das VSP/FAP. Origem dos custos: DATABASE PKE 2026, tab Visão VSP diária. Origem do potencial: Resultados VSP." },
         h("div", null,
-          h("div", { className: "section-kicker" }, "VSP"),
-          h("h4", { className: "text-xl font-black text-slate-100" }, "Investimento e potencial das VSP"),
-          h("p", { className: "text-sm text-slate-400 mt-1" }, "Investimento publicitário, custo por lead e potencial estimado no período selecionado.")
+          h("div", { className: "section-kicker" }, "APENAS VSP"),
+          h("h4", { className: "text-xl font-black text-slate-100" }, "Métricas exclusivas das VSP"),
+          h("p", { className: "text-sm text-slate-400 mt-1" }, "Todos os indicadores deste bloco referem-se exclusivamente às sales pages VSP de FAP. Não representam os resultados gerais de PS, FAP ou AdBlue.")
         ),
         h(VspKpiStrip, { summary: vspInvestment.summary }),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
@@ -8895,11 +8907,6 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
           vspInvestment.pageRows.length ? h(MarketingChartCard, { title: "Investimento publicitário por VSP", subtitle: "Soma do investimento Meta Ads e Google Ads por página VSP no período." }, h(MarketingComparisonChart, { data: vspInvestment.pageRows.slice(0, 6), unit: "currency", direction: "share", context: "Investimento por VSP: mostra quanto foi investido em publicidade paga para cada página VSP, somando Meta Ads e Google Ads." })) : null
         )
       ) : null,
-      (averageInvestmentRows.length || cplRows.length || cpaRows.length) ? h("div", { className: "grid lg:grid-cols-3 gap-4" },
-        averageInvestmentRows.length ? h(MarketingChartCard, { title: "Distribuição média do investimento", subtitle: "Peso médio de cada serviço no investimento pago. Não representa faturação." }, h(MarketingComparisonChart, { data: averageInvestmentRows, unit: "percent", direction: "share", context: "Distribuição média do investimento: percentagem média do orçamento pago dedicada a PS, FAP e AdBlue no período selecionado." })) : null,
-        cplRows.length ? h(MarketingChartCard, { title: "Custo por Lead (CPL)", subtitle: "Quanto custa gerar uma lead em cada serviço. Menor é melhor." }, h(MarketingComparisonChart, { data: cplRows, unit: "currency", direction: "min", context: "CPL por serviço: investimento publicitário dividido pelo número de leads geradas. A opção assinalada tem o menor custo por lead." })) : null,
-        cpaRows.length ? h(MarketingChartCard, { title: "Custo por Aquisição (CPA)", subtitle: "Quanto custa gerar uma aquisição/encomenda em cada serviço. Menor é melhor." }, h(MarketingComparisonChart, { data: cpaRows, unit: "currency", direction: "min", context: "CPA por serviço: investimento publicitário dividido pelo número de aquisições ou encomendas. A opção assinalada tem o menor custo por aquisição." })) : null
-      ) : null
     );
   }
   function MailerLiteNewslettersPanel({ payload, loading, error, updatedAt, onRefresh, selectedMonths }) {
