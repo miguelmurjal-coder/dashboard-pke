@@ -6759,7 +6759,7 @@ const DEEP_DIVE_PANELS = [
       /* @__PURE__ */ React.createElement("div", { className: "h-2 bg-slate-100 rounded-full overflow-hidden", style: { cursor: "pointer" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full", style: { width: `${Math.max(2, d.value / max * 100)}%`, background: `linear-gradient(90deg, ${palette[i % palette.length]}, ${palette[(i + 1) % palette.length]})`, boxShadow: `0 0 16px ${palette[i % palette.length]}33` } }))
     )), /* @__PURE__ */ React.createElement(ChartTooltip, { tip }));
   }
-  function DonutChart({ data, unit, colors }) {
+  function DonutChart({ data, unit, colors, showTotal = false, totalLabel = "Total" }) {
     const total = data.reduce((s, d) => s + d.value, 0) || 1;
     const size = 180;
     const r = 64;
@@ -6778,7 +6778,7 @@ const DEEP_DIVE_PANELS = [
       cumulative += dash;
       return seg;
     });
-    return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-6", "data-help": "Gráfico donut: mostra como um total se divide por várias categorias. Cada cor é uma fatia. Uma fatia maior significa que essa categoria representa mais peso no total. Passa o cursor nas fatias para ver valor e percentagem." }, /* @__PURE__ */ React.createElement("div", { className: "relative flex-shrink-0", ref }, /* @__PURE__ */ React.createElement("svg", { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, /* @__PURE__ */ React.createElement("g", { transform: `rotate(-90 ${cx} ${cy})` }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r, fill: "none", stroke: "#1f2c44", strokeWidth: "24" }), segments.map((s) => /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-6", "data-help": `Gráfico de composição: mostra como o total de ${fmtByUnit(total, unit)} se divide entre as origens. Cada fatia representa a percentagem dessa origem no total.` }, /* @__PURE__ */ React.createElement("div", { className: "relative flex-shrink-0", ref }, /* @__PURE__ */ React.createElement("svg", { width: size, height: size, viewBox: `0 0 ${size} ${size}` }, /* @__PURE__ */ React.createElement("g", { transform: `rotate(-90 ${cx} ${cy})` }, /* @__PURE__ */ React.createElement("circle", { cx, cy, r, fill: "none", stroke: "#1f2c44", strokeWidth: "24" }), segments.map((s) => /* @__PURE__ */ React.createElement(
       "circle",
       {
         key: s.i,
@@ -6805,7 +6805,7 @@ const DEEP_DIVE_PANELS = [
           hide();
         }
       }
-    )))), /* @__PURE__ */ React.createElement(ChartTooltip, { tip })), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 min-w-0" }, segments.map((s) => /* @__PURE__ */ React.createElement(
+    )))), showTotal && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex flex-col items-center justify-center pointer-events-none" }, /* @__PURE__ */ React.createElement("strong", { className: "text-xl text-slate-100 tabular-nums leading-none" }, fmtByUnit(total, unit)), /* @__PURE__ */ React.createElement("span", { className: "mt-1 text-[10px] font-bold uppercase text-slate-500" }, totalLabel)), /* @__PURE__ */ React.createElement(ChartTooltip, { tip })), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 min-w-0 flex-1" }, segments.map((s) => /* @__PURE__ */ React.createElement(
       "div",
       {
         key: s.i,
@@ -6816,7 +6816,7 @@ const DEEP_DIVE_PANELS = [
       },
       /* @__PURE__ */ React.createElement("span", { className: "legend-dot", style: { background: s.color } }),
       /* @__PURE__ */ React.createElement("span", { className: "truncate" }, s.label),
-      /* @__PURE__ */ React.createElement("span", { className: "tabular-nums text-slate-500 ml-2" }, Math.round(s.frac * 100), "%")
+      /* @__PURE__ */ React.createElement("span", { className: "tabular-nums text-slate-500 ml-auto whitespace-nowrap" }, showTotal ? `${fmtByUnit(s.value, unit)} · ${fmtPercent(s.frac)}` : `${Math.round(s.frac * 100)}%`)
     ))));
   }
   function SheetInsights({ table }) {
@@ -8806,7 +8806,7 @@ function DeepSourceMix({ boCount, vspCount, utmRate }) {
           )
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
-          h(Card, { title: "Convers\xE3o VSP por origem", subtitle: "Número de leads VSP que chegaram a encomenda identificada no BackOffice." }, h(CategoryBarChart, { data: vspConversionSourceRows, unit: "number" })),
+          h(Card, { title: "Convers\xE3o VSP por origem", subtitle: `${fmtNumber(vspConversion.converted)} conversões identificadas no BackOffice, distribuídas pela origem da lead VSP.` }, h(DonutChart, { data: vspConversionSourceRows, unit: "number", showTotal: true, totalLabel: "conversões" })),
           h(Card, { title: "Convers\xE3o VSP por campanha", subtitle: "Campanhas VSP/FAP com leads que aparecem depois como encomenda no BO." }, h(CategoryBarChart, { data: vspConversionCampaignRows, unit: "number" }))
         ),
         h("div", { className: "grid lg:grid-cols-2 gap-4" },
