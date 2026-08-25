@@ -661,6 +661,51 @@ table { border-collapse: collapse; }
 .chart-tooltip-row { display: flex; align-items: center; gap: 0.35rem; }
 .chart-tooltip-dot { width: 0.5rem; height: 0.5rem; border-radius: 9999px; display: inline-block; }
 
+.monthly-value-chart {
+  position: relative;
+  display: grid;
+  gap: 0.9rem;
+}
+.monthly-value-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+.monthly-value-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.35rem;
+  padding: 0.48rem 0.72rem;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 0.7rem;
+  background: rgba(7, 13, 24, 0.42);
+  color: #dbe7f7;
+  font-size: 0.76rem;
+  font-weight: 750;
+  transition: opacity 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+.monthly-value-toggle:hover,
+.monthly-value-toggle[aria-pressed="true"] {
+  border-color: var(--series-color);
+  background: color-mix(in srgb, var(--series-color) 10%, rgba(7, 13, 24, 0.58));
+}
+.monthly-value-toggle[aria-pressed="false"] { opacity: 0.42; }
+.monthly-value-toggle-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--series-color);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--series-color) 55%, transparent);
+}
+.monthly-value-note { color: #7f93b3; font-size: 0.72rem; }
+.monthly-value-svg { width: 100%; min-width: 640px; height: auto; display: block; }
+@media (max-width: 720px) {
+  .monthly-value-controls { display: grid; grid-template-columns: 1fr; }
+  .monthly-value-toggle { width: 100%; justify-content: flex-start; }
+}
+
 .data-loading-bar {
   display: grid;
   gap: 0.55rem;
@@ -6446,6 +6491,7 @@ const DEEP_DIVE_PANELS = [
     return niceFraction * base;
   }
   function fmtCurrencyShort(v) {
+    if (Math.abs(v) >= 1e6) return `${new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 1 }).format(v / 1e6)}M \u20AC`;
     if (Math.abs(v) >= 1e3) return `${Math.round(v / 1e3)}k \u20AC`;
     return `${Math.round(v)} \u20AC`;
   }
@@ -6729,6 +6775,112 @@ const DEEP_DIVE_PANELS = [
       yAxisLabel
     )), /* @__PURE__ */ React.createElement(ChartTooltip, { tip }));
   }
+function buildMarketingInvestmentTotalMonthly(table) {
+  const rows = table && table.rows ? table.rows : [];
+  const labels = new Set(["total ps", "total fap", "total adblue"]);
+  const totals = rows.filter((row) => labels.has(normalizeSearchText(rowLabel(row))));
+  return MONTH_COLS.map((col) => totals.reduce((sum, row) => sum + numericValue(row, col), 0));
+}
+function monthlySectionValue(section) {
+  return section && section.totalValue && section.totalValue.monthly ? section.totalValue.monthly : new Array(12).fill(0);
+}
+function buildMonthlyFinancialSeries(model, table) {
+  const definitions = [
+    { id: "billing", label: "Faturação do Mês", color: "#38BDF8", help: "Faturação real mensal da PKE. Origem: linha Faturação Real PKE do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: model.revenue.real && model.revenue.real.monthly ? model.revenue.real.monthly : new Array(12).fill(0) },
+    { id: "orders", label: "Valor € de Encomendas do Mês", color: "#34D399", help: "Valor mensal das encomendas reais, sem IVA. Origem: total em euros da secção Encomendas Reais (S/ IVA) do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: monthlySectionValue(model.encomendas.reais) },
+    { id: "investment", label: "Investimento € do MKT", color: "#F2A93B", help: "Investimento publicitário mensal total do Marketing. Soma TOTAL PS, TOTAL FAP e TOTAL ADBLUE. Origem: ficheiro MKT PKE 2026, tab Dashboard MKT.", values: buildMarketingInvestmentTotalMonthly(table) },
+    { id: "leads", label: "Valor € de Leads do Mês", color: "#A78BFA", help: "Valor mensal das propostas reais, sem IVA. No BackOffice, cada proposta é uma lead. Origem: total em euros da secção Propostas Reais (S/ IVA) do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: monthlySectionValue(model.propostasSIVA.reais) }
+  ];
+  let lastWithData = 0;
+  definitions.forEach((series) => series.values.forEach((value, month) => {
+    if (Math.abs(value || 0) > 0) lastWithData = Math.max(lastWithData, month);
+  }));
+  const lastMonth = Math.max(lastWithData, Math.min(11, (/* @__PURE__ */ new Date()).getMonth()));
+  return definitions.map((series) => ({ ...series, values: series.values.slice(0, lastMonth + 1) }));
+}
+function ToggleableMonthlyValueChart({ series }) {
+  const [activeIds, setActiveIds] = useState(() => new Set(series.map((item) => item.id)));
+  const { ref, tip, show, move, hide } = useChartTooltip();
+  const width = 980;
+  const height = 390;
+  const padL = 88;
+  const padR = 24;
+  const padT = 24;
+  const padB = 48;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+  const monthCount = Math.max(1, ...series.map((item) => item.values.length));
+  const activeSeries = series.filter((item) => activeIds.has(item.id));
+  const maxValue = Math.max(1, ...activeSeries.flatMap((item) => item.values.map((value) => value || 0)));
+  const niceMax = niceCeil(maxValue);
+  const xFor = (month) => padL + (monthCount === 1 ? innerW / 2 : month / (monthCount - 1) * innerW);
+  const yFor = (value) => padT + innerH - (value || 0) / niceMax * innerH;
+  const toggle = (id) => {
+    setActiveIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) {
+        if (next.size === 1) return current;
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+  const tooltipForMonth = (month) => h(React.Fragment, null,
+    h("div", { className: "chart-tooltip-title" }, MONTH_NAMES[month]),
+    activeSeries.map((item) => h("div", { key: item.id, className: "chart-tooltip-row" },
+      h("span", { className: "chart-tooltip-dot", style: { background: item.color } }),
+      item.label, ": ", fmtCurrency(item.values[month] || 0)
+    ))
+  );
+  return h("div", { className: "monthly-value-chart", ref, "data-help": "Evolução mensal em euros. Compara faturação real, valor das encomendas, investimento publicitário total de Marketing e valor das leads/propostas. Podes ligar ou desligar cada linha; a escala vertical reajusta-se às linhas visíveis. Origem: MKT PKE 2026, Dashboard MKT." },
+    h("div", { className: "monthly-value-controls", role: "group", "aria-label": "Linhas visíveis no gráfico" }, series.map((item) => h("button", {
+      key: item.id,
+      type: "button",
+      className: "monthly-value-toggle",
+      "aria-pressed": activeIds.has(item.id),
+      onClick: () => toggle(item.id),
+      style: { "--series-color": item.color },
+      "data-help": `${item.help} Clica para ${activeIds.has(item.id) ? "ocultar" : "mostrar"} esta linha no gráfico mensal.`
+    }, h("span", { className: "monthly-value-toggle-dot" }), item.label))),
+    h("div", { className: "chart-scroll" },
+      h("svg", { viewBox: `0 0 ${width} ${height}`, className: "monthly-value-svg", role: "img", "aria-label": "Evolução mensal de valores em euros" },
+        Array.from({ length: 5 }, (_, index) => {
+          const value = niceMax / 4 * index;
+          const y = yFor(value);
+          return h("g", { key: `y-${index}` },
+            h("line", { x1: padL, x2: width - padR, y1: y, y2: y, stroke: "#22314b", strokeWidth: "1" }),
+            h("text", { x: padL - 12, y, textAnchor: "end", dominantBaseline: "middle", fontSize: "11", fill: "#8fa3c2" }, fmtCurrencyShort(value))
+          );
+        }),
+        h("line", { x1: padL, x2: padL, y1: padT, y2: height - padB, stroke: "#31415e", strokeWidth: "1.2" }),
+        h("line", { x1: padL, x2: width - padR, y1: height - padB, y2: height - padB, stroke: "#31415e", strokeWidth: "1.2" }),
+        MONTH_NAMES.slice(0, monthCount).map((month, index) => h("text", { key: month, x: xFor(index), y: height - padB + 24, textAnchor: "middle", fontSize: "11", fill: "#8fa3c2", fontWeight: "650" }, month)),
+        activeSeries.map((item) => h("g", { key: item.id },
+          h("polyline", { points: item.values.map((value, month) => `${xFor(month)},${yFor(value)}`).join(" "), fill: "none", stroke: item.color, strokeWidth: "3.2", strokeLinejoin: "round", strokeLinecap: "round" }),
+          item.values.map((value, month) => h("circle", { key: month, cx: xFor(month), cy: yFor(value), r: "4.2", fill: "#0b1322", stroke: item.color, strokeWidth: "2.6" }))
+        )),
+        MONTH_NAMES.slice(0, monthCount).map((month, index) => h("rect", {
+          key: `hit-${month}`,
+          x: index === 0 ? padL : xFor(index) - innerW / Math.max(1, monthCount - 1) / 2,
+          y: padT,
+          width: monthCount === 1 ? innerW : index === 0 || index === monthCount - 1 ? innerW / Math.max(1, monthCount - 1) / 2 : innerW / Math.max(1, monthCount - 1),
+          height: innerH,
+          fill: "transparent",
+          style: { cursor: "crosshair" },
+          onMouseEnter: (event) => show(event, tooltipForMonth(index)),
+          onMouseMove: move,
+          onMouseLeave: hide
+        })),
+        h("text", { x: 18, y: padT + innerH / 2, textAnchor: "middle", fontSize: "11", fill: "#9fb2cf", fontWeight: "750", transform: `rotate(-90 18 ${padT + innerH / 2})` }, "Valor €"),
+        h("text", { x: padL + innerW / 2, y: height - 5, textAnchor: "middle", fontSize: "11", fill: "#9fb2cf", fontWeight: "750" }, "Meses")
+      )
+    ),
+    h("div", { className: "monthly-value-note" }, "A escala ajusta-se automaticamente às linhas ativas. Valor das leads = Propostas Reais s/ IVA, porque no BackOffice cada proposta conta como lead."),
+    h(ChartTooltip, { tip })
+  );
+}
   function CategoryBarChart({ data, unit }) {
     const max = Math.max(1, ...data.map((d) => d.value));
     const total = data.reduce((s, d) => s + d.value, 0) || 1;
@@ -8541,6 +8693,7 @@ const DEEP_DIVE_PANELS = [
     const diagnosis = buildExecutiveDiagnosis({ model, selectedMonths, pctAtingido, alertThreshold, vspTable });
     const combinedRecords = [...boRecords, ...vspRecords];
     const topSources = totalGroupStats(combinedRecords, totalRecordSourceLabel, 5, 1);
+    const monthlyFinancialSeries = buildMonthlyFinancialSeries(model, dashboardTable);
     const primaryTone = diagnosis.tone || "neutral";
     const vspRate = vspConversion.leads ? vspConversion.converted / vspConversion.leads : 0;
     const actionItems = [
@@ -8648,11 +8801,11 @@ const DEEP_DIVE_PANELS = [
       ),
       h("section", { className: "section-shell space-y-3" },
         h("div", null,
-          h("div", { className: "section-kicker" }, "CANAIS"),
-          h("h3", { className: "section-heading" }, "Valor potencial por origem"),
-          h("p", { className: "section-subtitle" }, "Soma do valor estimado/proposto em BO + VSP no período selecionado. Não é faturação real.")
+          h("div", { className: "section-kicker" }, "EVOLUÇÃO FINANCEIRA"),
+          h("h3", { className: "section-heading" }, "Valor mensal e investimento de Marketing"),
+          h("p", { className: "section-subtitle" }, "Comparação mensal em euros entre faturação, encomendas, investimento total de Marketing e valor das leads. Usa os controlos para isolar cada linha.")
         ),
-        h(CategoryBarChart, { data: topSources.map((row) => ({ label: row.label, value: row.value || row.total || 0 })), unit: topSources.some((row) => row.value) ? "currency" : "number" })
+        h(ToggleableMonthlyValueChart, { series: monthlyFinancialSeries })
       )
     );
   }
