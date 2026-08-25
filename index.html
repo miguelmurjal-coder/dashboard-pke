@@ -6786,10 +6786,10 @@ function monthlySectionValue(section) {
 }
 function buildMonthlyFinancialSeries(model, table) {
   const definitions = [
-    { id: "billing", label: "Faturação do Mês", color: "#38BDF8", help: "Faturação real mensal da PKE. Origem: linha Faturação Real PKE do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: model.revenue.real && model.revenue.real.monthly ? model.revenue.real.monthly : new Array(12).fill(0) },
-    { id: "orders", label: "Valor € de Encomendas do Mês", color: "#34D399", help: "Valor mensal das encomendas reais, sem IVA. Origem: total em euros da secção Encomendas Reais (S/ IVA) do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: monthlySectionValue(model.encomendas.reais) },
-    { id: "investment", label: "Investimento € do MKT", color: "#F2A93B", help: "Investimento publicitário mensal total do Marketing. Soma TOTAL PS, TOTAL FAP e TOTAL ADBLUE. Origem: ficheiro MKT PKE 2026, tab Dashboard MKT.", values: buildMarketingInvestmentTotalMonthly(table) },
-    { id: "leads", label: "Valor € de Leads do Mês", color: "#A78BFA", help: "Valor mensal das propostas reais, sem IVA. No BackOffice, cada proposta é uma lead. Origem: total em euros da secção Propostas Reais (S/ IVA) do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: monthlySectionValue(model.propostasSIVA.reais) }
+    { id: "billing", label: "Faturação do Mês", axisLabel: "FAT.", color: "#38BDF8", help: "Faturação real mensal da PKE. Origem: linha Faturação Real PKE do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: model.revenue.real && model.revenue.real.monthly ? model.revenue.real.monthly : new Array(12).fill(0) },
+    { id: "orders", label: "Valor € de Encomendas do Mês", axisLabel: "ENC.", color: "#34D399", help: "Valor mensal das encomendas reais, sem IVA. Origem: total em euros da secção Encomendas Reais (S/ IVA) do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: monthlySectionValue(model.encomendas.reais) },
+    { id: "investment", label: "Investimento € do MKT", axisLabel: "MKT", color: "#F2A93B", help: "Investimento publicitário mensal total do Marketing. Soma TOTAL PS, TOTAL FAP e TOTAL ADBLUE. Origem: ficheiro MKT PKE 2026, tab Dashboard MKT.", values: buildMarketingInvestmentTotalMonthly(table) },
+    { id: "leads", label: "Valor € de Leads do Mês", axisLabel: "LEADS", color: "#A78BFA", help: "Valor mensal das propostas reais, sem IVA. No BackOffice, cada proposta é uma lead. Origem: total em euros da secção Propostas Reais (S/ IVA) do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: monthlySectionValue(model.propostasSIVA.reais) }
   ];
   let lastWithData = 0;
   definitions.forEach((series) => series.values.forEach((value, month) => {
@@ -6801,20 +6801,23 @@ function buildMonthlyFinancialSeries(model, table) {
 function ToggleableMonthlyValueChart({ series }) {
   const [activeIds, setActiveIds] = useState(() => new Set(series.map((item) => item.id)));
   const { ref, tip, show, move, hide } = useChartTooltip();
-  const width = 980;
-  const height = 390;
-  const padL = 88;
+  const width = 1040;
+  const height = 410;
+  const padL = 246;
   const padR = 24;
-  const padT = 24;
-  const padB = 48;
+  const padT = 42;
+  const padB = 50;
   const innerW = width - padL - padR;
   const innerH = height - padT - padB;
   const monthCount = Math.max(1, ...series.map((item) => item.values.length));
   const activeSeries = series.filter((item) => activeIds.has(item.id));
-  const maxValue = Math.max(1, ...activeSeries.flatMap((item) => item.values.map((value) => value || 0)));
-  const niceMax = niceCeil(maxValue);
+  const scaleMaxById = new Map(activeSeries.map((item) => [
+    item.id,
+    niceCeil(Math.max(1, ...item.values.map((value) => value || 0)))
+  ]));
   const xFor = (month) => padL + (monthCount === 1 ? innerW / 2 : month / (monthCount - 1) * innerW);
-  const yFor = (value) => padT + innerH - (value || 0) / niceMax * innerH;
+  const yFor = (item, value) => padT + innerH - (value || 0) / scaleMaxById.get(item.id) * innerH;
+  const axisXFor = (index) => 52 + index * 48;
   const toggle = (id) => {
     setActiveIds((current) => {
       const next = new Set(current);
@@ -6834,7 +6837,7 @@ function ToggleableMonthlyValueChart({ series }) {
       item.label, ": ", fmtCurrency(item.values[month] || 0)
     ))
   );
-  return h("div", { className: "monthly-value-chart", ref, "data-help": "Evolução mensal em euros. Compara faturação real, valor das encomendas, investimento publicitário total de Marketing e valor das leads/propostas. Podes ligar ou desligar cada linha; a escala vertical reajusta-se às linhas visíveis. Origem: MKT PKE 2026, Dashboard MKT." },
+  return h("div", { className: "monthly-value-chart", ref, "data-help": "Evolução mensal em euros. Cada linha tem a sua própria escala vertical, identificada pela mesma cor no lado esquerdo. Isto permite comparar o formato e a tendência das linhas mesmo quando os valores são muito diferentes. Podes ligar ou desligar cada série. Origem: MKT PKE 2026, Dashboard MKT." },
     h("div", { className: "monthly-value-controls", role: "group", "aria-label": "Linhas visíveis no gráfico" }, series.map((item) => h("button", {
       key: item.id,
       type: "button",
@@ -6842,24 +6845,34 @@ function ToggleableMonthlyValueChart({ series }) {
       "aria-pressed": activeIds.has(item.id),
       onClick: () => toggle(item.id),
       style: { "--series-color": item.color },
-      "data-help": `${item.help} Clica para ${activeIds.has(item.id) ? "ocultar" : "mostrar"} esta linha no gráfico mensal.`
+      "data-help": `${item.help} A linha e a respetiva escala usam a mesma cor. Clica para ${activeIds.has(item.id) ? "ocultar" : "mostrar"} esta série.`
     }, h("span", { className: "monthly-value-toggle-dot" }), item.label))),
     h("div", { className: "chart-scroll" },
-      h("svg", { viewBox: `0 0 ${width} ${height}`, className: "monthly-value-svg", role: "img", "aria-label": "Evolução mensal de valores em euros" },
+      h("svg", { viewBox: `0 0 ${width} ${height}`, className: "monthly-value-svg", role: "img", "aria-label": "Evolução mensal com uma escala em euros independente para cada linha" },
         Array.from({ length: 5 }, (_, index) => {
-          const value = niceMax / 4 * index;
-          const y = yFor(value);
-          return h("g", { key: `y-${index}` },
-            h("line", { x1: padL, x2: width - padR, y1: y, y2: y, stroke: "#22314b", strokeWidth: "1" }),
-            h("text", { x: padL - 12, y, textAnchor: "end", dominantBaseline: "middle", fontSize: "11", fill: "#8fa3c2" }, fmtCurrencyShort(value))
+          const y = padT + innerH - index / 4 * innerH;
+          return h("line", { key: `grid-${index}`, x1: padL, x2: width - padR, y1: y, y2: y, stroke: "#22314b", strokeWidth: "1" });
+        }),
+        activeSeries.map((item, seriesIndex) => {
+          const axisX = axisXFor(seriesIndex);
+          const scaleMax = scaleMaxById.get(item.id);
+          return h("g", { key: `axis-${item.id}`, "aria-label": `Escala de ${item.label}` },
+            h("text", { x: axisX, y: 17, textAnchor: "middle", fontSize: "9", fill: item.color, fontWeight: "850" }, item.axisLabel),
+            h("line", { x1: axisX, x2: axisX, y1: padT, y2: padT + innerH, stroke: item.color, strokeWidth: "2", opacity: "0.75" }),
+            [0, 0.5, 1].map((ratio) => {
+              const y = padT + innerH - ratio * innerH;
+              return h("g", { key: ratio },
+                h("line", { x1: axisX - 4, x2: axisX + 4, y1: y, y2: y, stroke: item.color, strokeWidth: "2" }),
+                h("text", { x: axisX - 7, y, textAnchor: "end", dominantBaseline: "middle", fontSize: "8.5", fill: item.color, fontWeight: "700" }, fmtCurrencyShort(scaleMax * ratio))
+              );
+            })
           );
         }),
-        h("line", { x1: padL, x2: padL, y1: padT, y2: height - padB, stroke: "#31415e", strokeWidth: "1.2" }),
         h("line", { x1: padL, x2: width - padR, y1: height - padB, y2: height - padB, stroke: "#31415e", strokeWidth: "1.2" }),
-        MONTH_NAMES.slice(0, monthCount).map((month, index) => h("text", { key: month, x: xFor(index), y: height - padB + 24, textAnchor: "middle", fontSize: "11", fill: "#8fa3c2", fontWeight: "650" }, month)),
+        MONTH_NAMES.slice(0, monthCount).map((month, index) => h("text", { key: month, x: xFor(index), y: height - padB + 25, textAnchor: "middle", fontSize: "11", fill: "#8fa3c2", fontWeight: "650" }, month)),
         activeSeries.map((item) => h("g", { key: item.id },
-          h("polyline", { points: item.values.map((value, month) => `${xFor(month)},${yFor(value)}`).join(" "), fill: "none", stroke: item.color, strokeWidth: "3.2", strokeLinejoin: "round", strokeLinecap: "round" }),
-          item.values.map((value, month) => h("circle", { key: month, cx: xFor(month), cy: yFor(value), r: "4.2", fill: "#0b1322", stroke: item.color, strokeWidth: "2.6" }))
+          h("polyline", { points: item.values.map((value, month) => `${xFor(month)},${yFor(item, value)}`).join(" "), fill: "none", stroke: item.color, strokeWidth: "3.2", strokeLinejoin: "round", strokeLinecap: "round" }),
+          item.values.map((value, month) => h("circle", { key: month, cx: xFor(month), cy: yFor(item, value), r: "4.2", fill: "#0b1322", stroke: item.color, strokeWidth: "2.6" }))
         )),
         MONTH_NAMES.slice(0, monthCount).map((month, index) => h("rect", {
           key: `hit-${month}`,
@@ -6873,11 +6886,11 @@ function ToggleableMonthlyValueChart({ series }) {
           onMouseMove: move,
           onMouseLeave: hide
         })),
-        h("text", { x: 18, y: padT + innerH / 2, textAnchor: "middle", fontSize: "11", fill: "#9fb2cf", fontWeight: "750", transform: `rotate(-90 18 ${padT + innerH / 2})` }, "Valor €"),
+        h("text", { x: 14, y: padT + innerH / 2, textAnchor: "middle", fontSize: "10", fill: "#9fb2cf", fontWeight: "750", transform: `rotate(-90 14 ${padT + innerH / 2})` }, "Escalas €"),
         h("text", { x: padL + innerW / 2, y: height - 5, textAnchor: "middle", fontSize: "11", fill: "#9fb2cf", fontWeight: "750" }, "Meses")
       )
     ),
-    h("div", { className: "monthly-value-note" }, "A escala ajusta-se automaticamente às linhas ativas. Valor das leads = Propostas Reais s/ IVA, porque no BackOffice cada proposta conta como lead."),
+    h("div", { className: "monthly-value-note" }, "Cada linha usa uma escala independente da mesma cor. Compara sobretudo a forma, a direção e os pontos de viragem; consulta o tooltip para os valores exatos."),
     h(ChartTooltip, { tip })
   );
 }
