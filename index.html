@@ -671,6 +671,36 @@ table { border-collapse: collapse; }
   flex-wrap: wrap;
   gap: 0.55rem;
 }
+.monthly-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.monthly-scale-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 2.45rem;
+  padding: 0.52rem 0.78rem;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 0.7rem;
+  background: rgba(7, 13, 24, 0.52);
+  color: #dbeafe;
+  font-size: 0.72rem;
+  font-weight: 800;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+.monthly-scale-mode-btn:hover {
+  border-color: #7dd3fc;
+  background: rgba(14, 165, 233, 0.12);
+  color: #fff;
+}
+@media (max-width: 720px) {
+  .monthly-section-header { display: grid; }
+  .monthly-scale-mode-btn { width: 100%; }
+}
 .monthly-value-toggle {
   display: inline-flex;
   align-items: center;
@@ -6798,12 +6828,12 @@ function buildMonthlyFinancialSeries(model, table) {
   const lastMonth = Math.max(lastWithData, Math.min(11, (/* @__PURE__ */ new Date()).getMonth()));
   return definitions.map((series) => ({ ...series, values: series.values.slice(0, lastMonth + 1) }));
 }
-function ToggleableMonthlyValueChart({ series }) {
+function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
   const [activeIds, setActiveIds] = useState(() => new Set(series.map((item) => item.id)));
   const { ref, tip, show, move, hide } = useChartTooltip();
   const width = 1040;
   const height = 410;
-  const padL = 246;
+  const padL = scaleMode === "common" ? 112 : 246;
   const padR = 24;
   const padT = 42;
   const padB = 50;
@@ -6811,9 +6841,10 @@ function ToggleableMonthlyValueChart({ series }) {
   const innerH = height - padT - padB;
   const monthCount = Math.max(1, ...series.map((item) => item.values.length));
   const activeSeries = series.filter((item) => activeIds.has(item.id));
+  const commonScaleMax = niceCeil(Math.max(1, ...activeSeries.flatMap((item) => item.values.map((value) => value || 0))));
   const scaleMaxById = new Map(activeSeries.map((item) => [
     item.id,
-    niceCeil(Math.max(1, ...item.values.map((value) => value || 0)))
+    scaleMode === "common" ? commonScaleMax : niceCeil(Math.max(1, ...item.values.map((value) => value || 0)))
   ]));
   const xFor = (month) => padL + (monthCount === 1 ? innerW / 2 : month / (monthCount - 1) * innerW);
   const yFor = (item, value) => padT + innerH - (value || 0) / scaleMaxById.get(item.id) * innerH;
@@ -6837,7 +6868,23 @@ function ToggleableMonthlyValueChart({ series }) {
       item.label, ": ", fmtCurrency(item.values[month] || 0)
     ))
   );
-  return h("div", { className: "monthly-value-chart", ref, "data-help": "Evolução mensal em euros. Cada linha tem a sua própria escala vertical, identificada pela mesma cor no lado esquerdo. Isto permite comparar o formato e a tendência das linhas mesmo quando os valores são muito diferentes. Podes ligar ou desligar cada série. Origem: MKT PKE 2026, Dashboard MKT." },
+  const scaleAxes = scaleMode === "common" ? [{
+    id: "common",
+    axisLabel: "VALOR €",
+    color: "#9fb2cf",
+    scaleMax: commonScaleMax,
+    x: 82
+  }] : activeSeries.map((item, index) => ({
+    id: item.id,
+    axisLabel: item.axisLabel,
+    color: item.color,
+    scaleMax: scaleMaxById.get(item.id),
+    x: axisXFor(index)
+  }));
+  const modeHelp = scaleMode === "common"
+    ? "Escala comum: todas as linhas usam o mesmo eixo em euros. Este modo permite comparar diretamente a dimensão real dos valores."
+    : "Escalas individuais: cada linha usa um eixo próprio da mesma cor. Este modo facilita comparar a forma, direção e pontos de viragem.";
+  return h("div", { className: "monthly-value-chart", ref, "data-help": `${modeHelp} Podes ligar ou desligar cada série. Origem: MKT PKE 2026, Dashboard MKT.` },
     h("div", { className: "monthly-value-controls", role: "group", "aria-label": "Linhas visíveis no gráfico" }, series.map((item) => h("button", {
       key: item.id,
       type: "button",
@@ -6845,29 +6892,25 @@ function ToggleableMonthlyValueChart({ series }) {
       "aria-pressed": activeIds.has(item.id),
       onClick: () => toggle(item.id),
       style: { "--series-color": item.color },
-      "data-help": `${item.help} A linha e a respetiva escala usam a mesma cor. Clica para ${activeIds.has(item.id) ? "ocultar" : "mostrar"} esta série.`
+      "data-help": `${item.help} ${scaleMode === "independent" ? "A linha e a respetiva escala usam a mesma cor." : "A linha usa a escala comum do gráfico."} Clica para ${activeIds.has(item.id) ? "ocultar" : "mostrar"} esta série.`
     }, h("span", { className: "monthly-value-toggle-dot" }), item.label))),
     h("div", { className: "chart-scroll" },
-      h("svg", { viewBox: `0 0 ${width} ${height}`, className: "monthly-value-svg", role: "img", "aria-label": "Evolução mensal com uma escala em euros independente para cada linha" },
+      h("svg", { viewBox: `0 0 ${width} ${height}`, className: "monthly-value-svg", role: "img", "aria-label": scaleMode === "common" ? "Evolução mensal com uma escala comum em euros" : "Evolução mensal com uma escala em euros independente para cada linha" },
         Array.from({ length: 5 }, (_, index) => {
           const y = padT + innerH - index / 4 * innerH;
           return h("line", { key: `grid-${index}`, x1: padL, x2: width - padR, y1: y, y2: y, stroke: "#22314b", strokeWidth: "1" });
         }),
-        activeSeries.map((item, seriesIndex) => {
-          const axisX = axisXFor(seriesIndex);
-          const scaleMax = scaleMaxById.get(item.id);
-          return h("g", { key: `axis-${item.id}`, "aria-label": `Escala de ${item.label}` },
-            h("text", { x: axisX, y: 17, textAnchor: "middle", fontSize: "9", fill: item.color, fontWeight: "850" }, item.axisLabel),
-            h("line", { x1: axisX, x2: axisX, y1: padT, y2: padT + innerH, stroke: item.color, strokeWidth: "2", opacity: "0.75" }),
-            [0, 0.5, 1].map((ratio) => {
-              const y = padT + innerH - ratio * innerH;
-              return h("g", { key: ratio },
-                h("line", { x1: axisX - 4, x2: axisX + 4, y1: y, y2: y, stroke: item.color, strokeWidth: "2" }),
-                h("text", { x: axisX - 7, y, textAnchor: "end", dominantBaseline: "middle", fontSize: "8.5", fill: item.color, fontWeight: "700" }, fmtCurrencyShort(scaleMax * ratio))
-              );
-            })
-          );
-        }),
+        scaleAxes.map((axis) => h("g", { key: `axis-${axis.id}`, "aria-label": scaleMode === "common" ? "Escala comum de valores" : `Escala de ${axis.axisLabel}` },
+          h("text", { x: axis.x, y: 17, textAnchor: "middle", fontSize: "9", fill: axis.color, fontWeight: "850" }, axis.axisLabel),
+          h("line", { x1: axis.x, x2: axis.x, y1: padT, y2: padT + innerH, stroke: axis.color, strokeWidth: "2", opacity: "0.75" }),
+          [0, 0.5, 1].map((ratio) => {
+            const y = padT + innerH - ratio * innerH;
+            return h("g", { key: ratio },
+              h("line", { x1: axis.x - 4, x2: axis.x + 4, y1: y, y2: y, stroke: axis.color, strokeWidth: "2" }),
+              h("text", { x: axis.x - 7, y, textAnchor: "end", dominantBaseline: "middle", fontSize: "8.5", fill: axis.color, fontWeight: "700" }, fmtCurrencyShort(axis.scaleMax * ratio))
+            );
+          })
+        )),
         h("line", { x1: padL, x2: width - padR, y1: height - padB, y2: height - padB, stroke: "#31415e", strokeWidth: "1.2" }),
         MONTH_NAMES.slice(0, monthCount).map((month, index) => h("text", { key: month, x: xFor(index), y: height - padB + 25, textAnchor: "middle", fontSize: "11", fill: "#8fa3c2", fontWeight: "650" }, month)),
         activeSeries.map((item) => h("g", { key: item.id },
@@ -6886,11 +6929,11 @@ function ToggleableMonthlyValueChart({ series }) {
           onMouseMove: move,
           onMouseLeave: hide
         })),
-        h("text", { x: 14, y: padT + innerH / 2, textAnchor: "middle", fontSize: "10", fill: "#9fb2cf", fontWeight: "750", transform: `rotate(-90 14 ${padT + innerH / 2})` }, "Escalas €"),
+        h("text", { x: 14, y: padT + innerH / 2, textAnchor: "middle", fontSize: "10", fill: "#9fb2cf", fontWeight: "750", transform: `rotate(-90 14 ${padT + innerH / 2})` }, scaleMode === "common" ? "Valor €" : "Escalas €"),
         h("text", { x: padL + innerW / 2, y: height - 5, textAnchor: "middle", fontSize: "11", fill: "#9fb2cf", fontWeight: "750" }, "Meses")
       )
     ),
-    h("div", { className: "monthly-value-note" }, "Cada linha usa uma escala independente da mesma cor. Compara sobretudo a forma, a direção e os pontos de viragem; consulta o tooltip para os valores exatos."),
+    h("div", { className: "monthly-value-note" }, scaleMode === "common" ? "Escala comum ativa: compara diretamente a dimensão real dos valores. Desliga linhas para reajustar automaticamente o eixo às séries visíveis." : "Escalas individuais ativas: compara sobretudo a forma, a direção e os pontos de viragem; consulta o tooltip para os valores exatos."),
     h(ChartTooltip, { tip })
   );
 }
@@ -8674,6 +8717,7 @@ function ToggleableMonthlyValueChart({ series }) {
     };
   }
   function ResumoExecutivoView({ selectedMonths, alertThreshold, onNavigate, fromStage, setFromStage, toStage, setToStage }) {
+    const [monthlyScaleMode, setMonthlyScaleMode] = useState("independent");
     const dashboardFetchOpts = useMemo(() => ({ gid: DASHBOARD_GID, headers: 0 }), []);
     const vspFetchOpts = useMemo(() => ({ spreadsheetId: VSP_RESULTS_SHEET_ID, firstSheet: true }), []);
     const boFetchOpts = useMemo(() => ({ spreadsheetId: BO_RESULTS_SHEET_ID, firstSheet: true }), []);
@@ -8812,14 +8856,23 @@ function ToggleableMonthlyValueChart({ series }) {
         ))),
         decisionChips.length > 3 && h("div", { className: "relative mcp-decision-rail" }, decisionChips.slice(3).map((chip, index) => h("span", { key: index, className: `alert-chip alert-chip-${chip.tone}` }, chip.text)))
       ),
-      h("section", { className: "section-shell space-y-3" },
-        h("div", null,
-          h("div", { className: "section-kicker" }, "EVOLUÇÃO FINANCEIRA"),
-          h("h3", { className: "section-heading" }, "Valor mensal e investimento de Marketing"),
-          h("p", { className: "section-subtitle" }, "Comparação mensal em euros entre faturação, encomendas, investimento total de Marketing e valor das leads. Usa os controlos para isolar cada linha.")
-        ),
-        h(ToggleableMonthlyValueChart, { series: monthlyFinancialSeries })
-      )
+h("section", { className: "section-shell space-y-3" },
+  h("div", { className: "monthly-section-header" },
+    h("div", null,
+      h("div", { className: "section-kicker" }, "EVOLUÇÃO FINANCEIRA"),
+      h("h3", { className: "section-heading" }, "Valor mensal e investimento de Marketing"),
+      h("p", { className: "section-subtitle" }, "Comparação mensal em euros entre faturação, encomendas, investimento total de Marketing e valor das leads. Usa os controlos para isolar cada linha.")
+    ),
+    h("button", {
+      type: "button",
+      className: "monthly-scale-mode-btn",
+      onClick: () => setMonthlyScaleMode((current) => current === "independent" ? "common" : "independent"),
+      "aria-label": monthlyScaleMode === "independent" ? "Mudar para escala comum" : "Mudar para escalas individuais",
+      "data-help": monthlyScaleMode === "independent" ? "Mudar para escala comum: todas as linhas passam a usar o mesmo eixo em euros, permitindo comparar diretamente os valores." : "Mudar para escalas individuais: cada linha passa a usar a sua própria escala, facilitando a comparação da forma e tendência."
+    }, monthlyScaleMode === "independent" ? "Usar escala comum" : "Usar escalas individuais")
+  ),
+  h(ToggleableMonthlyValueChart, { series: monthlyFinancialSeries, scaleMode: monthlyScaleMode })
+)
     );
   }
 function DeepConversionOverview({ boProposals, boOrders, vspLeads, vspOrders }) {
