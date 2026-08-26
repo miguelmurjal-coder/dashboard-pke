@@ -325,6 +325,31 @@ table { border-collapse: collapse; }
 .page-title-pill .text-slate-900 { color: #f5f8fc; }
 .app-header .text-slate-700 { color: #dbeafe; }
 .app-header .text-slate-500 { color: #99acc9; }
+.app-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  min-width: 0;
+}
+@media (max-width: 720px) {
+  .app-header .global-search {
+    flex: 1 1 calc(100% - 2.5rem);
+    min-width: 0;
+    max-width: none;
+  }
+  .app-header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-left: 0;
+  }
+  .app-header-actions .theme-switcher-current { min-width: 7.5rem; }
+  .app-header-actions .alert-threshold {
+    flex: 1 1 14rem;
+    min-width: 0;
+  }
+}
 .theme-switcher {
   display: inline-flex;
   align-items: center;
@@ -4013,7 +4038,7 @@ const DEEP_DIVE_PANELS = [
     { title: "Cockpit principal", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Estado geral, alertas, funil global, faturação e próximas ações.", keywords: ["dashboard", "marketing control panel", "cockpit", "resumo", "estado", "alertas", "acoes", "ações", "diagnostico", "diagnóstico"] },
     { title: "Faturação e objetivos", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Objetivo, faturação, delta, ritmo do mês e linhas PS/FAP/AdBlue.", keywords: ["faturacao", "faturação", "objetivo", "objetivos", "delta", "ritmo", "ps", "fap", "adblue", "receita"] },
     { title: "Funil global", location: "Marketing Control Panel", target: "Dashboard MKT", description: "Desconhecido, Proposta, Encomenda, Faturação e valor capturado.", keywords: ["funil", "leads", "propostas", "vendas", "encomendas", "conversao", "conversão", "valor capturado"] },
-    { title: "KPIs Marketing", location: "KPIs Marketing", target: "KPIs Marketing", description: "ROAS, CPL, CPA, média de investimento por serviço e custos VSP Meta/Google.", keywords: ["kpi", "kpis", "roas", "cpl", "cpa", "custo por lead", "custo por aquisicao", "custo por aquisição", "media investimento", "média investimento", "performance paga", "meta", "google", "custos vsp"] },
+    { title: "KPIs Marketing", location: "KPIs Marketing", target: "KPIs Marketing", description: "ROAS, CPL, CPA, peso do investimento por serviço e custos VSP Meta/Google.", keywords: ["kpi", "kpis", "roas", "cpl", "cpa", "custo por lead", "custo por aquisicao", "custo por aquisição", "peso investimento", "distribuição investimento", "performance paga", "meta", "google", "custos vsp"] },
     { title: "Newsletters MailerLite", location: "Newsletters", target: "Newsletters", description: "Campanhas enviadas, aberturas, cliques, unsubscribes e bounces da MailerLite.", keywords: ["newsletter", "newsletters", "mailerlite", "email", "emails", "abertura", "aberturas", "click", "clique", "cliques", "unsubscribe", "unsubscribes", "bounce", "bounces"] },
     { title: "Call Analytics", location: "Call Analytics", target: "Call Analytics", description: "Analytics comercial: chamadas, leads contactadas, conversão, funil, vendedores e score AI.", keywords: ["call analytics", "chamadas", "telefonemas", "contactados", "vendedores", "comercial", "analytics", "score ai", "funil comercial", "taxa contacto", "taxa conversao"] },
     { title: "Resultados agregados", location: "Aprofundar Dados > Visão Global", target: "Resultados Totais", description: "Merge de VSP + BO, funil global, canais, campanhas, marcas e modelos.", keywords: ["resultados totais", "totais", "merge", "global", "vsp bo", "agregado", "agregados", "cruzado", "cruzamento"] },
@@ -4162,6 +4187,13 @@ const DEEP_DIVE_PANELS = [
     return FUNNEL_STAGES.find((s) => s.key === key) || null;
   }
   const LEADS_DATE_COL = 1;
+  const DASHBOARD_YEAR = 2026;
+  function isDashboardDate(date) {
+    return !!date && date.getFullYear() === DASHBOARD_YEAR;
+  }
+  function isSelectedDashboardDate(date, selectedMonths) {
+    return isDashboardDate(date) && selectedMonths.has(date.getMonth());
+  }
   const LEADS_EUR_COLS = { PS: 5, FAP: 4, AdBlue: 3 };
   const LEADS_COUNT_COLS = { PS: 10, FAP: 9, AdBlue: 8 };
   const LEADS_TOTAL_EUR_COL = 2;
@@ -4174,7 +4206,7 @@ const DEEP_DIVE_PANELS = [
     const totalValueMonthly = new Array(12).fill(0);
     (table.rows || []).forEach((r) => {
       const date = parseRowDate(r, LEADS_DATE_COL);
-      if (!date) return;
+      if (!isDashboardDate(date)) return;
       const m = date.getMonth();
       ["PS", "FAP", "AdBlue"].forEach((key) => {
         monthlyCount[key][m] += numericValue(r, LEADS_COUNT_COLS[key]);
@@ -4243,7 +4275,7 @@ const DEEP_DIVE_PANELS = [
     const worstCplKey = rowsWithCpl.length > 1 ? rowsWithCpl[rowsWithCpl.length - 1].key : null;
     const filteredRows = (table.rows || []).filter((r) => {
       const d = parseRowDate(r, LEADS_DATE_COL);
-      return d ? selectedMonths.has(d.getMonth()) : false;
+      return isSelectedDashboardDate(d, selectedMonths);
     });
     const filteredTable = { cols: table.cols, rows: filteredRows };
     return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement(SheetTopBar, { updatedAt, loading, onRefresh: reload }), !rmTable && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, '\u26A0 N\xE3o encontrei a folha "Resultados Mensais" \u2014 a compara\xE7\xE3o com investimento fica indispon\xEDvel at\xE9 essa folha estar acess\xEDvel (confirma se o nome est\xE1 exatamente igual).'), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-1" }, "Investimento vs Leads \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 mb-3" }, 'Leads do "Leads Di\xE1rios", investimento (Meta + Google) do "Resultados Mensais", para', " ", periodFilterLabel(selectedMonths), "."), /* @__PURE__ */ React.createElement("div", { className: "overflow-auto" }, /* @__PURE__ */ React.createElement("table", { className: "min-w-full text-sm" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-left text-slate-400" }, /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs" }, "Servi\xE7o"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "Leads"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "Investimento"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "CPL"))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((r) => /* @__PURE__ */ React.createElement("tr", { key: r.key, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 font-semibold text-slate-800" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(LineDot, { line: r.key }), r.key, r.key === bestCplKey && /* @__PURE__ */ React.createElement(MetricBadge, { tone: "good" }, "Melhor CPL"), r.key === worstCplKey && /* @__PURE__ */ React.createElement(MetricBadge, { tone: "warn" }, "Mais caro"))), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtNumber(r.leads)), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums" }, r.invest != null ? fmtCurrency(r.invest) : "\u2014"), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums font-semibold" }, r.cpl != null ? fmtCurrency(r.cpl) : "\u2014"))))))), /* @__PURE__ */ React.createElement(SheetInsights, { table: filteredTable }), /* @__PURE__ */ React.createElement(RawDataAccordion, { table, defaultOpen: false }));
@@ -4279,7 +4311,17 @@ const DEEP_DIVE_PANELS = [
       s = s.slice(1);
     }
     s = s.replace(/[€%]/g, "").replace(/\s|\u00A0/g, "");
-    s = s.replace(/\./g, "").replace(",", ".");
+    const lastComma = s.lastIndexOf(",");
+    const lastDot = s.lastIndexOf(".");
+    if (lastComma >= 0 && lastDot >= 0) {
+      const decimalSeparator = lastComma > lastDot ? "," : ".";
+      const thousandsSeparator = decimalSeparator === "," ? "." : ",";
+      s = s.replace(new RegExp(`\\${thousandsSeparator}`, "g"), "").replace(decimalSeparator, ".");
+    } else if (lastComma >= 0) {
+      s = s.replace(/\./g, "").replace(",", ".");
+    } else if (lastDot >= 0 && /^\d{1,3}(\.\d{3})+$/.test(s)) {
+      s = s.replace(/\./g, "");
+    }
     const n = parseFloat(s);
     if (isNaN(n)) return 0;
     return neg ? -n : n;
@@ -4455,6 +4497,18 @@ const DEEP_DIVE_PANELS = [
     }, [load]);
     return { ...state, reload: load };
   }
+  function staticSnapshotStatus(data, maxAgeHours = 24) {
+    const rawDate = data && data.generatedAt;
+    if (!rawDate) return { stale: Boolean(data && data.stale), date: null, ageHours: null };
+    const date = new Date(rawDate);
+    if (Number.isNaN(date.getTime())) return { stale: true, date: null, ageHours: null };
+    const ageHours = Math.max(0, (Date.now() - date.getTime()) / 36e5);
+    return {
+      stale: Boolean(data && data.stale) || ageHours > maxAgeHours,
+      date,
+      ageHours
+    };
+  }
   function rowLabel(row) {
     return String(cellVal(row, 0) ?? "").trim();
   }
@@ -4478,26 +4532,12 @@ const DEEP_DIVE_PANELS = [
       total: parseNum(cellVal(row, totalColIdx))
     };
   }
-  const MARKETING_KPI_START_ROW = 144;
-  const MARKETING_KPI_END_ROW = 158;
   function selectedMonthValuesFromRow(row, selectedMonths) {
     return MONTH_COLS.map((col, month) => selectedMonths.has(month) ? numericValue(row, col) : null).filter((v) => v !== null && Number.isFinite(v));
   }
-  function avgNumbers(values) {
-    const valid = values.filter((v) => Number.isFinite(v));
-    return valid.length ? valid.reduce((s, v) => s + v, 0) / valid.length : 0;
-  }
-  function metricFormatForLabel(label) {
-    const lower = normalizeSearchText(label);
-    if (lower.includes("roas")) return "roas";
-    if (lower.includes("media investimento") || lower.includes("média investimento")) return "percent";
-    if (lower.includes("cpl") || lower.includes("lead") || lower.includes("cpa") || lower.includes("aquis") || lower.includes("custo") || lower.includes("invest")) return "currency";
-    return lower.includes("%") ? "percent" : "number";
-  }
   function formatMarketingKpiValue(value, format) {
     if (format === "roas") {
-      const normalized = value > 20 ? value / 100 : value;
-      return new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(normalized || 0);
+      return new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(value || 0);
     }
     if (format === "currency") return fmtCurrency(value);
     if (format === "percent") return fmtPercent(value > 1 ? value / 100 : value);
@@ -4505,8 +4545,7 @@ const DEEP_DIVE_PANELS = [
   }
   function marketingKpiTone(label, value, format) {
     const lower = normalizeSearchText(label);
-    const normalizedRoas = format === "roas" && value > 20 ? value / 100 : value;
-    if (format === "roas") return normalizedRoas >= 4 ? "good" : normalizedRoas >= 2 ? "warn" : "bad";
+    if (format === "roas") return value >= 4 ? "good" : value >= 2 ? "warn" : "bad";
     if (lower.includes("custo") || lower.includes("cpl") || lower.includes("cpa")) return value > 0 ? "neutral" : "warn";
     if (format === "percent" && lower.includes("invest")) return value > 0 ? "neutral" : "warn";
     if (lower.includes("invest")) return value > 0 ? "good" : "neutral";
@@ -4514,39 +4553,40 @@ const DEEP_DIVE_PANELS = [
   }
   function buildMarketingPerformanceKpis(table, selectedMonths) {
     const allRows = table && table.rows ? table.rows : [];
-    const lineRows = allRows.slice(MARKETING_KPI_START_ROW - 1, MARKETING_KPI_END_ROW);
-    const toItem = (row, displayLine) => {
-      const label = rowLabel(row);
-      if (!label) return null;
-      const lower = normalizeSearchText(label);
-      if (!/(roas|cpl|cpa|aquis|invest|custo)/.test(lower)) return null;
-      const values = selectedMonthValuesFromRow(row, selectedMonths);
-      const isAverageMetric = /(roas|cpl|cpa|lead|aquis|media|média|custo)/.test(lower);
-      const rawValue = isAverageMetric ? avgNumbers(values) : values.reduce((s, v) => s + v, 0);
-      const format = metricFormatForLabel(label);
+    const model = buildDashboardModel(table);
+    if (!model) return [];
+    const investmentLabels = { PS: "TOTAL PS", FAP: "TOTAL FAP", AdBlue: "TOTAL ADBLUE" };
+    const serviceTotals = MARKETING_SERVICE_DEFS.map((service) => {
+      const investmentRow = findOne(allRows, investmentLabels[service.key]);
+      const investment = investmentRow ? selectedMonthValuesFromRow(investmentRow, selectedMonths).reduce((sum, value) => sum + value, 0) : 0;
+      const revenueLine = model.faturacaoReal && model.faturacaoReal.lines[service.key];
+      const leadLine = model.propostasSIVA.reais && model.propostasSIVA.reais.lines[service.key];
+      const acquisitionLine = model.encomendas.reais && model.encomendas.reais.lines[service.key];
       return {
-        label,
-        rawValue,
-        value: formatMarketingKpiValue(rawValue, format),
-        detail: `${periodFilterLabel(selectedMonths)} · ${displayLine}`,
-        tone: marketingKpiTone(label, rawValue, format),
-        format,
-        help: `${label}: KPI vindo das linhas 144 a 158 do ficheiro MKT PKE 2026. Respeita o período selecionado no topo. ROAS mostra retorno sobre investimento; CPL mostra custo por lead; CPA mostra custo por aquisição/encomenda; investimento médio mostra quanto está a ser investido por serviço.`
+        ...service,
+        investment,
+        revenue: revenueLine && revenueLine.value ? sumByMonths(revenueLine.value.monthly, selectedMonths) : 0,
+        leads: leadLine && leadLine.count ? sumByMonths(leadLine.count.monthly, selectedMonths) : 0,
+        acquisitions: acquisitionLine && acquisitionLine.count ? sumByMonths(acquisitionLine.count.monthly, selectedMonths) : 0
       };
-    };
-    let items = lineRows.map((row, index) => toItem(row, `linha ${MARKETING_KPI_START_ROW + index}`)).filter(Boolean);
-    if (!items.length) {
-      items = allRows.map((row, index) => toItem(row, `linha encontrada ${index + 1}`)).filter(Boolean);
-    }
-    const priority = (label) => {
-      const lower = normalizeSearchText(label);
-      if (lower.includes("roas")) return 0;
-      if (lower.includes("cpl") || lower.includes("lead")) return 1;
-      if (lower.includes("cpa") || lower.includes("aquis")) return 2;
-      if (lower.includes("invest")) return 3;
-      return 4;
-    };
-    return items.sort((a, b) => priority(a.label) - priority(b.label));
+    });
+    const totalInvestment = serviceTotals.reduce((sum, service) => sum + service.investment, 0);
+    const period = periodFilterLabel(selectedMonths);
+    const item = (label, rawValue, format, detail, help) => ({
+      label,
+      rawValue,
+      value: formatMarketingKpiValue(rawValue, format),
+      detail,
+      tone: marketingKpiTone(label, rawValue, format),
+      format,
+      help
+    });
+    return serviceTotals.flatMap((service) => [
+      item(`ROAS ${service.label}`, service.investment ? service.revenue / service.investment : 0, "roas", period, `ROAS ${service.label}: faturação real do período dividida pelo investimento publicitário do mesmo período. Usa totais agregados, não a média simples dos ROAS mensais.`),
+      item(`CPL ${service.label}`, service.leads ? service.investment / service.leads : 0, "currency", `${fmtNumber(service.leads)} leads · ${period}`, `CPL ${service.label}: investimento publicitário total do período dividido pelas propostas/leads geradas no mesmo período.`),
+      item(`CPA ${service.label}`, service.acquisitions ? service.investment / service.acquisitions : 0, "currency", `${fmtNumber(service.acquisitions)} encomendas · ${period}`, `CPA ${service.label}: investimento publicitário total do período dividido pelas encomendas reais do mesmo período.`),
+      item(`Peso de investimento ${service.label}`, totalInvestment ? service.investment / totalInvestment : 0, "percent", `${fmtCurrency(service.investment)} · ${period}`, `Peso de investimento ${service.label}: parte do investimento publicitário total do período aplicada neste serviço.`)
+    ]);
   }
   const MARKETING_SERVICE_DEFS = [
     { key: "PS", label: "PS" },
@@ -4573,7 +4613,7 @@ const DEEP_DIVE_PANELS = [
       roas: "ROAS",
       cpl: "CPL",
       cpa: "CPA",
-      invest: "Média de investimento",
+      invest: "Peso de investimento",
       other: "KPI"
     }[type] || "KPI";
   }
@@ -4599,7 +4639,7 @@ const DEEP_DIVE_PANELS = [
   function filterMailerLiteCampaigns(campaigns, selectedMonths) {
     return (campaigns || []).filter((campaign) => {
       const d = mailerLiteCampaignDate(campaign);
-      return d ? selectedMonths.has(d.getMonth()) : selectedMonths.size === 12;
+      return isSelectedDashboardDate(d, selectedMonths);
     });
   }
   function avgRateFromTotals(numerator, denominator) {
@@ -5780,7 +5820,7 @@ const DEEP_DIVE_PANELS = [
     if (lower.includes("vsp") || lower.includes("fap")) return `${raw}: VSP/FAP refere-se aos leads vindos do ficheiro PKE Leads FAP. Pensa nisto como contactos ou pedidos que entraram antes de sabermos se viraram proposta, encomenda ou faturação.`;
     if (lower.includes("bo") || lower.includes("backoffice")) return `${raw}: BO significa BackOffice PKE. São dados que vêm do sistema interno/site, sobretudo propostas e encomendas. É a parte mais próxima do resultado comercial real.`;
     if (lower.includes("fatur")) return `${raw}: fala de faturação, ou seja, dinheiro efetivamente faturado/realizado. Quando aparece em percentagem, normalmente compara o realizado com o objetivo. Quando aparece em euros, é valor monetário.`;
-    if (lower.includes("objetivo") || lower.includes("meta")) return `${raw}: objetivo/meta é o valor esperado para o período. O dashboard compara o resultado real contra esta referência para dizer se estamos saudáveis, em atenção ou com desvio crítico.`;
+    if (lower.includes("objetivo") || lower.includes("meta")) return `${raw}: objetivo/meta é o valor esperado para o período. O dashboard compara o resultado real contra esta referência e mostra diretamente a diferença.`;
     if (lower.includes("encomenda")) return `${raw}: encomenda é uma oportunidade que avançou para pedido/compra no BackOffice. É mais forte do que uma lead ou proposta, porque já indica conversão comercial.`;
     if (lower.includes("proposta")) return `${raw}: proposta é uma oportunidade comercial registada no BackOffice. Ainda não quer dizer venda fechada; quer dizer que existe valor proposto e possibilidade de virar encomenda.`;
     if (lower.includes("lead")) return `${raw}: lead é um contacto/pedido de potencial cliente. O dashboard acompanha se esse contacto evolui para proposta, encomenda e valor real.`;
@@ -6493,7 +6533,7 @@ const DEEP_DIVE_PANELS = [
     ))))));
   }
   function AlertThresholdControl({ threshold, setThreshold }) {
-    return /* @__PURE__ */ React.createElement("div", { className: "alert-threshold flex items-center gap-1.5", "data-help": "Limiar de alerta: define a partir de que percentagem do objetivo o dashboard deve considerar que há desvio crítico. Exemplo: se estiver em 80%, tudo abaixo de 80% do objetivo fica sinalizado como atenção/desvio." }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 whitespace-nowrap" }, "Alertar abaixo de"), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "alert-threshold flex items-center gap-1.5", "data-help": "Limiar de alerta: define a partir de que percentagem do objetivo o dashboard deve assinalar um desvio. Exemplo: se estiver em 80%, tudo abaixo de 80% do objetivo fica destacado para revisão." }, /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-500 whitespace-nowrap" }, "Alertar abaixo de"), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "number",
@@ -6819,7 +6859,7 @@ function buildMonthlyFinancialSeries(model, table) {
     { id: "billing", label: "Faturação do Mês", axisLabel: "FAT.", color: "#38BDF8", help: "Faturação real mensal da PKE. Origem: linha Faturação Real PKE do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: model.revenue.real && model.revenue.real.monthly ? model.revenue.real.monthly : new Array(12).fill(0) },
     { id: "orders", label: "Valor € de Encomendas do Mês", axisLabel: "ENC.", color: "#34D399", help: "Valor mensal das encomendas reais, sem IVA. Origem: total em euros da secção Encomendas Reais (S/ IVA) do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: monthlySectionValue(model.encomendas.reais) },
     { id: "investment", label: "Investimento € do MKT", axisLabel: "MKT", color: "#F2A93B", help: "Investimento publicitário mensal total do Marketing. Soma TOTAL PS, TOTAL FAP e TOTAL ADBLUE. Origem: ficheiro MKT PKE 2026, tab Dashboard MKT.", values: buildMarketingInvestmentTotalMonthly(table) },
-    { id: "leads", label: "Valor € de Leads do Mês", axisLabel: "LEADS", color: "#A78BFA", help: "Valor mensal das propostas reais, sem IVA. No BackOffice, cada proposta é uma lead. Origem: total em euros da secção Propostas Reais (S/ IVA) do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: monthlySectionValue(model.propostasSIVA.reais) }
+    { id: "leads", label: "Valor € de Propostas/Leads BO", axisLabel: "PROP. BO", color: "#A78BFA", help: "Valor mensal das propostas reais do BackOffice, sem IVA. No BackOffice, cada proposta corresponde a uma lead. Não inclui leads VSP sem proposta BO. Origem: total em euros da secção Propostas Reais (S/ IVA) do ficheiro MKT PKE 2026, tab Dashboard MKT.", values: monthlySectionValue(model.propostasSIVA.reais) }
   ];
   let lastWithData = 0;
   definitions.forEach((series) => series.values.forEach((value, month) => {
@@ -7401,7 +7441,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
         return;
       }
       const d = parseRowDate(r, dateColIdx);
-      if (!d) return;
+      if (!isDashboardDate(d)) return;
       if (maxDate && d > maxDate) return;
       const m = d.getMonth();
       dayCount[m] += 1;
@@ -7581,7 +7621,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
     const propostasEur = sumColsMonthly(FJM_PROPOSTAS_EUR_COLS);
     const propostasCount = sumColsMonthly(FJM_PROPOSTAS_COUNT_COLS);
     const dailyRows = ficheiroJMDailyRows(table);
-    const filteredDailyRows = dailyRows.filter((r) => selectedMonths.has(parseRowDate(r).getMonth()));
+    const filteredDailyRows = dailyRows.filter((r) => isSelectedDashboardDate(parseRowDate(r), selectedMonths));
     const dailyTotalSeries = filteredDailyRows.map((r) => ({
       x: parseRowDate(r),
       y: FJM_DAILY_TOTAL_COLS.reduce((s, idx) => s + numericValue(r, idx), 0)
@@ -7658,7 +7698,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
       warn: "bg-amber-50 text-amber-700",
       bad: "bg-red-50 text-red-800"
     };
-    return /* @__PURE__ */ React.createElement("div", { className: `executive-card rounded-xl p-3 ${styles[tone] || styles.warn}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-semibold", style: { opacity: 0.75 } }, "RESUMO"), /* @__PURE__ */ React.createElement(MetricBadge, { tone }, tone === "good" ? "Estável" : tone === "warn" ? "Atenção" : "Crítico")), /* @__PURE__ */ React.createElement("ul", { className: "executive-list" }, sentences.map((sentence, i) => /* @__PURE__ */ React.createElement("li", { key: i }, sentence))));
+    return /* @__PURE__ */ React.createElement("div", { className: `executive-card rounded-xl p-3 ${styles[tone] || styles.warn}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-semibold", style: { opacity: 0.75 } }, "RESUMO")), /* @__PURE__ */ React.createElement("ul", { className: "executive-list" }, sentences.map((sentence, i) => /* @__PURE__ */ React.createElement("li", { key: i }, sentence))));
   }
   function MonthPaceCard({ model }) {
     const now = /* @__PURE__ */ new Date();
@@ -7792,11 +7832,11 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
     const metaCols = metaTotalCol >= 0 ? [metaTotalCol] : metaPageCols.length ? metaPageCols : findCostColumns(table, "meta", VSP_META_COST_FALLBACK_COL);
     const googleCols = googleTotalCol >= 0 ? [googleTotalCol] : googlePageCols.length ? googlePageCols : findCostColumns(table, "google", VSP_GOOGLE_COST_FALLBACK_COL);
     const totalCol = findColumnByText(table, (text) => text.includes("investimento fap total") || text.includes("fap total"));
-    const cplCol = findColumnByText(table, (text) => text.includes("cpl fap"));
+    const totalLeadsCol = findColumnByText(table, (text) => text.includes("total leads fap"));
     const dateCol = findVspInvestmentDateColumn(table);
     const rows = (table.rows || []).filter((row) => {
       const date = parseRowDate(row, dateCol);
-      return date && selectedMonths.has(date.getMonth());
+      return isSelectedDashboardDate(date, selectedMonths);
     });
     const metaCost = sumColumns(rows, metaCols);
     const googleCost = sumColumns(rows, googleCols);
@@ -7804,12 +7844,11 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
     const totalCost = explicitTotalCost || metaCost + googleCost;
     const potentialSourceRows = (potentialTable && potentialTable.rows || table.rows || []).filter((row) => {
       const date = parseRowDate(row, VSP_DATE_COL);
-      return date && selectedMonths.has(date.getMonth());
+      return isSelectedDashboardDate(date, selectedMonths);
     });
     const potential = potentialSourceRows.reduce((sum, row) => sum + Math.max(numericValue(row, VSP_CLEAN_PRICE_COL), numericValue(row, VSP_REPLACE_PRICE_COL)), 0);
-    const leads = rows.length;
-    const cplValues = cplCol >= 0 ? rows.map((row) => numericValue(row, cplCol)).filter((value) => value > 0) : [];
-    const cpl = cplValues.length ? avgNumbers(cplValues) : leads ? totalCost / leads : 0;
+    const leads = totalLeadsCol >= 0 ? rows.reduce((sum, row) => sum + numericValue(row, totalLeadsCol), 0) : potentialSourceRows.length;
+    const cpl = leads ? totalCost / leads : 0;
     const roasPotential = totalCost ? potential / totalCost : 0;
     const pageRows = groupVspInvestmentByPage(rows, pageColumns);
     return {
@@ -7821,7 +7860,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
       summary: { totalCost, metaCost, googleCost, cpl, leads, roasPotential, potential },
       items: [
         { label: "Investimento VSP", value: fmtCurrency(totalCost), detail: `${fmtCurrency(metaCost)} Meta · ${fmtCurrency(googleCost)} Google`, tone: totalCost ? "good" : "neutral", help: "Investimento VSP: soma dos custos de Meta e Google registados na DATABASE PKE 2026, tab Visão VSP diária. Quando existe uma coluna de Investimento FAP Total, essa coluna é usada como total principal. Respeita o período selecionado." },
-        { label: "CPL VSP", value: fmtCurrency(cpl), detail: `${fmtNumber(leads)} leads VSP/FAP no período`, tone: cpl ? "neutral" : "warn", help: "CPL VSP: custo por lead das VSP. Se existir a coluna CPL FAP, usa a média dessa coluna; caso contrário calcula investimento Meta + Google das VSP dividido pelo número de leads VSP no período." },
+        { label: "CPL VSP", value: fmtCurrency(cpl), detail: `${fmtNumber(leads)} leads VSP/FAP no período`, tone: cpl ? "neutral" : "warn", help: "CPL VSP: investimento Meta + Google das VSP dividido pelo total de leads FAP geradas no período. O total de leads vem da coluna Total Leads FAP da Visão VSP diária." },
         { label: "ROAS potencial VSP", value: new Intl.NumberFormat("pt-PT", { maximumFractionDigits: 2 }).format(roasPotential), detail: `${fmtCurrency(potential)} potencial estimado`, tone: roasPotential >= 4 ? "good" : roasPotential >= 2 ? "warn" : roasPotential > 0 ? "bad" : "neutral", help: "ROAS potencial VSP: compara o potencial estimado das leads VSP com o investimento Meta e Google associado. É uma leitura de potencial, não faturação confirmada." }
       ]
     };
@@ -8061,7 +8100,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
     if (error) return h(ErrorState, { message: error, onRetry: reload, sheetName: "Resultados BO" });
     if (!table) return h(EmptyState, { text: "Sem dados para mostrar." });
     const datedRows = (table.rows || []).filter((row) => parseRowDate(row, BO_DATE_COL));
-    const filteredRows = datedRows.filter((row) => selectedMonths.has(parseRowDate(row, BO_DATE_COL).getMonth()));
+    const filteredRows = datedRows.filter((row) => isSelectedDashboardDate(parseRowDate(row, BO_DATE_COL), selectedMonths));
     const totalProposals = filteredRows.length;
     const totalOrders = filteredRows.filter((row) => textValue(row, BO_ORDER_COL)).length;
     const totalValue = sumValue(filteredRows, BO_VALUE_COL);
@@ -8163,11 +8202,12 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
   function boTotalRecords(table, selectedMonths) {
     return (table && table.rows || []).map((row) => {
       const date = parseRowDate(row, BO_DATE_COL);
-      if (!date || !selectedMonths.has(date.getMonth())) return null;
+      if (!isSelectedDashboardDate(date, selectedMonths)) return null;
       return {
         source: "BO",
         date,
         value: numericValue(row, BO_VALUE_COL),
+        orderId: textValue(row, BO_ORDER_COL),
         hasOrder: !!textValue(row, BO_ORDER_COL),
         hasScorecard: false,
         channel: boSourceLabel(row),
@@ -8184,7 +8224,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
   function vspTotalRecords(table, selectedMonths) {
     return (table && table.rows || []).map((row) => {
       const date = parseRowDate(row, VSP_DATE_COL);
-      if (!date || !selectedMonths.has(date.getMonth())) return null;
+      if (!isSelectedDashboardDate(date, selectedMonths)) return null;
       const clean = numericValue(row, VSP_CLEAN_PRICE_COL);
       const replace = numericValue(row, VSP_REPLACE_PRICE_COL);
       const brand = textValue(row, 5) || "Sem marca";
@@ -8227,6 +8267,9 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
   function normalizeMatchText(value) {
     return String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
   }
+  function isCancelledOrderStatus(status) {
+    return /(cancel|anulad)/i.test(String(status || ""));
+  }
   function boOrderRecords(table) {
     return (table && table.rows || []).map((row, index) => {
       const date = parseRowDate(row, BO_DATE_COL);
@@ -8235,6 +8278,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
       if (!date || (!email && !phone)) return null;
       return {
         key: textValue(row, 0) || `order-${index}`,
+        proposalId: textValue(row, 1),
         date,
         email,
         phone,
@@ -8247,7 +8291,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
       };
     }).filter(Boolean);
   }
-  function findVspConvertedOrder(row, orders) {
+  function findVspConvertedOrder(row, orders, usedOrderKeys = new Set()) {
     const leadDate = parseRowDate(row, VSP_DATE_COL);
     if (!leadDate) return null;
     const email = normalizeEmailValue(textValue(row, 2));
@@ -8255,7 +8299,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
     if (!email && !phone) return null;
     const brand = normalizeMatchText(textValue(row, 5));
     const model = normalizeMatchText(textValue(row, 6));
-    const candidates = orders.filter((order) => order.date >= leadDate && ((email && order.email === email) || (phone && order.phone === phone)));
+    const candidates = orders.filter((order) => !usedOrderKeys.has(order.key) && order.date >= leadDate && ((email && order.email === email) || (phone && order.phone === phone)));
     if (!candidates.length) return null;
     const sorted = candidates.map((order) => ({
       order,
@@ -8265,16 +8309,18 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
     return sorted[0];
   }
   function buildVspToOrderConversion(vspTable, ordersTable, selectedMonths) {
-    const orders = boOrderRecords(ordersTable);
+    const orders = boOrderRecords(ordersTable).filter((order) => isDashboardDate(order.date));
     const leads = (vspTable && vspTable.rows || []).filter((row) => {
       const date = parseRowDate(row, VSP_DATE_COL);
-      return date && selectedMonths.has(date.getMonth());
-    });
+      return isSelectedDashboardDate(date, selectedMonths);
+    }).sort((a, b) => parseRowDate(a, VSP_DATE_COL) - parseRowDate(b, VSP_DATE_COL));
     const matches = [];
+    const usedOrderKeys = new Set();
     leads.forEach((row) => {
-      const match = findVspConvertedOrder(row, orders);
+      const match = findVspConvertedOrder(row, orders, usedOrderKeys);
       if (!match) return;
       const order = match.order;
+      usedOrderKeys.add(order.key);
       matches.push({
         source: trafficSourceLabel(row),
         campaign: textValue(row, VSP_UTM_CAMPAIGN_COL) || "Sem campanha",
@@ -8283,7 +8329,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
         value: order.value || 0,
         status: order.status,
         strongMatch: match.strongMatch,
-        finalized: !/cancel/i.test(order.status || ""),
+        finalized: !isCancelledOrderStatus(order.status),
         daysToOrder: match.daysToOrder
       });
     });
@@ -8339,30 +8385,34 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
     })).sort((a, b) => b.value - a.value || b.orders - a.orders).slice(0, limit);
   }
   function buildGlobalValueFunnel({ boRecords, vspRecords, ordersTable, selectedMonths, vspConversion }) {
-    const orders = boOrderRecords(ordersTable).filter((order) => selectedMonths.has(order.date.getMonth()));
-    const activeOrders = orders.filter((order) => !/cancel/i.test(order.status || ""));
+    const orders = boOrderRecords(ordersTable).filter((order) => isSelectedDashboardDate(order.date, selectedMonths));
+    const activeOrders = orders.filter((order) => !isCancelledOrderStatus(order.status));
+    const activeOrderIds = new Set(activeOrders.map((order) => String(order.key)));
+    const linkedBoRecords = boRecords.filter((record) => record.orderId && activeOrderIds.has(String(record.orderId)));
+    const linkedOrderIds = new Set(linkedBoRecords.map((record) => String(record.orderId)));
+    const linkedActiveOrders = activeOrders.filter((order) => linkedOrderIds.has(String(order.key)));
     const entries = boRecords.length + vspRecords.length;
     const proposedValue = boRecords.reduce((sum, record) => sum + (record.value || 0), 0);
-    const orderedValue = activeOrders.reduce((sum, order) => sum + (order.value || 0), 0);
-    const openProposalValue = boRecords.filter((record) => !record.hasOrder).reduce((sum, record) => sum + (record.value || 0), 0);
+    const orderedValue = linkedActiveOrders.reduce((sum, order) => sum + (order.value || 0), 0);
+    const openProposalValue = boRecords.filter((record) => !record.orderId || !activeOrderIds.has(String(record.orderId))).reduce((sum, record) => sum + (record.value || 0), 0);
     const coreUtmMissing = [...boRecords, ...vspRecords].filter((record) => !record.hasCoreUtm).length;
     const topChannels = groupOrdersByValue(activeOrders, (order) => order.channel || "Sem origem", 8);
     const topCampaigns = groupOrdersByValue(activeOrders, (order) => order.campaign || "Sem campanha", 8);
     const actions = [];
-    if (openProposalValue > 0) actions.push(`Recuperar propostas BO sem encomenda identificada: ${fmtCurrency(openProposalValue)} ainda sem conversao no periodo.`);
+    if (openProposalValue > 0) actions.push(`Recuperar propostas BO sem encomenda identificada: ${fmtCurrency(openProposalValue)} ainda sem conversão no período.`);
     if (vspConversion.leads && vspConversion.converted < vspConversion.leads) actions.push(`Trabalhar follow-up VSP: ${fmtNumber(vspConversion.leads - vspConversion.converted)} leads VSP ainda sem encomenda identificada no BO.`);
     if (coreUtmMissing > 0) actions.push(`Corrigir tracking: ${fmtNumber(coreUtmMissing)} registos sem UTMs principais completos limitam a leitura por campanha.`);
     if (topChannels[0]) actions.push(`Proteger o canal ${topChannels[0].label}: lidera valor encomendado com ${fmtCurrency(topChannels[0].value)}.`);
     return {
       entries,
       proposals: boRecords.length,
-      orders: activeOrders.length,
+      orders: linkedActiveOrders.length,
       vspLeads: vspRecords.length,
       proposedValue,
       orderedValue,
       openProposalValue,
       leadToProposalRate: entries ? boRecords.length / entries : 0,
-      proposalToOrderRate: boRecords.length ? activeOrders.length / boRecords.length : 0,
+      proposalToOrderRate: boRecords.length ? linkedActiveOrders.length / boRecords.length : 0,
       valueCaptureRate: proposedValue ? orderedValue / proposedValue : 0,
       topChannels,
       topCampaigns,
@@ -8530,7 +8580,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
     const records = [...boRecords, ...vspRecords];
     const vspRows = (vspTable && vspTable.rows || []).filter((row) => {
       const d = parseRowDate(row, VSP_DATE_COL);
-      return d && selectedMonths.has(d.getMonth());
+      return isSelectedDashboardDate(d, selectedMonths);
     });
     const boRecordRows = boRecords;
     const scorecardRows = scorecardCompletionRows(vspRows);
@@ -8861,7 +8911,7 @@ h("section", { className: "section-shell space-y-3" },
     h("div", null,
       h("div", { className: "section-kicker" }, "EVOLUÇÃO FINANCEIRA"),
       h("h3", { className: "section-heading" }, "Valor mensal e investimento de Marketing"),
-      h("p", { className: "section-subtitle" }, "Comparação mensal em euros entre faturação, encomendas, investimento total de Marketing e valor das leads. Usa os controlos para isolar cada linha.")
+      h("p", { className: "section-subtitle" }, "Comparação mensal em euros entre faturação, encomendas, investimento total de Marketing e propostas/leads do BackOffice. Usa os controlos para isolar cada linha.")
     ),
     h("button", {
       type: "button",
@@ -9077,7 +9127,7 @@ function DeepSourceMix({ boCount, vspCount, utmRate }) {
   function buildVspExecutiveSignals(vspTable, selectedMonths) {
     const rows = (vspTable && vspTable.rows || []).filter((r) => {
       const d = parseRowDate(r, VSP_DATE_COL);
-      return d && selectedMonths.has(d.getMonth());
+      return isSelectedDashboardDate(d, selectedMonths);
     });
     const scorecardRows = scorecardCompletionRows(rows);
     const sourceRows = groupedLeadStats(rows, trafficSourceLabel, 10).filter((r) => r.leads >= 2);
@@ -9105,16 +9155,14 @@ function DeepSourceMix({ boCount, vspCount, utmRate }) {
     if (!actions.length) actions.push("Manter investimento e acompanhamento comercial, com revisão diária de faturação, funil e qualidade dos leads.");
     return {
       tone,
-      status: tone === "good" ? "Saudável" : tone === "warn" ? "Atenção" : "Crítico",
       metrics: [
         { label: "Faturação vs objetivo", value: fmtPercent(pctAtingido), detail: `${fmtCurrency(model.revenue.real ? sumByMonths(model.revenue.real.monthly, selectedMonths) : 0)} realizados`, tone: toneForPercent(pctAtingido, alertThreshold) },
         { label: `Ritmo de ${MONTH_NAMES[pace.month]}`, value: fmtPercent(pace.actual), detail: pace.diff >= 0 ? `${fmtPercent(pace.diff)} acima do esperado` : `${fmtPercent(Math.abs(pace.diff))} abaixo do esperado`, tone: pace.tone },
-        { label: "Linha mais fraca", value: weakest ? weakest.key : "Sem dados", detail: weakest ? `${fmtPercent(weakest.pct)} do objetivo` : "Sem objetivo por linha", tone: weakest ? weakest.pct >= 0.8 ? "warn" : "bad" : "neutral" },
-        { label: "Estado geral", value: tone === "good" ? "Saudável" : tone === "warn" ? "Atenção" : "Crítico", detail: `${periodFilterLabel(selectedMonths)} analisado`, tone }
+        { label: "Linha mais fraca", value: weakest ? weakest.key : "Sem dados", detail: weakest ? `${fmtPercent(weakest.pct)} do objetivo` : "Sem objetivo por linha", tone: weakest ? weakest.pct >= 0.8 ? "warn" : "bad" : "neutral" }
       ],
       insights: [
         { label: "Melhor canal", value: vsp.bestSource ? vsp.bestSource.label : "Sem dados VSP", detail: vsp.bestSource ? `${fmtNumber(vsp.bestSource.leads)} leads · ${fmtPercent(vsp.bestSource.completion)} scorecard` : "A aguardar dados", tone: "good" },
-        { label: "Campanhas a rever", value: vsp.weakCampaigns.length ? vsp.weakCampaigns.map((c) => c.label).join(" / ") : "Sem alerta", detail: vsp.weakCampaigns.length ? "Volume alto com qualidade abaixo do ideal" : "Sem campanhas críticas no período", tone: vsp.weakCampaigns.length ? "warn" : "good" },
+        { label: "Campanhas a rever", value: vsp.weakCampaigns.length ? vsp.weakCampaigns.map((c) => c.label).join(" / ") : "Sem alerta", detail: vsp.weakCampaigns.length ? "Volume alto com qualidade abaixo do ideal" : "Sem campanhas assinaladas no período", tone: vsp.weakCampaigns.length ? "warn" : "good" },
         { label: "Landing com potencial", value: vsp.bestLanding ? vsp.bestLanding.label : "Sem dados VSP", detail: vsp.bestLanding ? `${fmtCurrency(vsp.bestLanding.potential)} potencial médio · ${fmtNumber(vsp.bestLanding.leads)} leads` : "A aguardar dados", tone: "neutral" },
         { label: "Maior urgência", value: vsp.urgentSymptom ? vsp.urgentSymptom.label : "Sem sintomas", detail: vsp.urgentSymptom ? `${diagnosisSmallNumber(vsp.urgentSymptom.avgUrgency)} urgência · ${fmtNumber(vsp.urgentSymptom.leads)} leads` : "Sem scorecards no período", tone: vsp.urgentSymptom ? "warn" : "neutral" }
       ],
@@ -9137,7 +9185,7 @@ function DeepSourceMix({ boCount, vspCount, utmRate }) {
   }
   function marketingMetricNumericValue(item) {
     if (!item) return 0;
-    if (item.format === "roas") return item.rawValue > 20 ? item.rawValue / 100 : item.rawValue;
+    if (item.format === "roas") return item.rawValue || 0;
     if (item.format === "percent") return item.rawValue > 1 ? item.rawValue : item.rawValue * 100;
     return item.rawValue || 0;
   }
@@ -9193,7 +9241,7 @@ function DeepSourceMix({ boCount, vspCount, utmRate }) {
     const roasTone = roasValue >= 4 ? "good" : roasValue >= 2 ? "warn" : roasValue > 0 ? "bad" : "neutral";
     const cplTone = bestCpl && bestCpl.group.key === group.key ? "good" : cplValue > 0 ? "neutral" : "warn";
     const cpaTone = bestCpa && bestCpa.group.key === group.key ? "good" : cpaValue > 0 ? "neutral" : "warn";
-    return h("article", { className: `marketing-service-card marketing-service-card-${serviceSlug}`, "data-help": `${group.label}: leitura visual dos KPIs pagos deste serviço. ROAS é retorno sobre investimento; CPL é custo por lead; CPA é custo por aquisição/encomenda; média de investimento mostra o peso de orçamento desse serviço. Origem dos dados: MKT PKE 2026, linhas 144 a 158.` },
+    return h("article", { className: `marketing-service-card marketing-service-card-${serviceSlug}`, "data-help": `${group.label}: leitura visual dos KPIs pagos deste serviço. ROAS é retorno sobre investimento; CPL é custo por lead; CPA é custo por aquisição/encomenda; peso de investimento mostra a parte do orçamento do período aplicada neste serviço. Origem dos dados: MKT PKE 2026.` },
       h("div", { className: "marketing-service-title" },
         h("div", { className: "marketing-service-name" }, h(LineDot, { line: group.key }), group.label),
         bestRoas && bestRoas.group.key === group.key ? h(MetricBadge, { tone: roasTone }, "Melhor ROAS") : null
@@ -9211,7 +9259,7 @@ function DeepSourceMix({ boCount, vspCount, utmRate }) {
       h("div", { className: "marketing-rail-stack" },
         h(MarketingRail, { label: "CPL", item: cpl, value: cplValue, max: maxValues.cpl || 1, tone: cplTone, caption: bestCpl && bestCpl.group.key === group.key ? "menor custo por lead" : "quanto mais baixo, melhor" }),
         h(MarketingRail, { label: "CPA", item: cpa, value: cpaValue, max: maxValues.cpa || 1, tone: cpaTone, caption: bestCpa && bestCpa.group.key === group.key ? "menor custo por aquisição" : "quanto mais baixo, melhor" }),
-        h(MarketingRail, { label: "Peso de investimento", item: invest, value: investValue, max: Math.max(100, maxValues.invest || 1), tone: "neutral", caption: "percentagem média do investimento" })
+        h(MarketingRail, { label: "Peso de investimento", item: invest, value: investValue, max: Math.max(100, maxValues.invest || 1), tone: "neutral", caption: "parte do investimento total no período" })
       )
     );
   }
@@ -9303,10 +9351,9 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
         h("div", null,
           h("div", { className: "section-kicker" }, "DIAGNOSTICO EXECUTIVO"),
           h("h3", { className: "section-heading" }, "Estado atual e próximas ações")
-        ),
-        h(MetricBadge, { tone: diagnosis.tone }, diagnosis.status)
+        )
       ),
-      h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, diagnosis.metrics.map((item) => h(DiagnosisTile, { key: item.label, item }))),
+      h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-3 gap-4" }, diagnosis.metrics.map((item) => h(DiagnosisTile, { key: item.label, item }))),
       h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" }, diagnosis.insights.map((item) => h(DiagnosisTile, { key: item.label, item }))),
       h("div", { className: "diagnosis-tile" },
         h("h4", { className: "text-xs font-bold text-slate-100 mb-2" }, "Próximas 3 ações recomendadas"),
@@ -9331,7 +9378,7 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
       cpa: Math.max(1, ...snapshots.map((item) => item.cpaValue || 0)),
       invest: Math.max(1, ...snapshots.map((item) => item.investValue || 0))
     };
-    const averageInvestmentRows = snapshots.map((snapshot) => ({ label: snapshot.group.label, value: snapshot.investValue, help: snapshot.invest ? snapshot.invest.help : `Média de investimento ${snapshot.group.label}: sem dados no período.` })).filter((row) => row.value > 0);
+    const investmentShareRows = snapshots.map((snapshot) => ({ label: snapshot.group.label, value: snapshot.investValue, help: snapshot.invest ? snapshot.invest.help : `Peso de investimento ${snapshot.group.label}: sem dados no período.` })).filter((row) => row.value > 0);
     const cplRows = snapshots.map((snapshot) => ({ label: snapshot.group.label, value: snapshot.cplValue, help: snapshot.cpl ? snapshot.cpl.help : `CPL ${snapshot.group.label}: sem dados no período.` })).filter((row) => row.value > 0);
     const cpaRows = snapshots.map((snapshot) => ({ label: snapshot.group.label, value: snapshot.cpaValue, help: snapshot.cpa ? snapshot.cpa.help : `CPA ${snapshot.group.label}: sem dados no período.` })).filter((row) => row.value > 0);
     const vspMeta = vspInvestment.chartRows.find((row) => /meta/i.test(row.label));
@@ -9348,17 +9395,17 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
         h(MarketingInsightCard, { label: "Melhor retorno", value: bestRoas ? bestRoas.group.label : "Sem dados", detail: bestRoas ? `${formatMarketingKpiValue(bestRoas.roasValue, "roas")} de ROAS` : "A aguardar ROAS", tone: "good", help: "Melhor retorno: serviço com ROAS mais alto entre PS, FAP e AdBlue. Origem: linhas ROAS PS/FAP/ADB no MKT PKE 2026." }),
         h(MarketingInsightCard, { label: "Lead mais barato", value: bestCpl ? bestCpl.group.label : "Sem dados", detail: bestCpl ? `${fmtCurrency(bestCpl.cplValue)} por lead` : "A aguardar CPL", tone: "good", help: "Lead mais barato: serviço com menor CPL. Origem: linhas CPL PS/FAP/ADB no MKT PKE 2026." }),
         h(MarketingInsightCard, { label: "Aquisição mais barata", value: bestCpa ? bestCpa.group.label : "Sem dados", detail: bestCpa ? `${fmtCurrency(bestCpa.cpaValue)} por aquisição` : "A aguardar CPA", tone: "neutral", help: "Aquisição mais barata: serviço com menor CPA. Origem: linhas CPA PS/FAP/ADB no MKT PKE 2026." }),
-        h(MarketingInsightCard, { label: "Maior peso de investimento", value: topInvest ? topInvest.group.label : "Sem dados", detail: topInvest ? `${formatMarketingKpiValue(topInvest.investValue, "percent")} do investimento médio` : "A aguardar investimento", tone: "neutral", help: "Maior peso de investimento: serviço com maior percentagem média de investimento. Origem: linhas Média Investimento PS/FAP/ADB no MKT PKE 2026." })
+        h(MarketingInsightCard, { label: "Maior peso de investimento", value: topInvest ? topInvest.group.label : "Sem dados", detail: topInvest ? `${formatMarketingKpiValue(topInvest.investValue, "percent")} do investimento total` : "A aguardar investimento", tone: "neutral", help: "Maior peso de investimento: serviço com a maior parte do investimento publicitário total no período. Origem: totais PS, FAP e AdBlue no MKT PKE 2026." })
       ),
       hasServiceKpis ? h("div", { className: "marketing-service-board" }, snapshots.map((snapshot) => h(MarketingServiceVisualCard, { key: snapshot.group.key, snapshot, maxValues, bestRoas, bestCpl, bestCpa }))) : h(EmptyState, { text: "Ainda não encontrei linhas de ROAS, CPL, CPA ou investimento nas linhas 144 a 158." }),
-      (averageInvestmentRows.length || cplRows.length || cpaRows.length) ? h("div", { className: "marketing-general-kpis space-y-4", "data-help": "KPIs gerais por serviço: comparação de investimento, CPL e CPA de PS, FAP e AdBlue. Estes indicadores não pertencem às VSP." },
+      (investmentShareRows.length || cplRows.length || cpaRows.length) ? h("div", { className: "marketing-general-kpis space-y-4", "data-help": "KPIs gerais por serviço: comparação de investimento, CPL e CPA de PS, FAP e AdBlue. Estes indicadores não pertencem às VSP." },
         h("div", null,
           h("div", { className: "section-kicker" }, "PS · FAP · ADBLUE"),
           h("h4", { className: "text-xl font-black text-slate-100" }, "KPIs gerais por serviço"),
           h("p", { className: "text-sm text-slate-400 mt-1" }, "Investimento, custo por lead e custo por aquisição de PS, FAP e AdBlue. Não inclui as métricas específicas das VSP.")
         ),
         h("div", { className: "grid lg:grid-cols-3 gap-4" },
-        averageInvestmentRows.length ? h(MarketingChartCard, { title: "Distribuição média do investimento", subtitle: "Peso médio de cada serviço no investimento pago. Não representa faturação." }, h(MarketingComparisonChart, { data: averageInvestmentRows, unit: "percent", direction: "share", context: "Distribuição média do investimento: percentagem média do orçamento pago dedicada a PS, FAP e AdBlue no período selecionado." })) : null,
+        investmentShareRows.length ? h(MarketingChartCard, { title: "Distribuição do investimento", subtitle: "Peso de cada serviço no investimento pago total do período. Não representa faturação." }, h(MarketingComparisonChart, { data: investmentShareRows, unit: "percent", direction: "share", context: "Distribuição do investimento: percentagem do orçamento pago total aplicada a PS, FAP e AdBlue no período selecionado." })) : null,
         cplRows.length ? h(MarketingChartCard, { title: "Custo por Lead (CPL)", subtitle: "Quanto custa gerar uma lead em cada serviço. Menor é melhor." }, h(MarketingComparisonChart, { data: cplRows, unit: "currency", direction: "min", context: "CPL por serviço: investimento publicitário dividido pelo número de leads geradas. A opção assinalada tem o menor custo por lead." })) : null,
         cpaRows.length ? h(MarketingChartCard, { title: "Custo por Aquisição (CPA)", subtitle: "Quanto custa gerar uma aquisição/encomenda em cada serviço. Menor é melhor." }, h(MarketingComparisonChart, { data: cpaRows, unit: "currency", direction: "min", context: "CPA por serviço: investimento publicitário dividido pelo número de aquisições ou encomendas. A opção assinalada tem o menor custo por aquisição." })) : null
         )
@@ -9379,6 +9426,7 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
   }
   function MailerLiteNewslettersPanel({ payload, loading, error, updatedAt, onRefresh, selectedMonths }) {
     const summary = buildMailerLiteSummary(payload, selectedMonths);
+    const snapshot = staticSnapshotStatus(payload, 36);
     const clickRows = summary.campaigns.slice().sort((a, b) => (b.uniqueClicks || 0) - (a.uniqueClicks || 0)).slice(0, 6).map((campaign) => ({
       label: campaign.subject || campaign.name || "Newsletter",
       value: campaign.uniqueClicks || 0,
@@ -9398,6 +9446,10 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
       ),
       loading && payload ? h(DataLoadingBar, { loading, label: "A obter estatísticas MailerLite atualizadas..." }) : null,
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "MailerLite: ", error),
+      !error && snapshot.stale && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" },
+        snapshot.date ? `Dados MailerLite desatualizados: o último snapshot foi gerado em ${snapshot.date.toLocaleString("pt-PT")}.` : "Dados MailerLite desatualizados: não foi possível validar a data do último snapshot.",
+        " A atualização automática no GitHub precisa de gerar e publicar um novo ficheiro."
+      ),
       loading && !payload ? h(LoadingState, null) :
       summary.campaigns.length ? h(React.Fragment, null,
         h("div", { className: "grid sm:grid-cols-2 lg:grid-cols-4 gap-4" },
@@ -9474,7 +9526,7 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
       h("section", { className: "section-shell section-shell-hero space-y-3", "data-help": "KPIs Marketing: painel dedicado aos indicadores de performance paga. Serve para perceber rapidamente se o dinheiro investido em Meta Ads, Google Ads e VSP está a gerar retorno, leads e encomendas a um custo aceitável." },
         h("div", { className: "section-kicker" }, "KPIS MARKETING"),
         h("h2", { className: "section-heading" }, "Performance paga e eficiência de investimento"),
-        h("p", { className: "section-subtitle" }, "Aqui ficam ROAS, Custo por Lead, Custo por Aquisição e Média de Investimento por serviço. O período respeita o filtro no topo da página.")
+        h("p", { className: "section-subtitle" }, "Aqui ficam ROAS, Custo por Lead, Custo por Aquisição e Peso do Investimento por serviço. O período respeita o filtro no topo da página.")
       ),
       h(MarketingPerformancePanel, { dashboardTable, vspTable: vspCostTable || vspLeadTable, vspPotentialTable: vspLeadTable, selectedMonths })
     );
@@ -9492,8 +9544,9 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
   }
   function CallAnalyticsView({ selectedMonths }) {
     const { data, loading, error, updatedAt, reload } = useStaticJson("assets/call-analytics.json");
-    const [callPeriod, setCallPeriod] = useState("today");
+    const [callPeriod, setCallPeriod] = useState("month");
     const [callView, setCallView] = useState("analytics");
+    const snapshot = staticSnapshotStatus(data, 1);
     const summary = buildCallAnalyticsSummary(data, selectedMonths, callPeriod);
     const funnel = summary.funnel || {};
     const analytics = summary.analytics || {};
@@ -9544,7 +9597,10 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
     const revenueUpdatedLabel = summary.manualRevenue && summary.manualRevenue.updated_at ? `Faturação ${summary.manualRevenue.updated_at.substring(11)}` : "";
     return h("div", { className: "space-y-4" },
       error && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Call Analytics: ", error),
-      data && data.stale && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Estes dados podem estar em snapshot: o endpoint local não ficou acessível na última atualização automática."),
+      data && snapshot.stale && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium", "data-help": "Aviso de atualização: o Call Analytics depende do runner instalado num Mac da rede PKE. Se esse Mac ou o serviço estiver desligado, o MCP continua a mostrar o último snapshot, mas identifica-o como desatualizado." },
+        snapshot.date ? `Dados Call Analytics desatualizados: o último snapshot foi gerado em ${snapshot.date.toLocaleString("pt-PT")}.` : "Dados Call Analytics desatualizados: não foi possível validar a data do último snapshot.",
+        " O runner local precisa de estar ativo para publicar números novos. O botão Atualizar apenas relê o último ficheiro publicado."
+      ),
       loading && data ? h(DataLoadingBar, { loading, label: "A obter snapshot Call Analytics atualizado..." }) : null,
       loading && !data ? h(LoadingState, null) : data ? h("div", { className: "call-browser", "data-help": "Janela Call Analytics: réplica funcional e embutida da tab Analytics do dashboard PKE Call Analytics. Os dados vêm do snapshot assets/call-analytics.json." },
         h("div", { className: "call-browser-header" },
@@ -9617,7 +9673,7 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
     if (error) return /* @__PURE__ */ React.createElement(ErrorState, { message: error, onRetry: reload, sheetName: "Resultados VSP" });
     if (!table) return /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para mostrar." });
     const dailyRows = (table.rows || []).filter((r) => parseRowDate(r, VSP_DATE_COL) !== null);
-    const filteredRows = dailyRows.filter((r) => selectedMonths.has(parseRowDate(r, VSP_DATE_COL).getMonth()));
+    const filteredRows = dailyRows.filter((r) => isSelectedDashboardDate(parseRowDate(r, VSP_DATE_COL), selectedMonths));
     const unparsedCount = countUnparsedDateRows(table, VSP_DATE_COL, [VSP_ORIGIN_COL, VSP_LANDING_COL, VSP_UTM_SOURCE_COL]);
     const scorecardRows = scorecardCompletionRows(filteredRows);
     const totalLeads = filteredRows.length;
@@ -9947,17 +10003,17 @@ function ExecutiveDiagnosisPanel({ diagnosis }) {
       () => analysis.cols.some((c) => c.type === "number"),
       [analysis]
     );
-    const filterApplies = dateColIdx !== null && selectedMonths.size < 12;
+    const filterApplies = dateColIdx !== null;
     const unparsedCount = useMemo(() => {
       if (dateColIdx === null) return 0;
       const numericIdxs = analysis.cols.filter((c) => c.type === "number").map((c) => c.idx);
       return countUnparsedDateRows(table, dateColIdx, numericIdxs);
     }, [table, dateColIdx, analysis]);
     const filteredTable = useMemo(() => {
-      if (!table || dateColIdx === null || selectedMonths.size === 12) return table;
+      if (!table || dateColIdx === null) return table;
       const rows = (table.rows || []).filter((r) => {
         const d = parseRowDate(r, dateColIdx);
-        return d ? selectedMonths.has(d.getMonth()) : false;
+        return isSelectedDashboardDate(d, selectedMonths);
       });
       return { cols: table.cols, rows };
     }, [table, dateColIdx, selectedMonths]);
@@ -10984,7 +11040,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · escreve mcp"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 ml-auto" }, /* @__PURE__ */ React.createElement(ThemeSwitcher, { visualTheme, setVisualTheme }), selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), !["Ferramentas", "Newsletters", "Call Analytics"].includes(selected) && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · escreve mcp"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "app-header-actions" }, /* @__PURE__ */ React.createElement(ThemeSwitcher, { visualTheme, setVisualTheme }), selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), !["Ferramentas", "Newsletters", "Call Analytics"].includes(selected) && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
