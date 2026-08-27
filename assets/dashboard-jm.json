@@ -1,0 +1,322 @@
+{
+  "generatedAt": "2026-08-27T08:16:10.980Z",
+  "source": "Dashboard JM",
+  "sourceUrl": "https://dashboard-jm.neocities.org/",
+  "sourceUpdatedAt": "26/08/2026 às 10:10",
+  "dataThrough": "2026-08-25",
+  "privacy": "Apenas agregados; nomes, NIF, documentos e referencias de clientes nao sao exportados.",
+  "totals": {
+    "netRevenue": 599524.3,
+    "invoiceNet": 604582.97,
+    "creditNotes": 80585.67,
+    "invoiceCount": 2033,
+    "backOffice": {
+      "paid": 460574.9,
+      "unpaid": 226147.09,
+      "total": 686721.99
+    },
+    "averageInvoice": 297.38
+  },
+  "monthly": [
+    {
+      "month": 1,
+      "netRevenue": 68599.81,
+      "invoiceNet": 66952.48,
+      "creditNotes": 16480.23,
+      "invoiceCount": 267,
+      "averageInvoice": 250.76,
+      "services": {
+        "ps": 15221.32,
+        "fo": 38246.75,
+        "adb": 11869.95,
+        "fs": 692.84
+      },
+      "backOffice": {
+        "paid": 65031.17,
+        "unpaid": 16567.22,
+        "total": 81598.39,
+        "services": {
+          "ps": 22612.94,
+          "fo": 46027.38,
+          "adb": 11389.65,
+          "fs": 1568.42
+        }
+      }
+    },
+    {
+      "month": 2,
+      "netRevenue": 69723.73,
+      "invoiceNet": 71874.46,
+      "creditNotes": 6217.55,
+      "invoiceCount": 237,
+      "averageInvoice": 303.27,
+      "services": {
+        "ps": 12462.17,
+        "fo": 42100.97,
+        "adb": 15657.03,
+        "fs": 1002.39
+      },
+      "backOffice": {
+        "paid": 50593.53,
+        "unpaid": 27223.67,
+        "total": 77817.2,
+        "services": {
+          "ps": 12825.11,
+          "fo": 49821.38,
+          "adb": 14405.45,
+          "fs": 765.27
+        }
+      }
+    },
+    {
+      "month": 3,
+      "netRevenue": 89683.15,
+      "invoiceNet": 90007.27,
+      "creditNotes": 9386.11,
+      "invoiceCount": 279,
+      "averageInvoice": 322.61,
+      "services": {
+        "ps": 23880.58,
+        "fo": 48336.54,
+        "adb": 16178.57,
+        "fs": 650.43
+      },
+      "backOffice": {
+        "paid": 66124.24,
+        "unpaid": 28826.69,
+        "total": 94950.93,
+        "services": {
+          "ps": 29598.17,
+          "fo": 46937.24,
+          "adb": 17633.23,
+          "fs": 782.29
+        }
+      }
+    },
+    {
+      "month": 4,
+      "netRevenue": 92563.1,
+      "invoiceNet": 94043.42,
+      "creditNotes": 7064.1,
+      "invoiceCount": 274,
+      "averageInvoice": 343.22,
+      "services": {
+        "ps": 20244.37,
+        "fo": 49824.37,
+        "adb": 20625.43,
+        "fs": 1089
+      },
+      "backOffice": {
+        "paid": 70628.37,
+        "unpaid": 25713.59,
+        "total": 96341.96,
+        "services": {
+          "ps": 22878.01,
+          "fo": 53088.03,
+          "adb": 19021.57,
+          "fs": 1354.34
+        }
+      }
+    },
+    {
+      "month": 5,
+      "netRevenue": 65343.95,
+      "invoiceNet": 66167.2,
+      "creditNotes": 7026.44,
+      "invoiceCount": 225,
+      "averageInvoice": 294.08,
+      "services": {
+        "ps": 10411.33,
+        "fo": 40659.05,
+        "adb": 12883,
+        "fs": 607.62
+      },
+      "backOffice": {
+        "paid": 63661.63,
+        "unpaid": 30901.9,
+        "total": 94563.53,
+        "services": {
+          "ps": 21255.35,
+          "fo": 52635.5,
+          "adb": 17255.03,
+          "fs": 3417.66
+        }
+      }
+    },
+    {
+      "month": 6,
+      "netRevenue": 73674.82,
+      "invoiceNet": 75646.3,
+      "creditNotes": 7419.49,
+      "invoiceCount": 239,
+      "averageInvoice": 316.51,
+      "services": {
+        "ps": 9161.05,
+        "fo": 44821.23,
+        "adb": 18537,
+        "fs": 903.99
+      },
+      "backOffice": {
+        "paid": 59301.94,
+        "unpaid": 26768.62,
+        "total": 86070.56,
+        "services": {
+          "ps": 14864.36,
+          "fo": 52279.84,
+          "adb": 18181.57,
+          "fs": 744.79
+        }
+      }
+    },
+    {
+      "month": 7,
+      "netRevenue": 83399.89,
+      "invoiceNet": 83355.99,
+      "creditNotes": 14322.71,
+      "invoiceCount": 291,
+      "averageInvoice": 286.45,
+      "services": {
+        "ps": 15174.9,
+        "fo": 40778.15,
+        "adb": 24600.42,
+        "fs": 1526.42
+      },
+      "backOffice": {
+        "paid": 52476.31,
+        "unpaid": 37706.7,
+        "total": 90183.01,
+        "services": {
+          "ps": 21845.07,
+          "fo": 43781.08,
+          "adb": 23202.14,
+          "fs": 1354.72
+        }
+      }
+    },
+    {
+      "month": 8,
+      "netRevenue": 56535.85,
+      "invoiceNet": 56535.85,
+      "creditNotes": 12669.04,
+      "invoiceCount": 221,
+      "averageInvoice": 255.82,
+      "services": {
+        "ps": 10667.45,
+        "fo": 32617.18,
+        "adb": 11089.48,
+        "fs": 1988.78
+      },
+      "backOffice": {
+        "paid": 32757.71,
+        "unpaid": 32438.7,
+        "total": 65196.41,
+        "services": {
+          "ps": 18308.28,
+          "fo": 32258.46,
+          "adb": 13714.63,
+          "fs": 915.04
+        }
+      }
+    },
+    {
+      "month": 9,
+      "netRevenue": 0,
+      "invoiceNet": 0,
+      "creditNotes": 0,
+      "invoiceCount": 0,
+      "averageInvoice": 0,
+      "services": {
+        "ps": 0,
+        "fo": 0,
+        "adb": 0,
+        "fs": 0
+      },
+      "backOffice": {
+        "paid": 0,
+        "unpaid": 0,
+        "total": 0,
+        "services": {
+          "ps": 0,
+          "fo": 0,
+          "adb": 0,
+          "fs": 0
+        }
+      }
+    },
+    {
+      "month": 10,
+      "netRevenue": 0,
+      "invoiceNet": 0,
+      "creditNotes": 0,
+      "invoiceCount": 0,
+      "averageInvoice": 0,
+      "services": {
+        "ps": 0,
+        "fo": 0,
+        "adb": 0,
+        "fs": 0
+      },
+      "backOffice": {
+        "paid": 0,
+        "unpaid": 0,
+        "total": 0,
+        "services": {
+          "ps": 0,
+          "fo": 0,
+          "adb": 0,
+          "fs": 0
+        }
+      }
+    },
+    {
+      "month": 11,
+      "netRevenue": 0,
+      "invoiceNet": 0,
+      "creditNotes": 0,
+      "invoiceCount": 0,
+      "averageInvoice": 0,
+      "services": {
+        "ps": 0,
+        "fo": 0,
+        "adb": 0,
+        "fs": 0
+      },
+      "backOffice": {
+        "paid": 0,
+        "unpaid": 0,
+        "total": 0,
+        "services": {
+          "ps": 0,
+          "fo": 0,
+          "adb": 0,
+          "fs": 0
+        }
+      }
+    },
+    {
+      "month": 12,
+      "netRevenue": 0,
+      "invoiceNet": 0,
+      "creditNotes": 0,
+      "invoiceCount": 0,
+      "averageInvoice": 0,
+      "services": {
+        "ps": 0,
+        "fo": 0,
+        "adb": 0,
+        "fs": 0
+      },
+      "backOffice": {
+        "paid": 0,
+        "unpaid": 0,
+        "total": 0,
+        "services": {
+          "ps": 0,
+          "fo": 0,
+          "adb": 0,
+          "fs": 0
+        }
+      }
+    }
+  ]
+}

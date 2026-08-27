@@ -31,6 +31,9 @@ jobs:
           CALL_ANALYTICS_BASE_URL: ${{ secrets.CALL_ANALYTICS_BASE_URL }}
         run: node scripts/fetch-call-analytics.mjs
 
+      - name: Atualizar Dashboard JM
+        run: node scripts/fetch-dashboard-jm.mjs
+
       - name: Preparar publicacao
         run: |
           mkdir -p public

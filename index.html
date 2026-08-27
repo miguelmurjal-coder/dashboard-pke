@@ -1969,6 +1969,139 @@ table { border-collapse: collapse; }
   font-weight: 700;
   box-shadow: inset 1px 1px #1084d0, inset -1px -1px #000040;
 }
+.jm-control-shell {
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(20, 24, 46, 0.98), rgba(7, 14, 27, 0.98));
+  box-shadow: inset 0 1px rgba(255,255,255,0.04), 0 18px 38px rgba(0,0,0,0.2);
+}
+.jm-control-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.jm-control-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #c4b5fd;
+  font-size: 0.7rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.jm-control-status::before {
+  content: "";
+  width: 0.48rem;
+  height: 0.48rem;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 0.25rem rgba(52,211,153,0.08);
+}
+.jm-control-status.stale::before { background: #f2a93b; }
+.jm-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+.jm-kpi-card {
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid rgba(167, 139, 250, 0.16);
+  border-radius: 0.85rem;
+  background: rgba(5, 12, 24, 0.58);
+}
+.jm-kpi-label {
+  color: #91a4c3;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+.jm-kpi-value {
+  color: #f8fafc;
+  font-size: clamp(1.3rem, 2.4vw, 2rem);
+  line-height: 1.05;
+  font-weight: 950;
+  margin-top: 0.35rem;
+}
+.jm-kpi-detail {
+  color: #8295b4;
+  font-size: 0.72rem;
+  line-height: 1rem;
+  margin-top: 0.35rem;
+}
+.jm-visual-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+  gap: 0.9rem;
+  margin-top: 0.9rem;
+}
+.jm-visual-card {
+  border: 1px solid rgba(167, 139, 250, 0.14);
+  border-radius: 0.85rem;
+  padding: 0.95rem;
+  background: rgba(5, 12, 24, 0.46);
+}
+.jm-month-bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(3.2rem, 1fr));
+  align-items: end;
+  gap: 0.55rem;
+  min-height: 10.5rem;
+  margin-top: 0.8rem;
+}
+.jm-month-column { min-width: 0; text-align: center; }
+.jm-month-value {
+  color: #d8dff0;
+  font-size: 0.62rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.jm-month-track {
+  height: 7rem;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  margin: 0.3rem 0;
+}
+.jm-month-fill {
+  width: min(2.4rem, 78%);
+  min-height: 0.3rem;
+  border-radius: 0.5rem 0.5rem 0.2rem 0.2rem;
+  background: linear-gradient(180deg, #a78bfa, #38bdf8);
+}
+.jm-month-label { color: #8193b1; font-size: 0.68rem; font-weight: 800; }
+.jm-split-track {
+  display: flex;
+  height: 0.8rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(148,163,184,0.12);
+  margin-top: 0.7rem;
+}
+.jm-split-paid { background: #34d399; }
+.jm-split-open { background: #f2a93b; }
+.jm-service-row { margin-top: 0.75rem; }
+.jm-service-head { display: flex; justify-content: space-between; gap: 0.75rem; color: #c9d3e4; font-size: 0.75rem; font-weight: 800; }
+.jm-service-track { height: 0.48rem; border-radius: 999px; overflow: hidden; background: rgba(148,163,184,0.12); margin-top: 0.3rem; }
+.jm-service-fill { height: 100%; min-width: 0.2rem; border-radius: inherit; background: linear-gradient(90deg, #38bdf8, #a78bfa); }
+.jm-method-note {
+  color: #7f93b3;
+  font-size: 0.68rem;
+  line-height: 1rem;
+  margin-top: 0.9rem;
+}
+@media (max-width: 900px) {
+  .jm-kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .jm-visual-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .jm-control-header { display: block; }
+  .jm-control-status { margin-top: 0.7rem; white-space: normal; }
+  .jm-kpi-grid { grid-template-columns: 1fr; }
+}
 .tiago-prank-overlay {
   position: fixed;
   inset: 0;
@@ -4011,6 +4144,7 @@ input::placeholder { color: #7f93b3; }
     encomendas: { label: "BackOffice PKE · Encomendas", url: `https://docs.google.com/spreadsheets/d/${BO_RESULTS_SHEET_ID}/edit` },
     leads: { label: "Marketing Control Panel · Leads Diários", url: `${SPREADSHEET_URL}#gid=1508480304` },
     jm: { label: "Marketing Control Panel · Ficheiro JM", url: `${SPREADSHEET_URL}#gid=785129550` },
+    jmDashboard: { label: "Dashboard JM", url: "https://dashboard-jm.neocities.org/" },
     tarefas: { label: "Marketing Control Panel · Log Tarefas", url: SPREADSHEET_URL }
   };
   const SHEETS = [
@@ -4025,7 +4159,7 @@ const DEEP_DIVE_PANELS = [
   { name: "Resultados Totais", label: "Visão Global", kicker: "CRUZAMENTO", question: "Como se juntam BO e VSP?", description: "Volume total, conversão VSP para encomenda e padrões agregados.", source: "VSP + BackOffice", accent: "#38bdf8" },
   { name: "Resultados VSP", label: "Resultados VSP", kicker: "SALES PAGES", question: "O que acontece nas VSP?", description: "Leads FAP, scorecards, investimento, sintomas e páginas.", source: "PKE Leads FAP + custos VSP", accent: "#34d399" },
   { name: "Resultados BO", label: "Resultados BO", kicker: "BACKOFFICE", question: "Como convertem as propostas BO?", description: "Propostas, encomendas, canais, campanhas, serviços e viaturas.", source: "BackOffice PKE", accent: "#f2a93b" },
-  { name: "Ficheiro JM", label: "Ficheiro JM", kicker: "VALOR REAL", question: "O que foi faturado por serviço?", description: "Propostas, encomendas, faturação, sinais e evolução diária.", source: "MKT PKE 2026 · Ficheiro JM", accent: "#a78bfa" },
+  { name: "Ficheiro JM", label: "Ficheiro JM", kicker: "VALOR REAL", question: "O que foi faturado e quanto está em aberto?", description: "Faturação líquida, notas de crédito, encomendas BO, ticket médio e detalhe por serviço.", source: "Dashboard JM + MKT PKE 2026", accent: "#a78bfa" },
   { name: "Leads Di\xE1rios", label: "Leads Di\xE1rios", kicker: "EVOLUÇÃO", question: "Como evoluem volume e CPL?", description: "Leads, investimento e custo por lead ao longo do período.", source: "MKT PKE 2026 · Leads Diários", accent: "#fb7185" }
 ];
   const TOOL_PANELS = [
@@ -4047,7 +4181,7 @@ const DEEP_DIVE_PANELS = [
     { title: "UTMs e tracking", location: "Resultados BO / VSP / UTM Creator", target: "UTM Creator", description: "Criar links UTM e encontrar cobertura de UTMs em BO/VSP.", keywords: ["utm", "utms", "tracking", "source", "medium", "campaign", "content", "mailerlite", "link", "url"] },
     { title: "Resultados VSP", location: "Aprofundar Dados", target: "Resultados VSP", description: "Leads VSP/FAP, scorecards, sintomas, marcas, campanhas e landing pages.", keywords: ["vsp", "scorecard", "sintomas", "landing", "landing page", "leads vsp", "fap", "gravidade", "urgencia", "urgência"] },
     { title: "Resultados BO", location: "Aprofundar Dados", target: "Resultados BO", description: "Propostas do BackOffice, encomendas, origem, campanhas, serviços, marcas e modelos.", keywords: ["bo", "backoffice", "back office", "propostas bo", "encomendas", "servicos", "serviços", "autores", "website"] },
-    { title: "Ficheiro JM", location: "Aprofundar Dados", target: "Ficheiro JM", description: "Dados JM, faturação, sinais, VMT e informação operacional por linha.", keywords: ["jm", "ficheiro jm", "vmt", "sinal", "sinais", "ft", "faturacao jm", "adb", "fo"] },
+    { title: "Ficheiro JM", location: "Aprofundar Dados", target: "Ficheiro JM", description: "Faturação líquida sem IVA, notas de crédito, ticket médio, encomendas BO pagas/em aberto e detalhe por serviço.", keywords: ["jm", "dashboard jm", "ficheiro jm", "vmt", "sinal", "sinais", "ft", "faturacao jm", "notas de credito", "ticket medio", "pago", "em aberto", "adb", "fo"] },
     { title: "Leads Diários", location: "Aprofundar Dados", target: "Leads Di\xE1rios", description: "Leads por dia, origem e apoio ao funil de conversão.", keywords: ["leads diarios", "leads diários", "leads", "diario", "diário", "origem leads"] },
     { title: "UTM Creator", location: "Ferramentas", target: "UTM Creator", description: "Gerar links com utm_source, utm_medium, utm_campaign e utm_content.", keywords: ["utm creator", "criador utm", "gerar utm", "link utm", "source", "medium", "campaign", "content"] },
     { title: "To-do's", location: "Ferramentas", target: "To-do's", description: "Lista simples de tarefas por fazer, prioridades, prazos, pesquisa e tarefas concluídas.", keywords: ["todo", "to-do", "todos", "to dos", "tarefas", "lista", "afazeres", "prioridade", "prazo", "fazer"] },
@@ -5797,6 +5931,7 @@ const DEEP_DIVE_PANELS = [
     if (lower.includes("encomenda")) sources.push(DATA_SOURCE_LINKS.encomendas);
     if (lower.includes("leads diarios") || lower.includes("leads diários")) sources.push(DATA_SOURCE_LINKS.leads);
     if (lower.includes("ficheiro jm") || lower.includes("vmt") || lower.includes("sinal")) sources.push(DATA_SOURCE_LINKS.jm);
+    if (lower.includes("dashboard jm") || lower.includes("faturação líquida") || lower.includes("faturacao liquida") || lower.includes("notas de crédito") || lower.includes("notas de credito") || lower.includes("ticket médio") || lower.includes("ticket medio") || lower.includes("em aberto")) sources.push(DATA_SOURCE_LINKS.jmDashboard);
     if (lower.includes("log tarefas") || lower.includes("tarefa") || lower.includes("horas")) sources.push(DATA_SOURCE_LINKS.tarefas);
     return uniqueSources(sources);
   }
@@ -7589,7 +7724,106 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
     });
     return /* @__PURE__ */ React.createElement("div", { className: "relative", ref }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-2" }, title), /* @__PURE__ */ React.createElement("div", { className: "flex items-stretch gap-2 overflow-x-auto" }, nodes), /* @__PURE__ */ React.createElement(ChartTooltip, { tip }));
   }
+  function JmRevenueControl({ data, selectedMonths, loading, error, onRefresh }) {
+    if (!data) {
+      if (loading) return /* @__PURE__ */ React.createElement("div", { className: "jm-control-shell text-sm text-slate-400" }, "A carregar o controlo de receita JM...");
+      return /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200" }, "O snapshot agregado do Dashboard JM ainda não está disponível. ", error || "");
+    }
+    const snapshot = staticSnapshotStatus(data, 24);
+    const months = (data.monthly || []).filter((month) => selectedMonths.has(Number(month.month) - 1) && (month.netRevenue || month.invoiceCount || month.backOffice?.total));
+    if (!months.length) return /* @__PURE__ */ React.createElement("div", { className: "jm-control-shell" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-400" }, "O Dashboard JM não tem dados agregados para o período selecionado."));
+    const add = (key) => months.reduce((total, month) => total + (Number(month[key]) || 0), 0);
+    const netRevenue = add("netRevenue");
+    const invoiceNet = add("invoiceNet");
+    const creditNotes = add("creditNotes");
+    const invoiceCount = add("invoiceCount");
+    const averageInvoice = invoiceCount ? invoiceNet / invoiceCount : 0;
+    const bo = months.reduce((result, month) => {
+      result.total += Number(month.backOffice?.total || 0);
+      result.paid += Number(month.backOffice?.paid || 0);
+      result.unpaid += Number(month.backOffice?.unpaid || 0);
+      return result;
+    }, { total: 0, paid: 0, unpaid: 0 });
+    const serviceDefs = [
+      ["ps", "PS"],
+      ["fo", "FAP/FO"],
+      ["adb", "AdBlue"],
+      ["fs", "FS"]
+    ];
+    const services = serviceDefs.map(([key, label]) => ({
+      key,
+      label,
+      value: months.reduce((total, month) => total + (Number(month.services?.[key]) || 0), 0)
+    }));
+    const maxService = Math.max(1, ...services.map((service) => service.value));
+    const maxMonth = Math.max(1, ...months.map((month) => Number(month.netRevenue || 0)));
+    const paidPct = bo.total ? bo.paid / bo.total : 0;
+    const sourceLabel = data.sourceUpdatedAt ? `Fonte atualizada ${data.sourceUpdatedAt}` : data.dataThrough ? `Dados até ${data.dataThrough}` : "Dashboard JM";
+    return /* @__PURE__ */ React.createElement("section", { className: "jm-control-shell", "data-help": "Controlo de receita JM: resume apenas dados financeiros agregados do Dashboard JM. A faturação líquida é o valor sem IVA apresentado pela fonte já com os efeitos contabilísticos aplicáveis. As notas de crédito são mostradas separadamente para medir devoluções e correções; não devem ser novamente subtraídas à faturação líquida. As encomendas BO mostram valor pago e ainda em aberto, não faturação confirmada." },
+      /* @__PURE__ */ React.createElement("div", { className: "jm-control-header" },
+        /* @__PURE__ */ React.createElement("div", null,
+          /* @__PURE__ */ React.createElement("div", { className: "section-kicker" }, "CONTROLO DE RECEITA JM"),
+          /* @__PURE__ */ React.createElement("h3", { className: "section-heading mt-1" }, "Do valor encomendado à faturação real"),
+          /* @__PURE__ */ React.createElement("p", { className: "section-subtitle mt-1" }, "Leitura agregada, sem nomes, NIF ou documentos de clientes.")
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 flex-wrap justify-end" },
+          /* @__PURE__ */ React.createElement("a", { href: data.sourceUrl || DATA_SOURCE_LINKS.jmDashboard.url, target: "_blank", rel: "noreferrer", className: `jm-control-status ${snapshot.stale ? "stale" : ""}` }, sourceLabel),
+          /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onRefresh, disabled: loading, className: "task-secondary-btn" }, loading ? "A atualizar..." : "Atualizar")
+        )
+      ),
+      /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-grid" },
+        /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-card", "data-help": "Faturação líquida sem IVA: valor real de faturação indicado no resumo do Dashboard JM para os meses selecionados. Esta é a métrica principal de receita; já é líquida segundo a fonte e não se deve voltar a subtrair as notas de crédito apresentadas ao lado." },
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-label" }, "Faturação líquida s/ IVA"),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-value" }, fmtCurrency(netRevenue)),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-detail" }, periodFilterLabel(selectedMonths), " · valor real da fonte")
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-card", "data-help": "Notas de crédito sem IVA: soma dos documentos de devolução ou correção emitidos no período. Serve para perceber o peso de devoluções e ajustes. É informação de controlo e não deve ser subtraída outra vez à faturação líquida." },
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-label" }, "Notas de crédito emitidas"),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-value" }, fmtCurrency(creditNotes)),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-detail" }, netRevenue ? fmtPercent(creditNotes / netRevenue) : "0%", " da faturação líquida, apenas como indicador")
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-card", "data-help": "Documentos faturados: quantidade de faturas/registos de faturação no período. O ticket médio divide o valor sem IVA desses documentos pela respetiva quantidade; não é o valor médio de uma lead nem de uma proposta." },
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-label" }, "Documentos faturados"),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-value" }, fmtNumber(invoiceCount)),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-detail" }, "Ticket médio documental: ", fmtCurrency(averageInvoice))
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-card", "data-help": "Encomendas BackOffice sem IVA: valor total das encomendas registadas no BO no período, dividido entre pago e ainda em aberto. Uma encomenda não é automaticamente faturação; este valor mede pipeline comercial próximo da receita." },
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-label" }, "Encomendas BO s/ IVA"),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-value" }, fmtCurrency(bo.total)),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-kpi-detail" }, fmtPercent(paidPct), " pago · ", fmtCurrency(bo.unpaid), " em aberto")
+        )
+      ),
+      /* @__PURE__ */ React.createElement("div", { className: "jm-visual-grid" },
+        /* @__PURE__ */ React.createElement("div", { className: "jm-visual-card", "data-help": "Evolução mensal da faturação líquida sem IVA no período selecionado. A altura de cada coluna é comparada com o melhor mês visível; o valor exato aparece acima da coluna." },
+          /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-100" }, "Faturação líquida por mês"),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-month-bars" }, months.map((month) => /* @__PURE__ */ React.createElement("div", { key: month.month, className: "jm-month-column" },
+            /* @__PURE__ */ React.createElement("div", { className: "jm-month-value" }, fmtCurrency(month.netRevenue)),
+            /* @__PURE__ */ React.createElement("div", { className: "jm-month-track" }, /* @__PURE__ */ React.createElement("div", { className: "jm-month-fill", style: { height: `${Math.max(4, Number(month.netRevenue || 0) / maxMonth * 100)}%` } })),
+            /* @__PURE__ */ React.createElement("div", { className: "jm-month-label" }, MONTH_NAMES[Number(month.month) - 1])
+          )))
+        ),
+        /* @__PURE__ */ React.createElement("div", { className: "jm-visual-card" },
+          /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-100" }, "Encomendas BO: pago vs em aberto"),
+          /* @__PURE__ */ React.createElement("div", { className: "jm-split-track" },
+            /* @__PURE__ */ React.createElement("div", { className: "jm-split-paid", style: { width: `${paidPct * 100}%` } }),
+            /* @__PURE__ */ React.createElement("div", { className: "jm-split-open", style: { width: `${(1 - paidPct) * 100}%` } })
+          ),
+          /* @__PURE__ */ React.createElement("div", { className: "flex justify-between gap-3 mt-2 text-xs" },
+            /* @__PURE__ */ React.createElement("span", { className: "text-emerald-300 font-bold" }, fmtCurrency(bo.paid), " pago"),
+            /* @__PURE__ */ React.createElement("span", { className: "text-amber-300 font-bold" }, fmtCurrency(bo.unpaid), " em aberto")
+          ),
+          /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-100 mt-5" }, "Valor faturado por serviço"),
+          services.map((service) => /* @__PURE__ */ React.createElement("div", { key: service.key, className: "jm-service-row" },
+            /* @__PURE__ */ React.createElement("div", { className: "jm-service-head" }, /* @__PURE__ */ React.createElement("span", null, service.label), /* @__PURE__ */ React.createElement("span", null, fmtCurrency(service.value))),
+            /* @__PURE__ */ React.createElement("div", { className: "jm-service-track" }, /* @__PURE__ */ React.createElement("div", { className: "jm-service-fill", style: { width: `${service.value / maxService * 100}%` } }))
+          ))
+        )
+      ),
+      /* @__PURE__ */ React.createElement("p", { className: "jm-method-note" }, "Método: agregados do Dashboard JM. A faturação líquida vem do resumo mensal da fonte; documentos, notas de crédito, serviços e encomendas BO são agregados separadamente para controlo. Por isso, não devem ser somados ou subtraídos entre si como se fossem a mesma base contabilística.")
+    );
+  }
   function FicheiroJMView({ selectedMonths }) {
+    const { data: jmData, loading: jmLoading, error: jmError, reload: reloadJm } = useStaticJson("assets/dashboard-jm.json");
     const { table, loading, error, updatedAt, reload } = useSheetData("Ficheiro JM", {
       gid: SHEET_GIDS["Ficheiro JM"]
     });
@@ -7626,7 +7860,7 @@ function ToggleableMonthlyValueChart({ series, scaleMode = "independent" }) {
       x: parseRowDate(r),
       y: FJM_DAILY_TOTAL_COLS.reduce((s, idx) => s + numericValue(r, idx), 0)
     })).sort((a, b) => a.x - b.x);
-    return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement(SheetTopBar, { updatedAt, loading, onRefresh: reload }), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400" }, "A mostrar ", periodFilterLabel(selectedMonths), " \xB7 ", realDayCount, " ", realDayCount === 1 ? "dia" : "dias", " com detalhe di\xE1rio"), fallbackMonths.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "\u2139 ", fallbackMonths.map((i) => MONTH_NAMES[i]).join(", "), ' sem detalhe di\xE1rio na folha \u2014 a usar a linha "TOTAL:" do m\xEAs como valor.'), !monthIdxList.some((i) => dayCount[i] > 0 || totalRow[i]) ? /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para o per\xEDodo selecionado." }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Fatura\xE7\xE3o \u20AC \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement("div", { className: "overflow-auto" }, /* @__PURE__ */ React.createElement("table", { className: "min-w-full text-sm" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-left text-slate-400" }, /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs" }, "Servi\xE7o"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "FT"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "Sinal"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "NC"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "Net"))), /* @__PURE__ */ React.createElement("tbody", null, Object.entries(faturacaoEur).map(([service, v]) => /* @__PURE__ */ React.createElement("tr", { key: service, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 font-semibold text-slate-800" }, service), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtCurrency(v.ft)), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtCurrency(v.sinal)), /* @__PURE__ */ React.createElement("td", { className: `px-3 py-1.5 text-right tabular-nums ${v.nc < 0 ? "text-red-600" : ""}` }, fmtCurrency(v.nc)), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums font-semibold" }, fmtCurrency(v.net)))))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-2" }, "Fatura\xE7\xE3o total por dia"), (() => {
+    return /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, /* @__PURE__ */ React.createElement(SheetTopBar, { updatedAt, loading, onRefresh: reload }), /* @__PURE__ */ React.createElement(JmRevenueControl, { data: jmData, selectedMonths, loading: jmLoading, error: jmError, onRefresh: reloadJm }), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400" }, "A mostrar ", periodFilterLabel(selectedMonths), " \xB7 ", realDayCount, " ", realDayCount === 1 ? "dia" : "dias", " com detalhe di\xE1rio"), fallbackMonths.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "\u2139 ", fallbackMonths.map((i) => MONTH_NAMES[i]).join(", "), ' sem detalhe di\xE1rio na folha \u2014 a usar a linha "TOTAL:" do m\xEAs como valor.'), !monthIdxList.some((i) => dayCount[i] > 0 || totalRow[i]) ? /* @__PURE__ */ React.createElement(EmptyState, { text: "Sem dados para o per\xEDodo selecionado." }) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-3" }, "Fatura\xE7\xE3o \u20AC \u2014 por servi\xE7o"), /* @__PURE__ */ React.createElement("div", { className: "overflow-auto" }, /* @__PURE__ */ React.createElement("table", { className: "min-w-full text-sm" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", { className: "text-left text-slate-400" }, /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs" }, "Servi\xE7o"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "FT"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "Sinal"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "NC"), /* @__PURE__ */ React.createElement("th", { className: "px-3 py-1.5 text-xs text-right" }, "Net"))), /* @__PURE__ */ React.createElement("tbody", null, Object.entries(faturacaoEur).map(([service, v]) => /* @__PURE__ */ React.createElement("tr", { key: service, className: "border-t border-slate-200" }, /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 font-semibold text-slate-800" }, service), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtCurrency(v.ft)), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums" }, fmtCurrency(v.sinal)), /* @__PURE__ */ React.createElement("td", { className: `px-3 py-1.5 text-right tabular-nums ${v.nc < 0 ? "text-red-600" : ""}` }, fmtCurrency(v.nc)), /* @__PURE__ */ React.createElement("td", { className: "px-3 py-1.5 text-right tabular-nums font-semibold" }, fmtCurrency(v.net)))))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-semibold text-slate-700 mb-2" }, "Fatura\xE7\xE3o total por dia"), (() => {
       const { points, xAxisLabel } = buildAdaptiveDailySeries(dailyTotalSeries, selectedMonths);
       return /* @__PURE__ */ React.createElement(TimeSeriesChart, { points, unit: "currency", xAxisLabel, yAxisLabel: "Valor \u20AC" });
     })()), /* @__PURE__ */ React.createElement(
