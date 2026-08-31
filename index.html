@@ -3577,6 +3577,36 @@ input::placeholder { color: #7f93b3; }
 }
 .task-reminder-permission:hover { color: #bae6fd; }
 
+.task-v2-review {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid rgba(52, 211, 153, 0.32);
+  border-radius: 1rem;
+  background: #0f1d2d;
+}
+.task-v2-review-empty { border-color: #233048; }
+.task-v2-kicker { color: #7dd3fc; font-size: 0.68rem; font-weight: 900; text-transform: uppercase; }
+.task-v2-title { color: #f5f8fc; font-size: 1.05rem; font-weight: 900; margin-top: 0.2rem; }
+.task-v2-copy { color: #99acc9; font-size: 0.78rem; line-height: 1.25rem; margin-top: 0.2rem; }
+.task-v2-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 0.55rem; }
+.task-file-input { position: absolute; inline-size: 1px; block-size: 1px; opacity: 0; pointer-events: none; }
+.task-v2-draft-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #fcd34d;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+.task-v2-draft-badge::before { content: ""; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: #fbbf24; }
+@media (max-width: 760px) {
+  .task-v2-review { grid-template-columns: 1fr; }
+  .task-v2-actions { justify-content: flex-start; }
+}
+
 
 .task-day-nav {
   display: inline-flex;
@@ -4203,8 +4233,11 @@ const DEEP_DIVE_PANELS = [
     Outros: "#A78BFA"
   };
   const TASK_LOG_STORAGE_KEY = "pke.taskLog.entries.v1";
+  const TASK_LOG_OWNER_KEY = "pke.taskLog.owner.v2";
+  const TASK_LOG_PUBLISHED_IDS_KEY = "pke.taskLog.publishedIds.v2";
   const TASK_LOG_REMINDER_KEY = "pke.taskLog.nextReminderAt.v1";
   const TASK_LOG_LAST_REMINDER_KEY = "pke.taskLog.lastReminderKey.v1";
+  const TASK_HOURLY_REMINDERS_ENABLED = false;
   const UTM_CREATOR_STORAGE_KEY = "pke.utmCreator.options.v1";
   const TODO_STORAGE_KEY = "pke.todos.v1";
   const VISUAL_THEME_STORAGE_KEY = "pke.mcp.visualTheme.v1";
@@ -5474,6 +5507,46 @@ const DEEP_DIVE_PANELS = [
     const rows = entries.map((e) => [e.date, e.hour, e.task, e.category, e.status, e.notes, e.createdAt]);
     return [header, ...rows].map((row) => row.map(csvEscape).join(";")).join("\n");
   }
+  function normalizeTaskDraft(raw, owner) {
+    if (!raw) return null;
+    const start = raw.start || raw.startTime || raw.inicio || "";
+    const end = raw.end || raw.endTime || raw.fim || "";
+    const hour = raw.hour || raw.hora || (start && end ? `${String(start).slice(0, 5)}-${String(end).slice(0, 5)}` : "");
+    const task = raw.task || raw.tarefa || raw.title || raw.windowTitle || raw.app || "";
+    if (!hour || !task) return null;
+    return {
+      id: raw.id || `draft-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      source: "draft",
+      date: raw.date || raw.data || dateKey(new Date()),
+      hour: normalizeTaskHourRange(hour),
+      task: String(task).trim(),
+      category: raw.category || raw.categoria || "Outro",
+      status: raw.status || raw.estado || "✅ Feito",
+      notes: raw.notes || raw.notas || (raw.app ? `Sugestão automática · ${raw.app}` : "Sugestão automática"),
+      owner: raw.owner || owner || "",
+      confidence: Number(raw.confidence || 0),
+      createdAt: raw.createdAt || new Date().toISOString()
+    };
+  }
+  function parseTaskDraftFile(text, owner) {
+    const clean = String(text || "").trim();
+    if (!clean) return [];
+    try {
+      const payload = JSON.parse(clean);
+      const rows = Array.isArray(payload) ? payload : Array.isArray(payload.entries) ? payload.entries : [];
+      return rows.map((row) => normalizeTaskDraft(row, owner)).filter(Boolean);
+    } catch (e) {}
+    const lines = clean.split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) return [];
+    const delimiter = lines[0].includes(";") ? ";" : ",";
+    const headers = lines[0].split(delimiter).map((value) => normalizePtText(value));
+    return lines.slice(1).map((line) => {
+      const values = line.split(delimiter).map((value) => value.replace(/^"|"$/g, "").trim());
+      const row = {};
+      headers.forEach((header, index) => { row[header] = values[index] || ""; });
+      return normalizeTaskDraft(row, owner);
+    }).filter(Boolean);
+  }
   function normalizePtText(value) {
     return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   }
@@ -6282,7 +6355,7 @@ const DEEP_DIVE_PANELS = [
               h("div", { className: "task-slot-meta" },
                 h("span", { className: "task-category-chip" }, h(TaskCategoryDot, { category: entry.category }), entry.category || "Outro"),
                 h(MetricBadge, { tone: statusTone(entry.status) }, entry.status || "—"),
-                h(MetricBadge, { tone: entry.source === "sheet" ? "good" : "warn" }, entry.source === "sheet" ? "Sheets" : "Local")
+                entry.source === "sheet" ? h(MetricBadge, { tone: "good" }, "Partilhado") : h("span", { className: "task-v2-draft-badge" }, entry.source === "draft" ? "Sugestão" : "Rascunho privado")
               ),
               h("div", { className: "task-slot-title" }, entry.task),
               entry.notes && h("div", { className: "task-slot-notes" }, entry.notes)
@@ -6304,7 +6377,7 @@ const DEEP_DIVE_PANELS = [
       }))
     );
   }
-  function TaskLogView({ entries, onDelete, onOpenPrompt, onEdit, onEditWithHour, syncMessage, notificationPermission = "unsupported", onEnableNotifications, onClearLocalCache }) {
+  function TaskLogView({ entries, onDelete, onOpenPrompt, onEdit, onEditWithHour, onImportDrafts, onPublishDrafts, publishingDrafts, owner, setOwner, syncMessage, notificationPermission = "unsupported", onEnableNotifications, onClearLocalCache }) {
     const { entries: sheetEntries, loading, error, updatedAt, reload } = useTaskLogApiData();
     const [selectedDate, setSelectedDate] = useState(dateKey(new Date()));
     const [tableOpen, setTableOpen] = useState(false);
@@ -6313,6 +6386,7 @@ const DEEP_DIVE_PANELS = [
     const allEntries = useMemo(() => mergeTaskEntries(sheetEntries, entries), [sheetEntries, entries]);
     const undatedEntries = allEntries.filter((e) => !e.date);
     const selectedEntries = allEntries.filter((e) => e.date === selectedDate);
+    const selectedDrafts = entries.filter((e) => e.date === selectedDate && e.source !== "sheet");
     const today = dateKey(new Date());
     const weekStart = currentWeekStart(new Date()).getTime();
     const todayEntries = allEntries.filter((e) => e.date === today);
@@ -6386,7 +6460,7 @@ const DEEP_DIVE_PANELS = [
         h("div", { className: "task-command-header" },
           h("div", null,
             h("h2", { className: "task-command-title" }, "Log Tarefas"),
-            h("p", { className: "task-command-description" }, "Vista visual por blocos de 15 minutos. A tabela completa fica no fim da página.")
+            h("p", { className: "task-command-description" }, "O assistente prepara o dia; tu revês e decides quando fica visível para a equipa.")
           ),
           h("button", { className: "task-primary-btn", onClick: () => onOpenPrompt() }, "Registar agora")
         ),
@@ -6420,6 +6494,24 @@ const DEEP_DIVE_PANELS = [
       error && h("div", { className: "rounded-xl p-3 bg-red-50 text-red-700 text-xs font-medium" }, `Não foi possível ler a folha "Log Tarefas": ${error}`),
       !TASK_LOG_WRITE_ENDPOINT && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, "Escrita no Google Sheets ainda não configurada: falta colar o URL do Apps Script em TASK_LOG_WRITE_ENDPOINT."),
       syncMessage && h("div", { className: "rounded-xl p-3 bg-blue-50 text-blue-900 text-xs font-medium" }, syncMessage),
+      h("section", { className: `task-v2-review ${selectedDrafts.length ? "" : "task-v2-review-empty"}` },
+        h("div", null,
+          h("div", { className: "task-v2-kicker" }, "Log Tarefas V2 · revisão privada"),
+          h("div", { className: "task-v2-title" }, selectedDrafts.length ? `${selectedDrafts.length} ${selectedDrafts.length === 1 ? "bloco pronto" : "blocos prontos"} para rever` : "Sem rascunhos por publicar"),
+          h("p", { className: "task-v2-copy" }, selectedDrafts.length ? "Edita ou elimina o que for necessário na timeline. O teu colega só verá estes blocos depois da confirmação." : "A atividade importada e os registos novos ficam aqui em privado até confirmares."),
+          h("label", { className: "task-field", style: { maxWidth: "18rem", marginTop: "0.7rem", marginBottom: 0 } },
+            h("span", null, "Quem está a registar"),
+            h("input", { value: owner || "", onChange: (event) => setOwner(event.target.value), placeholder: "Ex: Miguel" })
+          )
+        ),
+        h("div", { className: "task-v2-actions" },
+          h("label", { className: "task-secondary-btn", role: "button", tabIndex: 0 },
+            "Importar atividade",
+            h("input", { className: "task-file-input", type: "file", accept: ".json,.csv,application/json,text/csv", onChange: onImportDrafts })
+          ),
+          h("button", { className: "task-primary-btn", disabled: !selectedDrafts.length || publishingDrafts, onClick: () => onPublishDrafts(selectedDate) }, publishingDrafts ? "A partilhar..." : "Confirmar e partilhar")
+        )
+      ),
       undatedEntries.length > 0 && h("div", { className: "rounded-xl p-3 bg-amber-50 text-amber-700 text-xs font-medium" }, `${undatedEntries.length} registo${undatedEntries.length === 1 ? "" : "s"} sem data reconhecida. Esses registos podem não aparecer na timeline diária; verifica se estão dentro de um bloco com dia no Google Sheets.`),
       h("div", { className: "task-focus-grid" },
         h("main", { className: "task-focus-main" },
@@ -6519,7 +6611,7 @@ const DEEP_DIVE_PANELS = [
                   h("td", { className: "px-3 py-1.5" }, h(MetricBadge, { tone: "neutral" }, e.category)),
                   h("td", { className: "px-3 py-1.5" }, e.status),
                   h("td", { className: "px-3 py-1.5 text-slate-500" }, e.notes || "—"),
-                  h("td", { className: "px-3 py-1.5" }, h(MetricBadge, { tone: e.source === "sheet" ? "good" : "warn" }, e.source === "sheet" ? "Sheets" : "Local")),
+                  h("td", { className: "px-3 py-1.5" }, e.source === "sheet" ? h(MetricBadge, { tone: "good" }, "Partilhado") : h("span", { className: "task-v2-draft-badge" }, e.source === "draft" ? "Sugestão" : "Rascunho")),
                   h("td", { className: "px-3 py-1.5 text-right" }, h("div", { className: "flex items-center justify-center gap-2" }, h("button", { className: "task-inline-btn task-edit-btn", onClick: () => onEdit(e) }, "Editar"), e.source === "sheet" ? h("span", { className: "text-xs text-slate-400" }, "—") : h("button", { className: "task-inline-btn", onClick: () => onDelete(e.id) }, "Apagar")))
                 )))
               )
@@ -10984,6 +11076,8 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
         return [];
       }
     });
+    const [taskOwner, setTaskOwner] = useState(() => typeof localStorage === "undefined" ? "" : localStorage.getItem(TASK_LOG_OWNER_KEY) || "");
+    const [publishingTaskDrafts, setPublishingTaskDrafts] = useState(false);
     const [taskPromptOpen, setTaskPromptOpen] = useState(false);
     const [taskPromptHour, setTaskPromptHour] = useState(quarterRangeLabel(new Date()));
     const [taskPromptDate, setTaskPromptDate] = useState(dateKey(new Date()));
@@ -11024,6 +11118,10 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
       if (typeof localStorage === "undefined") return;
       localStorage.setItem(TASK_LOG_STORAGE_KEY, JSON.stringify(taskEntries));
     }, [taskEntries]);
+    useEffect(() => {
+      if (typeof localStorage === "undefined") return;
+      localStorage.setItem(TASK_LOG_OWNER_KEY, taskOwner);
+    }, [taskOwner]);
     useEffect(() => {
       if (typeof localStorage === "undefined") return;
       localStorage.setItem(VISUAL_THEME_STORAGE_KEY, visualTheme);
@@ -11073,6 +11171,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
     }, []);
     useEffect(() => {
       if (typeof localStorage === "undefined") return void 0;
+      if (!TASK_HOURLY_REMINDERS_ENABLED) return void 0;
       const ensureNextReminder = () => {
         const current = Number(localStorage.getItem(TASK_LOG_REMINDER_KEY) || 0);
         if (!current) localStorage.setItem(TASK_LOG_REMINDER_KEY, String(nextBusinessReminderTs(new Date())));
@@ -11109,11 +11208,13 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
       localStorage.setItem(TASK_LOG_REMINDER_KEY, String(nextBusinessReminderTs(new Date())));
     };
     const saveTaskEntry = async (entry, previousEntry = null) => {
+      const editingPublishedEntry = previousEntry && previousEntry.source === "sheet";
       const localEntry = {
         ...entry,
         id: previousEntry && previousEntry.source !== "sheet" ? previousEntry.id : entry.id,
-        source: previousEntry && previousEntry.source === "sheet" ? "sheet" : "local",
+        source: editingPublishedEntry ? "sheet" : "draft",
         date: previousEntry ? previousEntry.date || entry.date : entry.date,
+        owner: entry.owner || previousEntry && previousEntry.owner || taskOwner,
         replacesKey: previousEntry ? taskLogEntryKey(previousEntry) : ""
       };
       setTaskEntries((prev) => {
@@ -11125,7 +11226,11 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
       scheduleNextBusinessTaskReminder();
-      setTaskSyncMessage(previousEntry ? "Altera\xE7\xE3o guardada localmente. A tentar sincronizar com Google Sheets..." : "Registo guardado localmente. A tentar sincronizar com Google Sheets...");
+      if (!editingPublishedEntry) {
+        setTaskSyncMessage(previousEntry ? "Rascunho atualizado. Continua privado até confirmares e partilhares." : "Rascunho guardado. Revê a timeline e publica quando estiver pronta.");
+        return;
+      }
+      setTaskSyncMessage("A atualizar o registo já publicado no Google Sheets...");
       try {
         await writeTaskLogEntry(localEntry, previousEntry);
         setTaskEntries((prev) => prev.map((item) => item.id === localEntry.id ? { ...item, source: "sheet" } : item));
@@ -11136,6 +11241,57 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
         }
       } catch (e) {
         setTaskSyncMessage(`${previousEntry ? "Altera\xE7\xE3o" : "Registo"} guardado localmente, mas n\xE3o foi enviado para Google Sheets: ${e && e.message || "erro desconhecido"}.`);
+      }
+    };
+    const importTaskDrafts = (event) => {
+      const file = event && event.target && event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const drafts = parseTaskDraftFile(reader.result, taskOwner);
+        if (!drafts.length) {
+          setTaskSyncMessage("O ficheiro não contém atividade reconhecível. Usa o JSON/CSV criado pelo assistente do Log V2.");
+          return;
+        }
+        const published = new Set(JSON.parse(localStorage.getItem(TASK_LOG_PUBLISHED_IDS_KEY) || "[]"));
+        const privateDrafts = drafts.filter((entry) => !published.has(entry.id));
+        setTaskEntries((current) => {
+          const incoming = new Map(privateDrafts.map((entry) => [entry.id, entry]));
+          const retained = current.filter((entry) => !incoming.has(entry.id));
+          return [...privateDrafts, ...retained];
+        });
+        setTaskSyncMessage(`${privateDrafts.length} sugestões importadas como rascunho privado.`);
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    };
+    const publishTaskDrafts = async (selectedDate) => {
+      const drafts = taskEntries.filter((entry) => entry.source !== "sheet" && (!selectedDate || entry.date === selectedDate));
+      if (!drafts.length || publishingTaskDrafts) return;
+      if (!taskOwner.trim()) {
+        setTaskSyncMessage("Indica primeiro quem está a registar antes de partilhar.");
+        return;
+      }
+      setPublishingTaskDrafts(true);
+      setTaskSyncMessage(`A partilhar ${drafts.length} ${drafts.length === 1 ? "bloco" : "blocos"}...`);
+      const publishedIds = [];
+      try {
+        for (const draft of drafts) {
+          const notes = [draft.notes, `Registado por: ${taskOwner.trim()}`].filter(Boolean).join(" · ");
+          await writeTaskLogEntry({ ...draft, notes, owner: taskOwner.trim() });
+          publishedIds.push(draft.id);
+        }
+        setTaskEntries((current) => current.filter((entry) => !publishedIds.includes(entry.id)));
+        const knownPublished = new Set(JSON.parse(localStorage.getItem(TASK_LOG_PUBLISHED_IDS_KEY) || "[]"));
+        publishedIds.forEach((id) => knownPublished.add(id));
+        localStorage.setItem(TASK_LOG_PUBLISHED_IDS_KEY, JSON.stringify(Array.from(knownPublished).slice(-2000)));
+        setTaskSyncMessage(`${publishedIds.length} ${publishedIds.length === 1 ? "bloco partilhado" : "blocos partilhados"} com sucesso. A reler o Google Sheets...`);
+        if (typeof window !== "undefined") window.setTimeout(() => window.dispatchEvent(new CustomEvent("pke:refresh-sheet", { detail: { sheetName: TASK_LOG_SHEET_NAME } })), 1200);
+      } catch (e) {
+        if (publishedIds.length) setTaskEntries((current) => current.filter((entry) => !publishedIds.includes(entry.id)));
+        setTaskSyncMessage(`${publishedIds.length} blocos foram partilhados; os restantes continuam privados. ${e && e.message || "Erro desconhecido"}.`);
+      } finally {
+        setPublishingTaskDrafts(false);
       }
     };
     const deleteTaskEntry = (id) => {
@@ -11274,7 +11430,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
         style: { background: "rgba(0,0,0,0.4)" },
         onClick: () => setMobileNavOpen(false)
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · escreve mcp"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "app-header-actions" }, /* @__PURE__ */ React.createElement(ThemeSwitcher, { visualTheme, setVisualTheme }), selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Log hora"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), !["Ferramentas", "Newsletters", "Call Analytics"].includes(selected) && /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · escreve mcp"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "app-header-actions" }, /* @__PURE__ */ React.createElement(ThemeSwitcher, { visualTheme, setVisualTheme }), selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Rascunho"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), !["Ferramentas", "Newsletters", "Call Analytics"].includes(selected) && /* @__PURE__ */ React.createElement(
       "a",
       {
         href: SPREADSHEET_URL,
@@ -11295,7 +11451,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
         setToStage,
         onNavigate: navigateDashboard
       }
-    ) : selected === "KPIs Marketing" ? /* @__PURE__ */ React.createElement(MarketingPerformanceView, { selectedMonths }) : selected === "Newsletters" ? /* @__PURE__ */ React.createElement(NewslettersView, { selectedMonths }) : selected === "Call Analytics" ? /* @__PURE__ */ React.createElement(CallAnalyticsView, { selectedMonths }) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
+    ) : selected === "KPIs Marketing" ? /* @__PURE__ */ React.createElement(MarketingPerformanceView, { selectedMonths }) : selected === "Newsletters" ? /* @__PURE__ */ React.createElement(NewslettersView, { selectedMonths }) : selected === "Call Analytics" ? /* @__PURE__ */ React.createElement(CallAnalyticsView, { selectedMonths }) : selected === "Aprofundar Dados" ? /* @__PURE__ */ React.createElement(AprofundarDadosView, { selectedMonths, activePanel: activeDeepPanel, setActivePanel: setActiveDeepPanel }) : selected === "Ferramentas" ? /* @__PURE__ */ React.createElement(FerramentasView, { selectedMonths, activePanel: activeToolPanel, setActivePanel: setActiveToolPanel, taskProps: { entries: taskEntries, onDelete: deleteTaskEntry, onOpenPrompt: openTaskPrompt, onEdit: editTaskEntry, onEditWithHour: editTaskEntryWithHour, onImportDrafts: importTaskDrafts, onPublishDrafts: publishTaskDrafts, publishingDrafts: publishingTaskDrafts, owner: taskOwner, setOwner: setTaskOwner, syncMessage: taskSyncMessage, notificationPermission, onEnableNotifications: enableBrowserNotifications, onClearLocalCache: clearTaskLocalCache } }) : /* @__PURE__ */ React.createElement(GenericSheetPage, { sheetName: selected, selectedMonths }))), /* @__PURE__ */ React.createElement(TaskLogModal, { open: taskPromptOpen, defaultHour: taskPromptHour, defaultDate: taskPromptDate, editingEntry: taskEditingEntry, templateEntry: taskTemplateEntry, onSave: saveTaskEntry, onClose: () => {
       setTaskPromptOpen(false);
       setTaskEditingEntry(null);
       setTaskTemplateEntry(null);
