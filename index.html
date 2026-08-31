@@ -4189,7 +4189,7 @@ input::placeholder { color: #7f93b3; }
     leads: { label: "Marketing Control Panel · Leads Diários", url: `${SPREADSHEET_URL}#gid=1508480304` },
     jm: { label: "Marketing Control Panel · Ficheiro JM", url: `${SPREADSHEET_URL}#gid=785129550` },
     jmDashboard: { label: "Dashboard JM", url: "https://dashboard-jm.neocities.org/" },
-    tarefas: { label: "Marketing Control Panel · Log Tarefas", url: SPREADSHEET_URL }
+    tarefas: { label: "Marketing Control Panel · Log Tarefas", url: `${SPREADSHEET_URL}#gid=763766968` }
   };
   const SHEETS = [
     { name: "Dashboard MKT", label: "Marketing Control Panel" },
@@ -11484,7 +11484,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
     ), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("header", { className: "app-header border-b border-slate-200 px-4 md:px-8 py-4 flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { className: "md:hidden p-2 -ml-2", onClick: () => setMobileNavOpen(true) }, /* @__PURE__ */ React.createElement(Menu, { className: "w-5 h-5 text-slate-700" })), win98Mode && /* @__PURE__ */ React.createElement("div", { className: "windows98-ribbon" }, "Windows 98 Mode · escreve mcp"), /* @__PURE__ */ React.createElement(GlobalSearch, { onNavigate: navigateDashboard }), /* @__PURE__ */ React.createElement("div", { className: "app-header-actions" }, /* @__PURE__ */ React.createElement(ThemeSwitcher, { visualTheme, setVisualTheme }), selected === "Dashboard MKT" && /* @__PURE__ */ React.createElement(AlertThresholdControl, { threshold: alertThreshold, setThreshold: setAlertThreshold }), /* @__PURE__ */ React.createElement("button", { className: "task-header-btn", onClick: () => openTaskPrompt() }, "+ Rascunho"), showPeriodFilter && /* @__PURE__ */ React.createElement(PeriodFilterControl, { selectedMonths, setSelectedMonths }), !["Ferramentas", "Newsletters", "Call Analytics"].includes(selected) && /* @__PURE__ */ React.createElement(
       "a",
       {
-        href: SPREADSHEET_URL,
+        href: ["Dashboard MKT", "KPIs Marketing"].includes(selected) ? DATA_SOURCE_LINKS.dashboard.url : SPREADSHEET_URL,
         target: "_blank",
         rel: "noopener noreferrer",
         className: "hidden sm:inline-flex items-center gap-1 text-xs text-slate-500 hover:text-blue-900"
