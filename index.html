@@ -4014,6 +4014,7 @@ input::placeholder { color: #7f93b3; }
   .task-hero { grid-template-columns: 1fr; }
   .task-slot { grid-template-columns: 1fr; }
   .task-agenda-row, .task-missing-item { grid-template-columns: 1fr; }
+  .task-agenda-entry { grid-template-columns: 1fr; }
 }
 
 
@@ -4031,6 +4032,19 @@ input::placeholder { color: #7f93b3; }
   border-top: 1px solid rgba(35,48,72,0.65);
 }
 .task-agenda-row:first-child { border-top: 0; }
+.task-agenda-row-group { grid-template-columns: 7.5rem 1fr; }
+.task-agenda-group { display: flex; flex-direction: column; gap: 0.7rem; }
+.task-agenda-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+.task-agenda-entry-actions { display: flex; align-items: center; justify-content: center; gap: 0.45rem; }
+@media (max-width: 760px) {
+  .task-agenda-row-group, .task-agenda-entry { grid-template-columns: 1fr; }
+  .task-agenda-entry-actions { justify-content: flex-start; }
+}
 .task-agenda-time {
   color: #c7d3e6;
   font-size: 0.82rem;
@@ -6311,14 +6325,20 @@ const DEEP_DIVE_PANELS = [
         end: Math.min(workEnd, Math.max(range.start + 15, range.end))
       };
     }).filter((item) => item.end > workStart && item.start < workEnd).sort((a, b) => a.start - b.start || a.end - b.end);
+    const grouped = Array.from(sorted.reduce((groups, item) => {
+      const key = `${item.start}-${item.end}`;
+      if (!groups.has(key)) groups.set(key, { start: item.start, end: item.end, entries: [] });
+      groups.get(key).entries.push(item.entry);
+      return groups;
+    }, new Map()).values()).sort((a, b) => a.start - b.start || a.end - b.end);
     const segments = [];
     let cursor = workStart;
-    sorted.forEach((item) => {
-      if (item.start > cursor) {
-        segments.push({ type: "empty", start: cursor, end: item.start });
+    grouped.forEach((group) => {
+      if (group.start > cursor) {
+        segments.push({ type: "empty", start: cursor, end: group.start });
       }
-      segments.push({ type: "task", ...item });
-      cursor = Math.max(cursor, item.end);
+      segments.push({ type: "task", ...group });
+      cursor = Math.max(cursor, group.end);
     });
     if (cursor < workEnd) segments.push({ type: "empty", start: cursor, end: workEnd });
     if (!segments.length) segments.push({ type: "empty", start: workStart, end: workEnd });
@@ -6326,7 +6346,8 @@ const DEEP_DIVE_PANELS = [
     sorted.forEach((item) => {
       for (let minute = item.start; minute < item.end; minute += 15) {
         const hour = Math.floor(minute / 60);
-        hourFill.set(hour, (hourFill.get(hour) || 0) + 1);
+        if (!hourFill.has(hour)) hourFill.set(hour, new Set());
+        hourFill.get(hour).add(minute);
       }
     });
     return h("div", { className: "task-timeline" },
@@ -6347,29 +6368,33 @@ const DEEP_DIVE_PANELS = [
               h("div", { className: "flex items-center justify-center" }, h("button", { className: "task-empty-add", onClick: () => onOpenPrompt(`${startLabel}-${endLabel}`, selectedDate || dateKey(new Date())) }, "+ Registar"))
             );
           }
-          const entry = segment.entry;
-          const slug = taskCategorySlug(entry.category);
-          return h("div", { key: entry.id || `task-${idx}`, className: "task-agenda-row" },
+          const groupEntries = segment.entries || [];
+          return h("div", { key: `group-${segment.start}-${segment.end}`, className: "task-agenda-row task-agenda-row-group" },
             h("div", { className: "task-agenda-time" }, `${startLabel}-${endLabel}`, h("div", { className: "task-agenda-duration" }, `${durationSlots} blocos · ${minutesLabel(durationSlots * 15)}`)),
-            h("article", { className: `task-agenda-card task-agenda-card-${slug}`, style: { minHeight } },
-              h("div", { className: "task-slot-meta" },
-                h("span", { className: "task-category-chip" }, h(TaskCategoryDot, { category: entry.category }), entry.category || "Outro"),
-                h(MetricBadge, { tone: statusTone(entry.status) }, entry.status || "—"),
-                entry.source === "sheet" ? h(MetricBadge, { tone: "good" }, "Partilhado") : h("span", { className: "task-v2-draft-badge" }, entry.source === "draft" ? "Sugestão" : "Rascunho privado")
-              ),
-              h("div", { className: "task-slot-title" }, entry.task),
-              entry.notes && h("div", { className: "task-slot-notes" }, entry.notes)
-            ),
-            h("div", { className: "flex items-center justify-center gap-2" },
-              h("button", { className: "task-inline-btn task-edit-btn", onClick: () => onEdit(entry) }, "Editar"),
-              entry.source !== "sheet" && h("button", { className: "task-inline-btn", onClick: () => onDelete(entry.id) }, "Apagar")
-            )
+            h("div", { className: "task-agenda-group" }, groupEntries.map((entry) => {
+              const slug = taskCategorySlug(entry.category);
+              return h("div", { key: entry.id, className: "task-agenda-entry" },
+                h("article", { className: `task-agenda-card task-agenda-card-${slug}`, style: { minHeight: Math.max(54, Math.min(minHeight, 110)) } },
+                  h("div", { className: "task-slot-meta" },
+                    h("span", { className: "task-category-chip" }, h(TaskCategoryDot, { category: entry.category }), entry.category || "Outro"),
+                    h(MetricBadge, { tone: statusTone(entry.status) }, entry.status || "—"),
+                    entry.source === "sheet" ? h(MetricBadge, { tone: "good" }, "Partilhado") : h("span", { className: "task-v2-draft-badge" }, entry.source === "draft" ? "Sugestão" : "Rascunho privado")
+                  ),
+                  h("div", { className: "task-slot-title" }, entry.task),
+                  entry.notes && h("div", { className: "task-slot-notes" }, entry.notes)
+                ),
+                h("div", { className: "task-agenda-entry-actions" },
+                  h("button", { className: "task-inline-btn task-edit-btn", onClick: () => onEdit(entry) }, "Editar"),
+                  entry.source !== "sheet" && h("button", { className: "task-inline-btn", onClick: () => onDelete(entry.id) }, "Apagar")
+                )
+              );
+            }))
           );
         }))
       ),
       h("div", { className: "grid sm:grid-cols-3 gap-2" }, Array.from({ length: TASK_WORKDAY_END_HOUR - TASK_WORKDAY_START_HOUR }, (_, i) => {
         const hour = TASK_WORKDAY_START_HOUR + i;
-        const filled = Math.min(4, hourFill.get(hour) || 0);
+        const filled = Math.min(4, hourFill.has(hour) ? hourFill.get(hour).size : 0);
         return h("div", { key: hour, className: "task-category-chip", style: { justifyContent: "space-between" } },
           h("span", null, `${pad2(hour)}:00-${pad2(hour + 1)}:00`),
           h("span", null, `${filled}/4`)
