@@ -11331,7 +11331,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
               break;
             } catch (error) {
               lastError = error;
-              const retryable = /service spreadsheets|temporar|try again|internal error/i.test(String(error && error.message || error));
+              const retryable = /service spreadsheets|temporar|ocupad|try again|internal error/i.test(String(error && error.message || error));
               if (!retryable) throw error;
               if (attempt < 6) {
                 const waitMs = Math.min(10000, attempt * 2500);
