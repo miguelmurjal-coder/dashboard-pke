@@ -4603,7 +4603,7 @@ const DEEP_DIVE_PANELS = [
             "Tempo limite excedido a contactar o Google Sheets. Confirma que a folha tem partilha p\xFAblica e que o nome do separador est\xE1 correto."
           )
         );
-      }, 15e3);
+      }, 30e3);
       document.head.appendChild(script);
     });
   }
@@ -4628,11 +4628,19 @@ const DEEP_DIVE_PANELS = [
         const table = await fetchSheet(sheetName, optsRef.current);
         setState({ table, loading: false, error: null, updatedAt: /* @__PURE__ */ new Date() });
       } catch (e) {
-        setState((s) => ({
-          ...s,
-          loading: false,
-          error: e && e.message || "Erro ao carregar dados."
-        }));
+        const message = e && e.message || "Erro ao carregar dados.";
+        if (/tempo limite excedido/i.test(message)) {
+          try {
+            await new Promise((resolve) => window.setTimeout(resolve, 2500));
+            const retryTable = await fetchSheet(sheetName, optsRef.current);
+            setState({ table: retryTable, loading: false, error: null, updatedAt: /* @__PURE__ */ new Date() });
+            return;
+          } catch (retryError) {
+            setState((s) => ({ ...s, loading: false, error: `${sheetName}: ${retryError && retryError.message || message}` }));
+            return;
+          }
+        }
+        setState((s) => ({ ...s, loading: false, error: `${sheetName}: ${message}` }));
       } finally {
         emitDataLoadStatus(loadIdRef.current, "end");
       }
