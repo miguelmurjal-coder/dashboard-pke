@@ -18,6 +18,11 @@ Para o iniciar automaticamente sempre que entras no Mac:
 python3 scripts/install-task-capture.py --owner "Miguel"
 ```
 
+O instalador copia apenas o assistente para
+`~/Library/Application Support/PKE Task Log/`. Isto e necessario porque o
+macOS nao permite que um processo de fundo execute diretamente a partir da
+iCloud Drive. O projeto e o codigo oficial continuam na pasta da iCloud.
+
 O ficheiro privado e atualizado em `~/Downloads/pke-task-drafts.json`. No MCP,
 abre `Ferramentas > Log Tarefas`, carrega em **Importar atividade**, revê a
 timeline e usa **Confirmar e partilhar**. Ate esse momento nada e enviado para

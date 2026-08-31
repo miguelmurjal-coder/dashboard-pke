@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import os
 import plistlib
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -18,7 +19,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Install MCP Log Tarefas V2 capture")
     parser.add_argument("--owner", required=True)
     args = parser.parse_args()
-    capture = Path(__file__).with_name("pke-task-capture.py").resolve()
+    source_capture = Path(__file__).with_name("pke-task-capture.py").resolve()
+    support_dir = Path.home() / "Library" / "Application Support" / "PKE Task Log"
+    support_dir.mkdir(parents=True, exist_ok=True)
+    capture = support_dir / "pke-task-capture.py"
+    shutil.copy2(source_capture, capture)
+    capture.chmod(0o700)
     output = Path.home() / "Downloads" / "pke-task-drafts.json"
     logs = Path.home() / "Library" / "Logs" / "PKE"
     launch_agents = Path.home() / "Library" / "LaunchAgents"
@@ -39,7 +45,8 @@ def main() -> None:
     domain = f"gui/{os.getuid()}"
     subprocess.run(["launchctl", "bootout", domain, str(plist_path)], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     subprocess.run(["launchctl", "bootstrap", domain, str(plist_path)], check=True)
-    print(f"Log Tarefas V2 ativo. Rascunhos: {output}")
+    print(f"Log Tarefas V2 ativo. Assistente: {capture}")
+    print(f"Rascunhos: {output}")
 
 
 if __name__ == "__main__":
