@@ -5798,7 +5798,7 @@ const DEEP_DIVE_PANELS = [
       timeoutId = setTimeout(() => {
         cleanup();
         reject(new Error("Tempo limite excedido a ler o Log Tarefas via Apps Script."));
-      }, 15000);
+      }, 30000);
       document.head.appendChild(script);
     });
   }
@@ -5810,7 +5810,19 @@ const DEEP_DIVE_PANELS = [
         const entries = await readTaskLogEntriesViaAppsScript();
         setState({ entries, loading: false, error: null, updatedAt: new Date() });
       } catch (e) {
-        setState((s) => ({ ...s, loading: false, error: e && e.message || "Erro ao carregar Log Tarefas." }));
+        const message = e && e.message || "Erro ao carregar Log Tarefas.";
+        if (/tempo limite|não foi possível contactar/i.test(message)) {
+          try {
+            await new Promise((resolve) => window.setTimeout(resolve, 2000));
+            const entries = await readTaskLogEntriesViaAppsScript();
+            setState({ entries, loading: false, error: null, updatedAt: new Date() });
+            return;
+          } catch (retryError) {
+            setState((s) => ({ ...s, loading: false, error: retryError && retryError.message || message }));
+            return;
+          }
+        }
+        setState((s) => ({ ...s, loading: false, error: message }));
       }
     }, []);
     useEffect(() => {
