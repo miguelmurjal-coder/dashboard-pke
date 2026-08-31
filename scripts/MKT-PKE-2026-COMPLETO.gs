@@ -319,14 +319,48 @@ function isoWeekKey_(date) {
    ========================================================= */
 
 const TASK_LOG_SHEET_NAME = 'Log Tarefas';
+const TASK_LOG_DB_SHEET_NAME = 'Log Tarefas DB';
 const TASK_LOG_TOKEN = '2860';
 const TASK_LOG_SPREADSHEET_ID = '1NdCeyxLExmZtGmdQ6m63Iv2XCzzWiUnadWj4UOwmJjM';
+const TASK_LOG_DB_HEADERS = ['ID', 'Data', 'Hora', 'Tarefa', 'Categoria', 'Estado', 'Notas', 'Responsável', 'Criado em', 'Atualizado em'];
 
 function getTaskLogSheet_() {
   const spreadsheet = SpreadsheetApp.openById(TASK_LOG_SPREADSHEET_ID);
   const sheet = spreadsheet.getSheetByName(TASK_LOG_SHEET_NAME);
   if (!sheet) throw new Error('Folha "Log Tarefas" não encontrada.');
   return sheet;
+}
+
+function getTaskLogDbSheet_() {
+  const spreadsheet = SpreadsheetApp.openById(TASK_LOG_SPREADSHEET_ID);
+  let sheet = spreadsheet.getSheetByName(TASK_LOG_DB_SHEET_NAME);
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(TASK_LOG_DB_SHEET_NAME);
+    sheet.getRange(1, 1, 1, TASK_LOG_DB_HEADERS.length).setValues([TASK_LOG_DB_HEADERS]);
+    sheet.setFrozenRows(1);
+    migrateLegacyTaskLog_(sheet);
+    sheet.hideSheet();
+  } else if (sheet.getLastRow() === 0) {
+    sheet.getRange(1, 1, 1, TASK_LOG_DB_HEADERS.length).setValues([TASK_LOG_DB_HEADERS]);
+    sheet.setFrozenRows(1);
+  }
+  return sheet;
+}
+
+function taskLogDbRow_(entry) {
+  const now = new Date().toISOString();
+  return [entry.id || Utilities.getUuid(), entry.date || '', entry.hour || '', entry.task || '', entry.category || 'Outro', entry.status || '—', entry.notes || '', entry.owner || '', entry.createdAt || now, entry.updatedAt || now];
+}
+
+function taskLogEntryFromDbRow_(row, rowNumber) {
+  return { id: String(row[0] || 'db-r' + rowNumber), source: 'sheet', row: rowNumber, date: String(row[1] || ''), hour: String(row[2] || ''), task: String(row[3] || ''), category: String(row[4] || 'Outro'), status: String(row[5] || '—'), notes: String(row[6] || ''), owner: String(row[7] || ''), createdAt: String(row[8] || ''), updatedAt: String(row[9] || '') };
+}
+
+function migrateLegacyTaskLog_(dbSheet) {
+  const entries = readTaskLogEntriesLegacy_();
+  if (!entries.length) return;
+  const rows = entries.reverse().map(entry => taskLogDbRow_(entry));
+  dbSheet.getRange(2, 1, rows.length, TASK_LOG_DB_HEADERS.length).setValues(rows);
 }
 
 function doGet(e) {
@@ -342,17 +376,35 @@ function doGet(e) {
       return taskLogJsonp_(callback, { ok: true, entries: readTaskLogEntriesMerged_() });
     }
 
+    if (p.action === 'batchAppend') {
+      const entries = JSON.parse(p.entries || '[]');
+      if (!Array.isArray(entries) || !entries.length) {
+        return taskLogJsonp_(callback, { ok: false, error: 'Lote vazio.' });
+      }
+      const batchLock = LockService.getScriptLock();
+      if (!batchLock.tryLock(30000)) throw new Error('Log Tarefas ocupado por outra gravação. Tenta novamente.');
+      try {
+        const result = appendTaskLogBatch_(entries);
+        return taskLogJsonp_(callback, { ok: true, rows: result.rows, count: result.count });
+      } finally {
+        batchLock.releaseLock();
+      }
+    }
+
     if (p.action !== 'append' && p.action !== 'update') {
       return taskLogJsonp_(callback, { ok: false, error: 'Ação inválida.' });
     }
 
     const entry = {
+      id: p.id || '',
       date: p.date || '',
       hour: p.hour || '',
       task: p.task || '',
       category: p.category || '',
       status: p.status || '',
       notes: p.notes || '',
+      owner: p.owner || '',
+      createdAt: p.createdAt || '',
     };
 
     if (!entry.task) {
@@ -360,6 +412,7 @@ function doGet(e) {
     }
 
     const oldEntry = {
+      id: p.oldId || '',
       date: p.oldDate || '',
       hour: p.oldHour || '',
       task: p.oldTask || '',
@@ -377,7 +430,6 @@ function doGet(e) {
       const result = p.action === 'update'
         ? updateTaskLogEntry_(entry, oldEntry)
         : appendTaskLogEntry_(entry);
-      SpreadsheetApp.flush();
       return taskLogJsonp_(callback, { ok: true, row: result.row, mode: result.mode });
     } finally {
       lock.releaseLock();
@@ -394,6 +446,17 @@ function doGet(e) {
 /* ---------- LEITURA ROBUSTA COM MERGES ---------- */
 
 function readTaskLogEntriesMerged_() {
+  const sheet = getTaskLogDbSheet_();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+  return sheet.getRange(2, 1, lastRow - 1, TASK_LOG_DB_HEADERS.length)
+    .getDisplayValues()
+    .map((row, index) => taskLogEntryFromDbRow_(row, index + 2))
+    .filter(entry => entry.task)
+    .reverse();
+}
+
+function readTaskLogEntriesLegacy_() {
   const sheet = getTaskLogSheet_();
   const lastRow = sheet.getLastRow();
   if (lastRow < 1) return [];
@@ -508,21 +571,27 @@ function taskLogMergedEndMinute_(values, merge, fallbackStart) {
 /* ---------- ESCRITA / EDIÇÃO ---------- */
 
 function appendTaskLogEntry_(entry) {
-  const sheet = getTaskLogSheet_();
-
-  const target = findTaskTargetRow_(sheet, entry.date, entry.hour);
-  const row = target || Math.max(sheet.getLastRow() + 1, 2);
-  writeTaskRowMerged_(sheet, row, entry, null);
-  return { row, mode: target ? 'matched-slot-merged' : 'append-bottom' };
+  const sheet = getTaskLogDbSheet_();
+  const row = Math.max(sheet.getLastRow() + 1, 2);
+  sheet.getRange(row, 1, 1, TASK_LOG_DB_HEADERS.length).setValues([taskLogDbRow_(entry)]);
+  return { row, mode: 'db-append' };
 }
 
 function updateTaskLogEntry_(entry, oldEntry) {
-  const sheet = getTaskLogSheet_();
-
+  const sheet = getTaskLogDbSheet_();
   const existingRow = findExistingTaskRow_(sheet, oldEntry) || findExistingTaskRow_(sheet, entry);
-  const row = existingRow || findTaskTargetRow_(sheet, entry.date, entry.hour) || Math.max(sheet.getLastRow() + 1, 2);
-  writeTaskRowMerged_(sheet, row, entry, oldEntry);
-  return { row, mode: existingRow ? 'updated-existing-merged' : 'update-fallback-merged' };
+  const row = existingRow || Math.max(sheet.getLastRow() + 1, 2);
+  sheet.getRange(row, 1, 1, TASK_LOG_DB_HEADERS.length).setValues([taskLogDbRow_({ ...entry, id: entry.id || oldEntry.id || Utilities.getUuid(), updatedAt: new Date().toISOString() })]);
+  return { row, mode: existingRow ? 'db-update' : 'db-update-fallback' };
+}
+
+function appendTaskLogBatch_(entries) {
+  const sheet = getTaskLogDbSheet_();
+  const startRow = Math.max(sheet.getLastRow() + 1, 2);
+  const rows = entries.filter(entry => entry && entry.task).map(entry => taskLogDbRow_(entry));
+  if (!rows.length) throw new Error('O lote não contém tarefas válidas.');
+  sheet.getRange(startRow, 1, rows.length, TASK_LOG_DB_HEADERS.length).setValues(rows);
+  return { rows: rows.map((_, index) => startRow + index), count: rows.length };
 }
 
 function writeTaskRowMerged_(sheet, row, entry, oldEntry) {
@@ -579,12 +648,15 @@ function taskLogRowsForHourRange_(hourRange) {
 }
 
 function findExistingTaskRow_(sheet, entry) {
-  const entries = readTaskLogEntriesMerged_();
-  const targetKey = [entry.date, taskLogStartHour_(entry.hour), entry.task, entry.category, entry.status, entry.notes].map(x => String(x || '').trim()).join('|');
-  for (let i = 0; i < entries.length; i++) {
-    const e = entries[i];
-    const key = [e.date, taskLogStartHour_(e.hour), e.task, e.category, e.status, e.notes].map(x => String(x || '').trim()).join('|');
-    if (key === targetKey) return e.row || null;
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return null;
+  const values = sheet.getRange(2, 1, lastRow - 1, TASK_LOG_DB_HEADERS.length).getDisplayValues();
+  const targetId = String(entry.id || '').trim();
+  const targetKey = [entry.date, entry.hour, entry.task, entry.category, entry.status, entry.notes].map(x => String(x || '').trim()).join('|');
+  for (let i = values.length - 1; i >= 0; i--) {
+    if (targetId && String(values[i][0] || '').trim() === targetId) return i + 2;
+    const key = [values[i][1], values[i][2], values[i][3], values[i][4], values[i][5], values[i][6]].map(x => String(x || '').trim()).join('|');
+    if (key === targetKey) return i + 2;
   }
   return null;
 }

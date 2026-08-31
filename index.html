@@ -5842,14 +5842,18 @@ const DEEP_DIVE_PANELS = [
         action: previousEntry ? "update" : "append",
         callback: cbName,
         token: TASK_LOG_WRITE_TOKEN,
+        id: entry.id || "",
         date: entry.date || "",
         hour: entry.hour || "",
         task: entry.task || "",
         category: entry.category || "",
         status: entry.status || "",
-        notes: entry.notes || ""
+        notes: entry.notes || "",
+        owner: entry.owner || "",
+        createdAt: entry.createdAt || ""
       });
       if (previousEntry) {
+        params.set("oldId", previousEntry.id || "");
         params.set("oldDate", previousEntry.date || "");
         params.set("oldHour", previousEntry.hour || "");
         params.set("oldTask", previousEntry.task || "");
@@ -5879,6 +5883,41 @@ const DEEP_DIVE_PANELS = [
         cleanup();
         reject(new Error("Tempo limite excedido a gravar no Google Sheets."));
       }, 15000);
+      document.head.appendChild(script);
+    });
+  }
+  function writeTaskLogBatch(entries) {
+    if (!TASK_LOG_WRITE_ENDPOINT) return Promise.reject(new Error("Endpoint Apps Script por configurar."));
+    return new Promise((resolve, reject) => {
+      const cbName = `__taskLogBatch${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      const params = new URLSearchParams({
+        action: "batchAppend",
+        callback: cbName,
+        token: TASK_LOG_WRITE_TOKEN,
+        entries: JSON.stringify(entries || [])
+      });
+      const script = document.createElement("script");
+      let timeoutId;
+      function cleanup() {
+        clearTimeout(timeoutId);
+        delete window[cbName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+      window[cbName] = (payload) => {
+        cleanup();
+        if (payload && payload.ok) resolve(payload);
+        else reject(new Error(payload && payload.error || "Erro ao gravar lote no Google Sheets."));
+      };
+      script.src = `${TASK_LOG_WRITE_ENDPOINT}?${params.toString()}`;
+      script.async = true;
+      script.onerror = () => {
+        cleanup();
+        reject(new Error("Não foi possível contactar o Apps Script."));
+      };
+      timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error("Tempo limite excedido a gravar o lote no Google Sheets."));
+      }, 6e4);
       document.head.appendChild(script);
     });
   }
@@ -11321,12 +11360,19 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
       setTaskSyncMessage(`A partilhar ${drafts.length} ${drafts.length === 1 ? "bloco" : "blocos"}...`);
       const publishedIds = [];
       try {
-        for (const draft of drafts) {
-          const notes = [draft.notes, `Registado por: ${taskOwner.trim()}`].filter(Boolean).join(" · ");
+        const preparedDrafts = drafts.map((draft) => ({
+          ...draft,
+          owner: taskOwner.trim(),
+          notes: [draft.notes, `Registado por: ${taskOwner.trim()}`].filter(Boolean).join(" · ")
+        }));
+        const chunks = [];
+        for (let i = 0; i < preparedDrafts.length; i += 5) chunks.push(preparedDrafts.slice(i, i + 5));
+        for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+          const chunk = chunks[chunkIndex];
           let lastError = null;
           for (let attempt = 1; attempt <= 6; attempt++) {
             try {
-              await writeTaskLogEntry({ ...draft, notes, owner: taskOwner.trim() });
+              await writeTaskLogBatch(chunk);
               lastError = null;
               break;
             } catch (error) {
@@ -11341,8 +11387,9 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
             }
           }
           if (lastError) throw lastError;
-          publishedIds.push(draft.id);
-          if (drafts.length > 1) await new Promise((resolve) => window.setTimeout(resolve, 900));
+          chunk.forEach((draft) => publishedIds.push(draft.id));
+          setTaskSyncMessage(`${publishedIds.length} de ${drafts.length} blocos partilhados...`);
+          if (chunkIndex < chunks.length - 1) await new Promise((resolve) => window.setTimeout(resolve, 1200));
         }
         setTaskEntries((current) => current.filter((entry) => !publishedIds.includes(entry.id)));
         const knownPublished = new Set(JSON.parse(localStorage.getItem(TASK_LOG_PUBLISHED_IDS_KEY) || "[]"));
