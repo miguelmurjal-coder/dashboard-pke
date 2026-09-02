@@ -685,7 +685,7 @@ function writeTaskRowMerged_(sheet, row, entry, oldEntry) {
 
   // Só juntamos B:E. A coluna A mantém as horas de 15 em 15 minutos.
   const writeRange = sheet.getRange(safeRow, 2, numRows, 4);
-  writeRange.breakApart();
+  breakApartIntersectingMerges_(writeRange);
   writeRange.clearContent();
 
   sheet.getRange(safeRow, 1).setValue(taskLogStartHour_(entry.hour));
@@ -706,8 +706,13 @@ function clearTaskMergedBlock_(sheet, row, hourRange) {
   const safeRow = taskLogTopLeftRowForWrite_(sheet, row, 2);
   const numRows = taskLogRowsForHourRange_(hourRange);
   const range = sheet.getRange(safeRow, 2, numRows, 4);
-  range.breakApart();
+  breakApartIntersectingMerges_(range);
   range.clearContent();
+}
+
+function breakApartIntersectingMerges_(range) {
+  const mergedRanges = range.getMergedRanges();
+  mergedRanges.forEach(mergedRange => mergedRange.breakApart());
 }
 
 function taskLogTopLeftRowForWrite_(sheet, row, col) {
