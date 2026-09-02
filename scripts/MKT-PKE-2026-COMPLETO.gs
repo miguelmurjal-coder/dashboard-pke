@@ -572,8 +572,15 @@ function taskLogMergedEndMinute_(values, merge, fallbackStart) {
 
 function appendTaskLogEntry_(entry) {
   const sheet = getTaskLogDbSheet_();
+  const existingRow = findExistingTaskRow_(sheet, entry);
+  if (existingRow) {
+    syncTaskLogVisualForEntries_([entry]);
+    return { row: existingRow, mode: 'db-existing' };
+  }
   const row = Math.max(sheet.getLastRow() + 1, 2);
   sheet.getRange(row, 1, 1, TASK_LOG_DB_HEADERS.length).setValues([taskLogDbRow_(entry)]);
+  SpreadsheetApp.flush();
+  syncTaskLogVisualForEntries_([entry]);
   return { row, mode: 'db-append' };
 }
 
@@ -582,16 +589,89 @@ function updateTaskLogEntry_(entry, oldEntry) {
   const existingRow = findExistingTaskRow_(sheet, oldEntry) || findExistingTaskRow_(sheet, entry);
   const row = existingRow || Math.max(sheet.getLastRow() + 1, 2);
   sheet.getRange(row, 1, 1, TASK_LOG_DB_HEADERS.length).setValues([taskLogDbRow_({ ...entry, id: entry.id || oldEntry.id || Utilities.getUuid(), updatedAt: new Date().toISOString() })]);
+  SpreadsheetApp.flush();
+  syncTaskLogVisualForEntries_([oldEntry, entry]);
   return { row, mode: existingRow ? 'db-update' : 'db-update-fallback' };
 }
 
 function appendTaskLogBatch_(entries) {
   const sheet = getTaskLogDbSheet_();
+  const validEntries = entries.filter(entry => entry && entry.task);
+  if (!validEntries.length) throw new Error('O lote não contém tarefas válidas.');
+
+  const lastRow = sheet.getLastRow();
+  const knownIds = lastRow < 2
+    ? {}
+    : sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues().reduce((known, row) => {
+        const id = String(row[0] || '').trim();
+        if (id) known[id] = true;
+        return known;
+      }, {});
+  const newEntries = validEntries.filter(entry => {
+    const id = String(entry.id || '').trim();
+    if (!id) return true;
+    if (knownIds[id]) return false;
+    knownIds[id] = true;
+    return true;
+  });
   const startRow = Math.max(sheet.getLastRow() + 1, 2);
-  const rows = entries.filter(entry => entry && entry.task).map(entry => taskLogDbRow_(entry));
-  if (!rows.length) throw new Error('O lote não contém tarefas válidas.');
-  sheet.getRange(startRow, 1, rows.length, TASK_LOG_DB_HEADERS.length).setValues(rows);
-  return { rows: rows.map((_, index) => startRow + index), count: rows.length };
+  const rows = newEntries.map(entry => taskLogDbRow_(entry));
+  if (rows.length) {
+    sheet.getRange(startRow, 1, rows.length, TASK_LOG_DB_HEADERS.length).setValues(rows);
+    SpreadsheetApp.flush();
+  }
+  syncTaskLogVisualForEntries_(validEntries);
+  return { rows: rows.map((_, index) => startRow + index), count: validEntries.length };
+}
+
+function syncTaskLogVisualForEntries_(entries) {
+  const keys = {};
+  entries.filter(entry => entry && entry.date && entry.hour).forEach(entry => {
+    keys[entry.date + '|' + taskLogStartHour_(entry.hour)] = true;
+  });
+  const targetKeys = Object.keys(keys);
+  if (!targetKeys.length) return;
+
+  const dbSheet = getTaskLogDbSheet_();
+  const visualSheet = getTaskLogSheet_();
+  const lastRow = dbSheet.getLastRow();
+  const dbEntries = lastRow < 2 ? [] : dbSheet
+    .getRange(2, 1, lastRow - 1, TASK_LOG_DB_HEADERS.length)
+    .getDisplayValues()
+    .map((row, index) => taskLogEntryFromDbRow_(row, index + 2));
+
+  targetKeys.forEach(key => {
+    const separator = key.indexOf('|');
+    const date = key.slice(0, separator);
+    const startHour = key.slice(separator + 1);
+    const matches = dbEntries.filter(entry => entry.date === date && taskLogStartHour_(entry.hour) === startHour);
+    const targetRow = findTaskTargetRow_(visualSheet, date, startHour);
+    if (!targetRow) throw new Error('Não foi encontrado o período ' + date + ' ' + startHour + ' na folha "Log Tarefas".');
+
+    if (!matches.length) {
+      clearTaskMergedBlock_(visualSheet, targetRow, startHour + '-' + taskLogMinutesToTime_(taskLogTimeToMinutes_(startHour) + 15));
+      return;
+    }
+
+    const unique = values => values.map(value => String(value || '').trim()).filter((value, index, all) => value && all.indexOf(value) === index);
+    const tasks = unique(matches.map(entry => entry.task));
+    const categories = unique(matches.map(entry => entry.category));
+    const statuses = unique(matches.map(entry => entry.status));
+    const notes = unique(matches.map(entry => entry.notes));
+    const allowedCategories = ['Design', 'Marketing', 'Sistemas', 'Reunião', 'Vídeo', 'Outro', 'Almoço'];
+    const category = categories.length === 1 && allowedCategories.indexOf(categories[0]) !== -1 ? categories[0] : 'Outro';
+    const endMinutes = Math.max.apply(null, matches.map(entry => {
+      const times = String(entry.hour || '').match(/\d{1,2}:\d{2}/g) || [];
+      return taskLogTimeToMinutes_(times[1]) || taskLogTimeToMinutes_(startHour) + 15;
+    }));
+    writeTaskRowMerged_(visualSheet, targetRow, {
+      hour: startHour + '-' + taskLogMinutesToTime_(endMinutes),
+      task: tasks.join('\n'),
+      category: category,
+      status: statuses.length === 1 ? statuses[0] : '✅ Feito',
+      notes: notes.join('\n'),
+    });
+  });
 }
 
 function writeTaskRowMerged_(sheet, row, entry, oldEntry) {
@@ -671,27 +751,29 @@ function findTaskTargetRow_(sheet, isoDate, hourRange) {
   if (lastRow < 1) return null;
   const values = sheet.getRange(1, 1, lastRow, 5).getDisplayValues();
   let inDay = false;
+  let dayHeaderRow = null;
 
   for (let r = 0; r < values.length; r++) {
     const joined = taskLogNormalize_(values[r].join(' '));
     const isDayHeader = /\b\d{1,2}\s+de\s+(janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\b/.test(joined);
     if (isDayHeader) {
+      if (inDay && dayHeaderRow) break;
       inDay = joined.indexOf(targetDayText) !== -1;
+      if (inDay) dayHeaderRow = r + 1;
       continue;
     }
     if (!inDay) continue;
 
     const rowHour = String(values[r][0] || '').trim();
-    const rowTask = String(values[r][1] || '').trim();
-    if (rowHour === hour && !rowTask) return r + 1;
-    if (rowHour === hour && rowTask) {
-      for (let scan = r + 1; scan < Math.min(r + 6, values.length); scan++) {
-        const scanTask = String(values[scan][1] || '').trim();
-        const scanJoined = taskLogNormalize_(values[scan].join(' '));
-        if (/\b\d{1,2}\s+de\s+/.test(scanJoined)) break;
-        if (!scanTask) return scan + 1;
-      }
-    }
+    if (rowHour === hour) return r + 1;
+  }
+
+  const startMinutes = taskLogTimeToMinutes_(hour);
+  const slot = startMinutes === null ? null : (startMinutes - 9 * 60) / 15;
+  if (dayHeaderRow && slot !== null && slot >= 0 && slot <= 36 && Math.floor(slot) === slot) {
+    const targetRow = dayHeaderRow + 1 + slot;
+    sheet.getRange(targetRow, 1).setValue(hour);
+    return targetRow;
   }
   return null;
 }
