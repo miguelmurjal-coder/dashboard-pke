@@ -16,7 +16,7 @@ import signal
 import subprocess
 import time
 import uuid
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse
@@ -135,9 +135,35 @@ class Capture:
     def __init__(self, owner: str, output: Path):
         self.owner = owner
         self.output = output
-        self.segments: list[Segment] = []
+        self.segments = self.load_existing_segments()
         self.current: Segment | None = None
         self.running = True
+
+    def load_existing_segments(self) -> list[Segment]:
+        if not self.output.exists():
+            return []
+        try:
+            payload = json.loads(self.output.read_text(encoding="utf-8"))
+            raw_entries = payload if isinstance(payload, list) else payload.get("entries", [])
+            allowed = {field.name for field in fields(Segment)}
+            loaded: list[Segment] = []
+            seen: set[str] = set()
+            for raw in raw_entries:
+                if not isinstance(raw, dict) or not raw.get("id") or raw["id"] in seen:
+                    continue
+                values = {key: raw[key] for key in allowed if key in raw}
+                values.setdefault("owner", self.owner)
+                values.setdefault("confidence", 0.0)
+                values.setdefault("started_at", 0.0)
+                values.setdefault("ended_at", values["started_at"])
+                try:
+                    loaded.append(Segment(**values))
+                    seen.add(raw["id"])
+                except TypeError:
+                    continue
+            return loaded
+        except (OSError, json.JSONDecodeError, AttributeError):
+            return []
 
     def close_current(self, ended_at: float) -> None:
         if not self.current:
@@ -204,7 +230,9 @@ class Capture:
             "privacy": "local-draft",
             "entries": entries,
         }
-        self.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary = self.output.with_suffix(f"{self.output.suffix}.tmp")
+        temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary.replace(self.output)
 
     def stop(self, *_args) -> None:
         self.running = False

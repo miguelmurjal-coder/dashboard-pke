@@ -23,10 +23,16 @@ O instalador copia apenas o assistente para
 macOS nao permite que um processo de fundo execute diretamente a partir da
 iCloud Drive. O projeto e o codigo oficial continuam na pasta da iCloud.
 
-O ficheiro privado e atualizado em `~/Downloads/pke-task-drafts.json`. No MCP,
+O ficheiro privado e atualizado em `~/Downloads/pke-task-drafts.json`. O
+assistente recupera o conteúdo existente sempre que reinicia, acumula vários
+dias no mesmo ficheiro e não substitui o histórico anterior. No MCP,
 abre `Ferramentas > Log Tarefas`, carrega em **Importar atividade**, revê a
 timeline e usa **Confirmar e partilhar**. Ate esse momento nada e enviado para
 o Google Sheets nem fica visivel ao colega.
+
+Depois da partilha, os IDs confirmados ficam registados no navegador e deixam
+de voltar a aparecer como rascunhos em importações seguintes. O JSON continua
+a servir de arquivo local de recuperação, mesmo depois da publicação.
 
 Na primeira execucao o macOS pode pedir autorizacao para o Terminal controlar
 System Events, Chrome ou Safari. Essa autorizacao serve apenas para ler o nome
