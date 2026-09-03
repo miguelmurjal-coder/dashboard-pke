@@ -8,6 +8,24 @@ assert.deepEqual(Array.from(context.taskLogQuarterStarts_('14:04-14:20')), [840,
 assert.deepEqual(Array.from(context.taskLogQuarterStarts_('14:00-14:15')), [840]);
 assert.deepEqual(Array.from(context.taskLogQuarterStarts_('bad')), []);
 let writes = [];
+for (const headers of [['Hora', 'Tarefa', 'Notas', '', ''], ['Hora', 'Tarefa', 'Categoria', 'Estado', 'Notas']]) {
+  const cells = [];
+  const sheet = { getRange(row, col, height, width) {
+    return {
+      getDisplayValues: () => [headers],
+      getMergedRanges: () => [],
+      clearContent() { cells.push(['clear', col, width]); },
+      setValue(value) { cells.push([col, value]); },
+      mergeVertically() {}
+    };
+  }};
+  context.writeTaskRowMerged_(sheet, 10, {hour: '09:00-09:15', task: 'Campanha', category: 'Marketing', status: 'Feito', notes: 'Nova campanha FAP'});
+  const compact = headers[2] === 'Notas';
+  assert.ok(cells.some(cell => cell[0] === (compact ? 3 : 5) && cell[1] === 'Nova campanha FAP'));
+  assert.deepEqual(cells[0], ['clear', 2, compact ? 2 : 4]);
+  if (compact) assert.ok(cells.every(cell => typeof cell[0] !== 'number' || cell[0] <= 3));
+}
+assert.throws(() => context.taskLogVisualLayout_({getRange: () => ({getDisplayValues: () => [['unexpected']]})}));
 const merge = {
   getColumn: () => 2, getNumColumns: () => 1, getNumRows: () => 4,
   getFormula: () => '', getValue: () => 'Existing task',

@@ -494,12 +494,41 @@ function readTaskLogEntriesMerged_() {
     .reverse();
 }
 
+function taskLogVisualLayout_(sheet) {
+  const headers = sheet.getRange(1, 1, 1, 5).getDisplayValues()[0].map(taskLogNormalize_);
+  if (headers[0] === 'hora' && headers[1] === 'tarefa' && headers[2] === 'notas') {
+    return { width: 3, notes: 2, category: null, status: null };
+  }
+  if (headers[0] === 'hora' && headers[1] === 'tarefa' && headers[2] === 'categoria' && headers[3] === 'estado' && headers[4] === 'notas') {
+    return { width: 5, notes: 4, category: 2, status: 3 };
+  }
+  throw new Error('Cabeçalhos inesperados no Log Tarefas. Nenhuma alteração foi feita.');
+}
+
+function simplificarLogTarefas() {
+  const sheet = getTaskLogSheet_();
+  const layout = taskLogVisualLayout_(sheet);
+  const ui = SpreadsheetApp.getUi();
+  if (layout.width === 3) {
+    ui.alert('O Log Tarefas já tem apenas Hora, Tarefa e Notas.');
+    return;
+  }
+  if (ui.alert('Simplificar Log Tarefas', 'Confirma que já publicaste a nova versão do Apps Script. Será criada uma cópia de segurança antes de remover Categoria e Estado da folha visível.', ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
+  const backup = sheet.copyTo(sheet.getParent());
+  backup.setName('Backup Log ' + Utilities.formatDate(new Date(), 'Europe/Lisbon', 'yyyyMMdd-HHmmss'));
+  backup.hideSheet();
+  sheet.deleteColumns(3, 2);
+  SpreadsheetApp.flush();
+  ui.alert('Concluído: Hora | Tarefa | Notas. A cópia de segurança ficou num separador oculto.');
+}
+
 function readTaskLogEntriesLegacy_() {
   const sheet = getTaskLogSheet_();
   const lastRow = sheet.getLastRow();
   if (lastRow < 1) return [];
 
-  const range = sheet.getRange(1, 1, lastRow, 5);
+  const layout = taskLogVisualLayout_(sheet);
+  const range = sheet.getRange(1, 1, lastRow, layout.width);
   const values = range.getDisplayValues();
   const baseRow = range.getRow();
   const baseCol = range.getColumn();
@@ -511,7 +540,7 @@ function readTaskLogEntriesLegacy_() {
   let currentDate = null;
 
   for (let r = 0; r < values.length; r++) {
-    const cells = [0, 1, 2, 3, 4].map(c => taskLogEffectiveCell_(values, mergeMap, r, c));
+    const cells = Array.from({ length: layout.width }, (_, c) => taskLogEffectiveCell_(values, mergeMap, r, c));
     const joined = cells.filter(Boolean).join(' ');
     const normalized = taskLogNormalize_(joined);
 
@@ -550,9 +579,9 @@ function readTaskLogEntriesLegacy_() {
       date: taskLogDateKey_(currentDate),
       hour: taskLogMinutesToTime_(minute) + '-' + taskLogMinutesToTime_(Math.max(minute + 15, endMinute)),
       task: task,
-      category: String(cells[2] || 'Outro').trim() || 'Outro',
-      status: String(cells[3] || '—').trim() || '—',
-      notes: String(cells[4] || '').trim(),
+      category: layout.category === null ? 'Outro' : String(cells[layout.category] || 'Outro').trim(),
+      status: layout.status === null ? '—' : String(cells[layout.status] || '—').trim(),
+      notes: String(cells[layout.notes] || '').trim(),
       createdAt: '',
     });
   }
@@ -732,29 +761,26 @@ function writeTaskRowMerged_(sheet, row, entry, oldEntry) {
   const safeRow = row;
   const numRows = taskLogRowsForHourRange_(entry.hour);
 
-  // Só juntamos B:E. A coluna A mantém as horas de 15 em 15 minutos.
-  const writeRange = sheet.getRange(safeRow, 2, numRows, 4);
+  const layout = taskLogVisualLayout_(sheet);
+  const writeRange = sheet.getRange(safeRow, 2, numRows, layout.width - 1);
   breakApartIntersectingMerges_(writeRange);
   writeRange.clearContent();
 
   sheet.getRange(safeRow, 1).setValue(taskLogStartHour_(entry.hour));
   sheet.getRange(safeRow, 2).setValue(entry.task);
-  sheet.getRange(safeRow, 3).setValue(entry.category);
-  sheet.getRange(safeRow, 4).setValue(entry.status);
-  sheet.getRange(safeRow, 5).setValue(entry.notes);
+  if (layout.category !== null) sheet.getRange(safeRow, layout.category + 1).setValue(entry.category);
+  if (layout.status !== null) sheet.getRange(safeRow, layout.status + 1).setValue(entry.status);
+  sheet.getRange(safeRow, layout.notes + 1).setValue(entry.notes);
 
   if (numRows > 1) {
-    sheet.getRange(safeRow, 2, numRows, 1).mergeVertically();
-    sheet.getRange(safeRow, 3, numRows, 1).mergeVertically();
-    sheet.getRange(safeRow, 4, numRows, 1).mergeVertically();
-    sheet.getRange(safeRow, 5, numRows, 1).mergeVertically();
+    for (let col = 2; col <= layout.width; col++) sheet.getRange(safeRow, col, numRows, 1).mergeVertically();
   }
 }
 
 function clearTaskMergedBlock_(sheet, row, hourRange) {
   const safeRow = row;
   const numRows = taskLogRowsForHourRange_(hourRange);
-  const range = sheet.getRange(safeRow, 2, numRows, 4);
+  const range = sheet.getRange(safeRow, 2, numRows, taskLogVisualLayout_(sheet).width - 1);
   breakApartIntersectingMerges_(range);
   range.clearContent();
 }
