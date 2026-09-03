@@ -6488,12 +6488,8 @@ const DEEP_DIVE_PANELS = [
       syncMessage && h("div", { className: "rounded-xl p-3 bg-blue-50 text-blue-900 text-xs font-medium" }, syncMessage),
       h("section", { className: `task-v2-review ${selectedDrafts.length ? "" : "task-v2-review-empty"}` },
         h("div", null,
-          h("div", { className: "task-v2-kicker" }, "Log Tarefas V2 · revisão privada"),
-          h("div", { className: "task-v2-title" }, selectedDrafts.length ? `${selectedDrafts.length} ${selectedDrafts.length === 1 ? "bloco pronto" : "blocos prontos"} para rever` : "Sem rascunhos por publicar"),
-          h("label", { className: "task-field", style: { maxWidth: "18rem", marginTop: "0.7rem", marginBottom: 0 } },
-            h("span", null, "Quem está a registar"),
-            h("input", { value: owner || "", onChange: (event) => setOwner(event.target.value), placeholder: "Ex: Miguel" })
-          )
+          h("div", { className: "task-v2-kicker" }, "Revisão privada"),
+          h("div", { className: "task-v2-title" }, selectedDrafts.length ? `${selectedDrafts.length} ${selectedDrafts.length === 1 ? "bloco" : "blocos"} por publicar` : "Sem rascunhos por publicar")
         ),
         h("div", { className: "task-v2-actions" },
           h("label", { className: "task-secondary-btn", role: "button", tabIndex: 0 },
@@ -11006,7 +11002,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
         return [];
       }
     });
-    const [taskOwner, setTaskOwner] = useState(() => typeof localStorage === "undefined" ? "" : localStorage.getItem(TASK_LOG_OWNER_KEY) || "");
+    const [taskOwner, setTaskOwner] = useState("Miguel");
     const [publishingTaskDrafts, setPublishingTaskDrafts] = useState(false);
     const [taskPromptOpen, setTaskPromptOpen] = useState(false);
     const [taskPromptHour, setTaskPromptHour] = useState(quarterRangeLabel(new Date()));
