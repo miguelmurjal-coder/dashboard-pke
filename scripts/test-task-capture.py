@@ -3,6 +3,7 @@ import json
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 spec = importlib.util.spec_from_file_location("capture", Path(__file__).with_name("pke-task-capture.py"))
@@ -12,6 +13,14 @@ spec.loader.exec_module(capture)
 
 
 class CaptureTests(unittest.TestCase):
+    def test_personal_activity_does_not_create_a_task(self):
+        with tempfile.TemporaryDirectory() as directory:
+            recorder = capture.Capture("Miguel", Path(directory) / "drafts.json")
+            with patch.object(capture, "idle_seconds", return_value=0), patch.object(capture, "foreground_context", return_value=("Chrome", "Video", "https://www.youtube.com/watch?v=test")):
+                recorder.observe()
+            self.assertIsNone(recorder.current)
+            self.assertEqual(recorder.segments, [])
+
     def test_keeps_previous_days_and_only_exports_closed_segments(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "drafts.json"

@@ -187,6 +187,9 @@ class Capture:
         if not app:
             return
         task, category, confidence = classify(app, title, url)
+        if category == "Pausa":
+            self.close_current(now)
+            return
         if category == "Reunião":
             calendar_title = active_calendar_event()
             if calendar_title:

@@ -5546,6 +5546,7 @@ const DEEP_DIVE_PANELS = [
   }
   function normalizeTaskDraft(raw, owner) {
     if (!raw) return null;
+    if (String(raw.category || raw.categoria || "").trim().toLowerCase() === "pausa" || String(raw.task || raw.tarefa || "").trim().toLowerCase() === "pausa pessoal") return null;
     const start = raw.start || raw.startTime || raw.inicio || "";
     const end = raw.end || raw.endTime || raw.fim || "";
     const hour = raw.hour || raw.hora || (start && end ? `${String(start).slice(0, 5)}-${String(end).slice(0, 5)}` : "");
@@ -10997,7 +10998,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
       if (typeof localStorage === "undefined") return [];
       try {
         const stored = JSON.parse(localStorage.getItem(TASK_LOG_STORAGE_KEY) || "[]");
-        return Array.isArray(stored) ? stored.map((entry) => ({ ...entry, notes: taskManualNote(entry.notes) })) : [];
+        return Array.isArray(stored) ? stored.filter((entry) => !(entry.source === "draft" && (entry.category === "Pausa" || entry.task === "Pausa pessoal"))).map((entry) => ({ ...entry, notes: taskManualNote(entry.notes) })) : [];
       } catch (e) {
         return [];
       }
