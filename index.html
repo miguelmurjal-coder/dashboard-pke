@@ -3545,6 +3545,15 @@ input::placeholder { color: #7f93b3; }
   box-shadow: 0 0 0 3px rgba(14,165,233,0.12);
 }
 .task-field textarea { resize: vertical; }
+.task-detected-app {
+  margin-bottom: 14px;
+  padding: 9px 12px;
+  border-left: 3px solid var(--accent, #38bdf8);
+  color: var(--text-muted, #94a3b8);
+  background: rgba(56, 189, 248, 0.07);
+  font-size: 13px;
+}
+.task-detected-app strong { color: var(--text-main, #e2e8f0); }
 .task-modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -5544,7 +5553,8 @@ const DEEP_DIVE_PANELS = [
       task: String(task).trim(),
       category: raw.category || raw.categoria || "Outro",
       status: raw.status || raw.estado || "✅ Feito",
-      notes: raw.notes || raw.notas || (raw.app ? `Sugestão automática · ${raw.app}` : "Sugestão automática"),
+      notes: raw.manualNote || raw.notaManual || raw.notas || "",
+      app: raw.app || raw.program || raw.programa || "",
       owner: raw.owner || owner || "",
       confidence: Number(raw.confidence || 0),
       createdAt: raw.createdAt || new Date().toISOString()
@@ -6235,12 +6245,13 @@ const DEEP_DIVE_PANELS = [
         category,
         status,
         notes: notes.trim(),
+        app: editingEntry && editingEntry.app || "",
         createdAt: new Date().toISOString()
       }, editingEntry);
     };
     const startOptions = taskStartOptions(startTime);
     const endOptions = taskEndOptions(startTime, endTime);
-    return h("div", { className: "task-modal-backdrop" }, h("form", { className: "task-modal bg-white rounded-xl border border-slate-200", onSubmit: submit }, h("div", { className: "flex items-center justify-between mb-3" }, h("div", null, h("div", { className: "text-xs text-slate-500" }, "Log Tarefas"), h("h3", { className: "text-lg font-bold text-slate-900" }, editingEntry ? "Editar registo" : "O que fizeste neste per\xEDodo?")), h(MetricBadge, { tone: editingEntry ? "warn" : "neutral" }, editingEntry ? "Editar" : hour)), h("div", { className: "grid sm:grid-cols-2 gap-3" }, h("label", { className: "task-field" }, h("span", null, "Início"), h("select", { value: startTime, onChange: (e) => { const nextStart = e.target.value; setStartTime(nextStart); const nextStartMin = timeLabelToMinutes(nextStart) || TASK_WORKDAY_START_HOUR * 60; const currentEndMin = timeLabelToMinutes(endTime) || nextStartMin + 15; if (currentEndMin <= nextStartMin) setEndTime(minutesToTimeLabel(nextStartMin + 15)); } }, startOptions.map((slot) => h("option", { key: slot, value: slot }, slot)))), h("label", { className: "task-field" }, h("span", null, "Fim"), h("select", { value: endTime, onChange: (e) => setEndTime(e.target.value) }, endOptions.map((slot) => h("option", { key: slot, value: slot }, slot))))), h("p", { className: "text-xs text-slate-400 mb-3" }, "No Sheets, períodos com mais de 15 minutos ficam agrupados/merged automaticamente."), !editingEntry && h("div", { className: "task-preset-row" }, TASK_QUICK_PRESETS.map((preset) => h("button", { key: preset.label, type: "button", className: "task-preset-chip", onClick: () => { setTask(preset.task); setCategory(preset.category); setStatus(preset.status); } }, preset.label))), h("label", { className: "task-field" }, h("span", null, "Tarefa"), h("input", { value: task, onChange: (e) => setTask(e.target.value), placeholder: "Ex: Cria\xE7\xE3o de conte\xFAdos Reel", autoFocus: true })), h("div", { className: "grid sm:grid-cols-2 gap-3" }, h("label", { className: "task-field" }, h("span", null, "Categoria"), h("select", { value: category, onChange: (e) => setCategory(e.target.value) }, TASK_CATEGORIES.map((c) => h("option", { key: c, value: c }, c)))), h("label", { className: "task-field" }, h("span", null, "Estado"), h("select", { value: status, onChange: (e) => setStatus(e.target.value) }, TASK_STATUSES.map((s) => h("option", { key: s, value: s }, s))))), h("label", { className: "task-field" }, h("span", null, "Notas"), h("textarea", { value: notes, onChange: (e) => setNotes(e.target.value), placeholder: "Ex: Facebook em baixo; continuar quando voltar.", rows: 3 })), h("div", { className: "task-modal-actions" }, !editingEntry && h("button", { type: "button", className: "task-secondary-btn", onClick: onSnooze }, "Lembrar daqui a 15 min"), h("button", { type: "button", className: "task-ghost-btn", onClick: onClose }, "Ignorar"), h("button", { type: "submit", className: "task-primary-btn" }, editingEntry ? "Guardar altera\xE7\xF5es" : "Guardar registo"))));
+    return h("div", { className: "task-modal-backdrop" }, h("form", { className: "task-modal bg-white rounded-xl border border-slate-200", onSubmit: submit }, h("div", { className: "flex items-center justify-between mb-3" }, h("div", null, h("div", { className: "text-xs text-slate-500" }, "Log Tarefas"), h("h3", { className: "text-lg font-bold text-slate-900" }, editingEntry ? "Editar registo" : "O que fizeste neste per\xEDodo?")), h(MetricBadge, { tone: editingEntry ? "warn" : "neutral" }, editingEntry ? "Editar" : hour)), editingEntry && editingEntry.app && h("div", { className: "task-detected-app" }, "Programa detetado: ", h("strong", null, editingEntry.app)), h("div", { className: "grid sm:grid-cols-2 gap-3" }, h("label", { className: "task-field" }, h("span", null, "Início"), h("select", { value: startTime, onChange: (e) => { const nextStart = e.target.value; setStartTime(nextStart); const nextStartMin = timeLabelToMinutes(nextStart) || TASK_WORKDAY_START_HOUR * 60; const currentEndMin = timeLabelToMinutes(endTime) || nextStartMin + 15; if (currentEndMin <= nextStartMin) setEndTime(minutesToTimeLabel(nextStartMin + 15)); } }, startOptions.map((slot) => h("option", { key: slot, value: slot }, slot)))), h("label", { className: "task-field" }, h("span", null, "Fim"), h("select", { value: endTime, onChange: (e) => setEndTime(e.target.value) }, endOptions.map((slot) => h("option", { key: slot, value: slot }, slot))))), h("p", { className: "text-xs text-slate-400 mb-3" }, "No Sheets, períodos com mais de 15 minutos ficam agrupados/merged automaticamente."), !editingEntry && h("div", { className: "task-preset-row" }, TASK_QUICK_PRESETS.map((preset) => h("button", { key: preset.label, type: "button", className: "task-preset-chip", onClick: () => { setTask(preset.task); setCategory(preset.category); setStatus(preset.status); } }, preset.label))), h("label", { className: "task-field" }, h("span", null, "Tarefa"), h("input", { value: task, onChange: (e) => setTask(e.target.value), placeholder: "Ex: Nova Campanha FAP", autoFocus: true })), h("div", { className: "grid sm:grid-cols-2 gap-3" }, h("label", { className: "task-field" }, h("span", null, "Categoria"), h("select", { value: category, onChange: (e) => setCategory(e.target.value) }, TASK_CATEGORIES.map((c) => h("option", { key: c, value: c }, c)))), h("label", { className: "task-field" }, h("span", null, "Estado"), h("select", { value: status, onChange: (e) => setStatus(e.target.value) }, TASK_STATUSES.map((s) => h("option", { key: s, value: s }, s))))), h("label", { className: "task-field" }, h("span", null, "Nota opcional"), h("textarea", { value: notes, onChange: (e) => setNotes(e.target.value), placeholder: "Ex: Nova Campanha FAP", rows: 3 })), h("div", { className: "task-modal-actions" }, !editingEntry && h("button", { type: "button", className: "task-secondary-btn", onClick: onSnooze }, "Lembrar daqui a 15 min"), h("button", { type: "button", className: "task-ghost-btn", onClick: onClose }, "Ignorar"), h("button", { type: "submit", className: "task-primary-btn" }, editingEntry ? "Guardar altera\xE7\xF5es" : "Guardar registo"))));
   }
   function taskCategorySlug(category) {
     const clean = normalizePtText(category || "Outro").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -11379,7 +11390,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
         const preparedDrafts = drafts.map((draft) => ({
           ...draft,
           owner: taskOwner.trim(),
-          notes: [draft.notes, `Registado por: ${taskOwner.trim()}`].filter(Boolean).join(" · ")
+          notes: String(draft.notes || "").trim()
         }));
         const chunks = [];
         for (let i = 0; i < preparedDrafts.length; i += 5) chunks.push(preparedDrafts.slice(i, i + 5));

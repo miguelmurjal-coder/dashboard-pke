@@ -207,7 +207,7 @@ class Capture:
             task=task,
             category=category,
             app=app,
-            notes=f"Sugestão automática · {app}",
+            notes="",
             owner=self.owner,
             confidence=confidence,
             started_at=now,
