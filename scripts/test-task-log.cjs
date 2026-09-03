@@ -21,6 +21,10 @@ writes = [];
 assert.throws(() => context.breakApartIntersectingMerges_({getMergedRanges: () => [merge, {...merge, getNumColumns: () => 5, getA1Notation: () => 'A1:E1'}]}));
 assert.equal(writes.length, 0, 'Validate every merge before mutating any');
 const values = [['Quarta - 12 de Setembro'], ['14:00'], ['Quarta - 2 de Setembro'], ['14:00']];
+assert.equal(context.encontrarDiaLogTarefas_(values, "2026-09-02"), 3);
+assert.equal(context.encontrarDiaLogTarefas_(values, "2026-09-03"), null);
+assert.equal(context.encontrarDiaLogTarefas_([["Semana 36 - 2 de Setembro de 2026"], ["Quarta - 2 de Setembro"]], "2026-09-02"), 2);
+assert.equal(context.encontrarDiaLogTarefas_([["Segunda - 2 de Setembro de 2025"]], "2026-09-02"), null);
 assert.equal(context.findTaskTargetRow_({getLastRow: () => values.length, getRange: () => ({getDisplayValues: () => values})}, '2026-09-02', '14:00'), 4);
 const synced = [];
 context.getTaskLogDbSheet_ = () => ({
