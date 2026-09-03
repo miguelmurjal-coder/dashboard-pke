@@ -373,7 +373,7 @@ function doGet(e) {
     }
 
     if (p.action === 'read') {
-      return taskLogJsonp_(callback, { ok: true, entries: readTaskLogEntriesMerged_() });
+      return taskLogJsonp_(callback, { ok: true, apiVersion: '2026-09-03', entries: readTaskLogEntriesMerged_() });
     }
 
     if (p.action === 'batchAppend') {
@@ -385,7 +385,7 @@ function doGet(e) {
       if (!batchLock.tryLock(30000)) throw new Error('Log Tarefas ocupado por outra gravação. Tenta novamente.');
       try {
         const result = appendTaskLogBatch_(entries);
-        return taskLogJsonp_(callback, { ok: true, rows: result.rows, count: result.count });
+        return taskLogJsonp_(callback, { ok: true, visualSynced: true, rows: result.rows, count: result.count });
       } finally {
         batchLock.releaseLock();
       }
@@ -430,7 +430,7 @@ function doGet(e) {
       const result = p.action === 'update'
         ? updateTaskLogEntry_(entry, oldEntry)
         : appendTaskLogEntry_(entry);
-      return taskLogJsonp_(callback, { ok: true, row: result.row, mode: result.mode });
+      return taskLogJsonp_(callback, { ok: true, visualSynced: true, row: result.row, mode: result.mode });
     } finally {
       lock.releaseLock();
     }
@@ -627,7 +627,9 @@ function appendTaskLogBatch_(entries) {
 function syncTaskLogVisualForEntries_(entries) {
   const keys = {};
   entries.filter(entry => entry && entry.date && entry.hour).forEach(entry => {
-    keys[entry.date + '|' + taskLogStartHour_(entry.hour)] = true;
+    taskLogQuarterStarts_(entry.hour).forEach(start => {
+      keys[entry.date + '|' + taskLogMinutesToTime_(start)] = true;
+    });
   });
   const targetKeys = Object.keys(keys);
   if (!targetKeys.length) return;
@@ -644,7 +646,8 @@ function syncTaskLogVisualForEntries_(entries) {
     const separator = key.indexOf('|');
     const date = key.slice(0, separator);
     const startHour = key.slice(separator + 1);
-    const matches = dbEntries.filter(entry => entry.date === date && taskLogStartHour_(entry.hour) === startHour);
+    const slotMinute = taskLogTimeToMinutes_(startHour);
+    const matches = dbEntries.filter(entry => entry.date === date && taskLogQuarterStarts_(entry.hour).indexOf(slotMinute) !== -1);
     const targetRow = findTaskTargetRow_(visualSheet, date, startHour);
     if (!targetRow) throw new Error('Não foi encontrado o período ' + date + ' ' + startHour + ' na folha "Log Tarefas".');
 
@@ -660,10 +663,7 @@ function syncTaskLogVisualForEntries_(entries) {
     const notes = unique(matches.map(entry => entry.notes));
     const allowedCategories = ['Design', 'Marketing', 'Sistemas', 'Reunião', 'Vídeo', 'Outro', 'Almoço'];
     const category = categories.length === 1 && allowedCategories.indexOf(categories[0]) !== -1 ? categories[0] : 'Outro';
-    const endMinutes = Math.max.apply(null, matches.map(entry => {
-      const times = String(entry.hour || '').match(/\d{1,2}:\d{2}/g) || [];
-      return taskLogTimeToMinutes_(times[1]) || taskLogTimeToMinutes_(startHour) + 15;
-    }));
+    const endMinutes = slotMinute + 15;
     writeTaskRowMerged_(visualSheet, targetRow, {
       hour: startHour + '-' + taskLogMinutesToTime_(endMinutes),
       task: tasks.join('\n'),
@@ -672,6 +672,17 @@ function syncTaskLogVisualForEntries_(entries) {
       notes: notes.join('\n'),
     });
   });
+  SpreadsheetApp.flush();
+}
+
+function taskLogQuarterStarts_(hourRange) {
+  const times = String(hourRange || '').match(/\d{1,2}:\d{2}/g) || [];
+  const start = taskLogTimeToMinutes_(times[0]);
+  const end = times.length > 1 ? taskLogTimeToMinutes_(times[1]) : start === null ? null : start + 15;
+  if (start === null || end === null || end <= start || end > 24 * 60) return [];
+  const slots = [];
+  for (let minute = Math.floor(start / 15) * 15; minute < end; minute += 15) slots.push(minute);
+  return slots;
 }
 
 function writeTaskRowMerged_(sheet, row, entry, oldEntry) {
@@ -680,7 +691,7 @@ function writeTaskRowMerged_(sheet, row, entry, oldEntry) {
     clearTaskMergedBlock_(sheet, oldTopRow, oldEntry.hour);
   }
 
-  const safeRow = taskLogTopLeftRowForWrite_(sheet, row, 2); // coluna B / Tarefa
+  const safeRow = row;
   const numRows = taskLogRowsForHourRange_(entry.hour);
 
   // Só juntamos B:E. A coluna A mantém as horas de 15 em 15 minutos.
@@ -703,7 +714,7 @@ function writeTaskRowMerged_(sheet, row, entry, oldEntry) {
 }
 
 function clearTaskMergedBlock_(sheet, row, hourRange) {
-  const safeRow = taskLogTopLeftRowForWrite_(sheet, row, 2);
+  const safeRow = row;
   const numRows = taskLogRowsForHourRange_(hourRange);
   const range = sheet.getRange(safeRow, 2, numRows, 4);
   breakApartIntersectingMerges_(range);
@@ -711,8 +722,18 @@ function clearTaskMergedBlock_(sheet, row, hourRange) {
 }
 
 function breakApartIntersectingMerges_(range) {
-  const mergedRanges = range.getMergedRanges();
-  mergedRanges.forEach(mergedRange => mergedRange.breakApart());
+  const merges = range.getMergedRanges();
+  const preserved = merges.map(merged => {
+    if (merged.getColumn() < 2 || merged.getColumn() > 5 || merged.getNumColumns() !== 1 || merged.getNumRows() > 37 || merged.getFormula()) {
+      throw new Error('União inesperada no Log Tarefas: ' + merged.getA1Notation() + '. A estrutura foi preservada.');
+    }
+    return { merged: merged, value: merged.getValue() };
+  });
+  // Mantém o conteúdo dos períodos vizinhos quando um bloco antigo é dividido.
+  preserved.forEach(item => {
+    item.merged.breakApart();
+    item.merged.setValues(Array.from({ length: item.merged.getNumRows() }, () => [item.value]));
+  });
 }
 
 function taskLogTopLeftRowForWrite_(sheet, row, col) {
@@ -750,7 +771,6 @@ function findTaskTargetRow_(sheet, isoDate, hourRange) {
   const date = taskLogParseIsoDate_(isoDate);
   if (!date) return null;
 
-  const targetDayText = taskLogNormalize_(date.getDate() + ' de ' + taskLogMonthNamePt_(date.getMonth()));
   const hour = taskLogStartHour_(hourRange);
   const lastRow = sheet.getLastRow();
   if (lastRow < 1) return null;
@@ -763,7 +783,8 @@ function findTaskTargetRow_(sheet, isoDate, hourRange) {
     const isDayHeader = /\b\d{1,2}\s+de\s+(janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\b/.test(joined);
     if (isDayHeader) {
       if (inDay && dayHeaderRow) break;
-      inDay = joined.indexOf(targetDayText) !== -1;
+      const headerDate = taskLogParsePtDayDate_(joined, date.getFullYear());
+      inDay = headerDate && taskLogDateKey_(headerDate) === isoDate;
       if (inDay) dayHeaderRow = r + 1;
       continue;
     }

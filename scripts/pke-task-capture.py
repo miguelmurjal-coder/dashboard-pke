@@ -26,6 +26,7 @@ POLL_SECONDS = 10
 MIN_SEGMENT_SECONDS = 30
 IDLE_SECONDS = 180
 MERGE_GAP_SECONDS = 180
+MAX_SEGMENT_SECONDS = 15 * 60
 
 
 @dataclass
@@ -162,8 +163,8 @@ class Capture:
                 except TypeError:
                     continue
             return loaded
-        except (OSError, json.JSONDecodeError, AttributeError):
-            return []
+        except (OSError, json.JSONDecodeError, AttributeError) as error:
+            raise RuntimeError("Cannot read existing drafts; refusing to overwrite them") from error
 
     def close_current(self, ended_at: float) -> None:
         if not self.current:
@@ -172,12 +173,7 @@ class Capture:
         self.current.end = time_label(ended_at, round_up=True)
         duration = ended_at - self.current.started_at
         if duration >= MIN_SEGMENT_SECONDS:
-            previous = self.segments[-1] if self.segments else None
-            if previous and previous.task == self.current.task and self.current.started_at - previous.ended_at <= MERGE_GAP_SECONDS:
-                previous.end = self.current.end
-                previous.ended_at = ended_at
-            else:
-                self.segments.append(self.current)
+            self.segments.append(self.current)
         self.current = None
         self.write()
 
@@ -198,7 +194,7 @@ class Capture:
                 confidence = 0.98
         key = (task, category, app)
         current_key = (self.current.task, self.current.category, self.current.app) if self.current else None
-        if key == current_key:
+        if key == current_key and self.current.date == datetime.now().strftime("%Y-%m-%d") and now - self.current.started_at < MAX_SEGMENT_SECONDS:
             self.current.ended_at = now
             self.current.end = time_label(now, round_up=True)
             return
@@ -219,10 +215,9 @@ class Capture:
         )
 
     def write(self) -> None:
-        self.output.parent.mkdir(parents=True, exist_ok=True)
+        self.output.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         entries = [asdict(item) for item in self.segments]
-        if self.current and time.time() - self.current.started_at >= MIN_SEGMENT_SECONDS:
-            entries.append(asdict(self.current))
+        # Export only closed segments: an imported ID must never grow afterwards.
         payload = {
             "version": 2,
             "generatedAt": datetime.now().isoformat(timespec="seconds"),
@@ -232,6 +227,7 @@ class Capture:
         }
         temporary = self.output.with_suffix(f"{self.output.suffix}.tmp")
         temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary.chmod(0o600)
         temporary.replace(self.output)
 
     def stop(self, *_args) -> None:
@@ -250,7 +246,7 @@ class Capture:
 def main() -> None:
     parser = argparse.ArgumentParser(description="MCP Log Tarefas V2 activity capture")
     parser.add_argument("--owner", required=True, help="Name shown on confirmed entries")
-    parser.add_argument("--output", type=Path, default=Path.home() / "Downloads" / "pke-task-drafts.json")
+    parser.add_argument("--output", type=Path, default=Path.home() / "PKE Task Log" / "pke-task-drafts.json")
     args = parser.parse_args()
     Capture(args.owner.strip(), args.output.expanduser()).loop()
 

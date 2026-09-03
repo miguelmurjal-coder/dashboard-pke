@@ -5870,8 +5870,8 @@ const DEEP_DIVE_PANELS = [
       }
       window[cbName] = (payload) => {
         cleanup();
-        if (payload && payload.ok) resolve(payload);
-        else reject(new Error(payload && payload.error || "Erro ao gravar no Google Sheets."));
+        if (payload && payload.ok && payload.visualSynced === true) resolve(payload);
+        else reject(new Error(payload && payload.ok ? "Atualiza o Apps Script: esta versão não confirma a cópia para o Log Tarefas visível. O rascunho foi mantido." : payload && payload.error || "Erro ao gravar no Google Sheets."));
       };
       script.src = `${TASK_LOG_WRITE_ENDPOINT}?${params.toString()}`;
       script.async = true;
@@ -5905,8 +5905,8 @@ const DEEP_DIVE_PANELS = [
       }
       window[cbName] = (payload) => {
         cleanup();
-        if (payload && payload.ok) resolve(payload);
-        else reject(new Error(payload && payload.error || "Erro ao gravar lote no Google Sheets."));
+        if (payload && payload.ok && payload.visualSynced === true) resolve(payload);
+        else reject(new Error(payload && payload.ok ? "Atualiza o Apps Script: esta versão não confirma a cópia para o Log Tarefas visível. Os rascunhos foram mantidos." : payload && payload.error || "Erro ao gravar lote no Google Sheets."));
       };
       script.src = `${TASK_LOG_WRITE_ENDPOINT}?${params.toString()}`;
       script.async = true;
@@ -11337,15 +11337,31 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
           setTaskSyncMessage("O ficheiro não contém atividade reconhecível. Usa o JSON/CSV criado pelo assistente do Log V2.");
           return;
         }
-        const published = new Set(JSON.parse(localStorage.getItem(TASK_LOG_PUBLISHED_IDS_KEY) || "[]"));
-        const privateDrafts = drafts.filter((entry) => !published.has(entry.id));
+        let storedPublished = [];
+        try { storedPublished = JSON.parse(localStorage.getItem(TASK_LOG_PUBLISHED_IDS_KEY) || "[]"); } catch (_) {}
+        const published = new Set(Array.isArray(storedPublished) ? storedPublished : []);
+        const existingIds = new Set(taskEntries.map((entry) => entry.id));
+        const uniqueDrafts = [...new Map(drafts.map((entry) => [entry.id, entry])).values()];
+        const privateDrafts = uniqueDrafts.filter((entry) => !published.has(entry.id) && !existingIds.has(entry.id));
         setTaskEntries((current) => {
-          const incoming = new Map(privateDrafts.map((entry) => [entry.id, entry]));
-          const retained = current.filter((entry) => !incoming.has(entry.id));
-          return [...privateDrafts, ...retained];
+          const currentIds = new Set(current.map((entry) => entry.id));
+          return [...privateDrafts.filter((entry) => !currentIds.has(entry.id)), ...current];
         });
-        setTaskSyncMessage(`${privateDrafts.length} sugestões importadas como rascunho privado.`);
+        const dates = [...new Set(uniqueDrafts.map((entry) => entry.date))].sort();
+        const publishedCount = uniqueDrafts.filter((entry) => published.has(entry.id)).length;
+        const existingCount = uniqueDrafts.length - privateDrafts.length - publishedCount;
+        let generatedAt = null;
+        try { generatedAt = new Date(JSON.parse(String(reader.result)).generatedAt); } catch (_) {}
+        const stale = generatedAt && Number.isFinite(generatedAt.getTime()) && Date.now() - generatedAt.getTime() > 60 * 60 * 1000;
+        setTaskSyncMessage([
+          `${privateDrafts.length} novos blocos importados.`,
+          existingCount ? `${existingCount} já estavam na lista; as tuas edições foram mantidas.` : "",
+          publishedCount ? `${publishedCount} já tinham sido publicados.` : "",
+          `Datas no ficheiro: ${dates.join(", ")}.`,
+          stale ? `Atenção: ficheiro atualizado pela última vez em ${generatedAt.toLocaleString("pt-PT")}. Verifica o assistente de captura e usa o ficheiro da pasta PKE Task Log.` : ""
+        ].filter(Boolean).join(" "));
       };
+      reader.onerror = () => setTaskSyncMessage("Não foi possível ler o ficheiro. Volta a selecioná-lo.");
       reader.readAsText(file);
       event.target.value = "";
     };

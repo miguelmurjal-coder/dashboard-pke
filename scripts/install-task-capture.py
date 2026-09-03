@@ -25,7 +25,12 @@ def main() -> None:
     capture = support_dir / "pke-task-capture.py"
     shutil.copy2(source_capture, capture)
     capture.chmod(0o700)
-    output = Path.home() / "Downloads" / "pke-task-drafts.json"
+    output = Path.home() / "PKE Task Log" / "pke-task-drafts.json"
+    output.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    previous_output = Path.home() / "Downloads" / "pke-task-drafts.json"
+    if not output.exists() and previous_output.exists():
+        shutil.copy2(previous_output, output)
+        output.chmod(0o600)
     logs = Path.home() / "Library" / "Logs" / "PKE"
     launch_agents = Path.home() / "Library" / "LaunchAgents"
     plist_path = launch_agents / f"{LABEL}.plist"

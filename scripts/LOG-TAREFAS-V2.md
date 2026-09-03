@@ -23,7 +23,7 @@ O instalador copia apenas o assistente para
 macOS nao permite que um processo de fundo execute diretamente a partir da
 iCloud Drive. O projeto e o codigo oficial continuam na pasta da iCloud.
 
-O ficheiro privado e atualizado em `~/Downloads/pke-task-drafts.json`. O
+O ficheiro privado e atualizado em `~/PKE Task Log/pke-task-drafts.json`. A pasta Downloads deixa de ser usada pelo assistente, para evitar bloqueios de permissões do macOS. O instalador preserva o ficheiro antigo e copia os rascunhos existentes na primeira atualização. O
 assistente recupera o conteúdo existente sempre que reinicia, acumula vários
 dias no mesmo ficheiro e não substitui o histórico anterior. No MCP,
 abre `Ferramentas > Log Tarefas`, carrega em **Importar atividade**, revê a
