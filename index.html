@@ -5553,12 +5553,16 @@ const DEEP_DIVE_PANELS = [
       task: String(task).trim(),
       category: raw.category || raw.categoria || "Outro",
       status: raw.status || raw.estado || "✅ Feito",
-      notes: raw.manualNote || raw.notaManual || raw.notas || "",
+      notes: raw.manualNote || raw.notaManual || raw.notas || taskManualNote(raw.notes),
       app: raw.app || raw.program || raw.programa || "",
       owner: raw.owner || owner || "",
       confidence: Number(raw.confidence || 0),
       createdAt: raw.createdAt || new Date().toISOString()
     };
+  }
+  function taskManualNote(value) {
+    const note = String(value || "").trim();
+    return /^Sugestão automática · [^\n]*(?:\nSugestão automática · [^\n]*)*$/.test(note) ? "" : note;
   }
   function parseTaskDraftFile(text, owner) {
     const clean = String(text || "").trim();
@@ -11166,7 +11170,8 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
     const [taskEntries, setTaskEntries] = useState(() => {
       if (typeof localStorage === "undefined") return [];
       try {
-        return JSON.parse(localStorage.getItem(TASK_LOG_STORAGE_KEY) || "[]");
+        const stored = JSON.parse(localStorage.getItem(TASK_LOG_STORAGE_KEY) || "[]");
+        return Array.isArray(stored) ? stored.map((entry) => ({ ...entry, notes: taskManualNote(entry.notes) })) : [];
       } catch (e) {
         return [];
       }
