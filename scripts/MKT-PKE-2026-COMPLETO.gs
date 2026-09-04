@@ -841,9 +841,14 @@ function findTaskTargetRow_(sheet, isoDate, hourRange) {
   const values = sheet.getRange(1, 1, lastRow, 5).getDisplayValues();
   let inDay = false;
   let dayHeaderRow = null;
+  const daySlots = [];
 
   for (let r = 0; r < values.length; r++) {
     const joined = taskLogNormalize_(values[r].join(' '));
+    if (/\bsemana\b/.test(joined)) {
+      if (inDay) break;
+      continue;
+    }
     const isDayHeader = /\b\d{1,2}\s+de\s+(janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)\b/.test(joined);
     if (isDayHeader) {
       if (inDay && dayHeaderRow) break;
@@ -855,14 +860,26 @@ function findTaskTargetRow_(sheet, isoDate, hourRange) {
     if (!inDay) continue;
 
     const rowHour = String(values[r][0] || '').trim();
-    if (rowHour === hour) return r + 1;
+    const rowMinute = /^\d{1,2}:\d{2}$/.test(rowHour) ? taskLogTimeToMinutes_(rowHour) : null;
+    if (rowMinute !== null) {
+      if (rowMinute === taskLogTimeToMinutes_(hour)) return r + 1;
+      daySlots.push({ row: r + 1, minute: rowMinute });
+    }
   }
 
   const startMinutes = taskLogTimeToMinutes_(hour);
-  const slot = startMinutes === null ? null : (startMinutes - 9 * 60) / 15;
-  if (dayHeaderRow && slot !== null && slot >= 0 && slot <= 36 && Math.floor(slot) === slot) {
-    const targetRow = dayHeaderRow + 1 + slot;
-    sheet.getRange(targetRow, 1).setValue(hour);
+  if (dayHeaderRow && daySlots.length && startMinutes !== null && startMinutes >= 0 && startMinutes < 1440 && startMinutes % 15 === 0) {
+    const following = daySlots.find(slot => slot.minute > startMinutes);
+    const targetRow = following ? following.row : daySlots[daySlots.length - 1].row + 1;
+    const width = taskLogVisualLayout_(sheet).width;
+    const boundary = sheet.getRange(Math.max(1, targetRow - 1), 1, 2, width);
+    if (boundary.getMergedRanges().some(merge => merge.getRow() < targetRow && merge.getLastRow() >= targetRow)) {
+      throw new Error('O horário ' + hour + ' cruza um bloco unido. A folha foi preservada.');
+    }
+    if (targetRow > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), 1);
+    else sheet.insertRowsBefore(targetRow, 1);
+    sheet.getRange(targetRow, 1, 1, width).clearContent().clearDataValidations();
+    sheet.getRange(targetRow, 1).setNumberFormat('@').setValue(hour);
     return targetRow;
   }
   return null;

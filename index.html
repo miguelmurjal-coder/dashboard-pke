@@ -6402,10 +6402,10 @@ const DEEP_DIVE_PANELS = [
       const range = taskRangeMinutes(entry) || { start: timeLabelToMinutes(taskLogStartHour(entry.hour)) || workStart, end: (timeLabelToMinutes(taskLogStartHour(entry.hour)) || workStart) + 15 };
       return {
         entry,
-        start: Math.max(workStart, range.start),
-        end: Math.min(workEnd, Math.max(range.start + 15, range.end))
+        start: range.start,
+        end: Math.max(range.start + 15, range.end)
       };
-    }).filter((item) => item.end > workStart && item.start < workEnd).sort((a, b) => a.start - b.start || a.end - b.end);
+    }).filter((item) => item.start >= 0 && item.end <= 1440 && item.end > item.start).sort((a, b) => a.start - b.start || a.end - b.end);
     const grouped = Array.from(sorted.reduce((groups, item) => {
       const key = `${item.start}-${item.end}`;
       if (!groups.has(key)) groups.set(key, { start: item.start, end: item.end, entries: [] });

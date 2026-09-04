@@ -45,6 +45,25 @@ assert.equal(context.encontrarDiaLogTarefas_([["Semana 36 - 2 de Setembro de 202
 assert.equal(context.encontrarDiaLogTarefas_([["Segunda - 2 de Setembro de 2025"]], "2026-09-02"), null);
 assert.equal(context.findTaskTargetRow_({getLastRow: () => values.length, getRange: () => ({getDisplayValues: () => values})}, '2026-09-02', '14:00'), 4);
 const synced = [];
+for (const [hour, expectedRow] of [['08:15', 3], ['18:15', 5]]) {
+  const rows = [['Hora', 'Tarefa', 'Notas', '', ''], ['Sexta - 4 de Setembro'], ['09:00'], ['18:00'], ['Segunda - 7 de Setembro']];
+  const inserted = [];
+  const sheet = {
+    getLastRow: () => rows.length,
+    getMaxRows: () => 100,
+    insertRowsBefore: row => inserted.push(row),
+    getRange: (row, col, height) => ({
+      getDisplayValues: () => height === 1 ? [rows[0]] : rows,
+      getMergedRanges: () => [],
+      clearContent() { return this; },
+      clearDataValidations() { return this; },
+      setNumberFormat() { return this; },
+      setValue(value) { assert.equal(value, hour); }
+    })
+  };
+  assert.equal(context.findTaskTargetRow_(sheet, '2026-09-04', hour), expectedRow);
+  assert.deepEqual(inserted, [expectedRow]);
+}
 context.getTaskLogDbSheet_ = () => ({
   getLastRow: () => 3,
   getRange: () => ({getDisplayValues: () => [
