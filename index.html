@@ -4129,6 +4129,24 @@ input::placeholder { color: #7f93b3; }
   box-shadow: 0 24px 70px rgba(0,0,0,0.45);
 }
 .password-submit { width: 100%; }
+.password-screen { flex-direction: column; color: #fff; padding-bottom: 8rem; }
+.shared-alert-panel { text-align: center; width: min(30rem, 100%); }
+.shared-alert-panel h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); margin: 0 0 1rem; }
+.shared-alert-button { width: clamp(10rem, 35vw, 15rem); aspect-ratio: 1; border-radius: 50%; border: 6px solid #fda4af; background: linear-gradient(145deg, #fb7185, #be123c); color: #fff; font-size: 1.4rem; font-weight: 800; box-shadow: 0 0 60px #fb718540, 0 12px 0 #881337; cursor: pointer; margin: 1.5rem 0; }
+.shared-alert-button:active { transform: translateY(5px); box-shadow: 0 7px 0 #881337; }
+.shared-alert-button:disabled { opacity: .55; cursor: wait; }
+.shared-alert-button:focus-visible, .login-dock-toggle:focus-visible, .alert-sound-toggle:focus-visible { outline: 3px solid #38bdf8; outline-offset: 5px; }
+.alert-sound-toggle { border: 1px solid #94a3b8; border-radius: .6rem; padding: .6rem 1rem; background: #ffffff12; color: #fff; cursor: pointer; }
+.shared-alert-status { min-height: 3rem; margin: 1rem 0; color: #cbd5e1; font-size: .9rem; }
+.login-dock { position: fixed; bottom: max(1rem, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(24rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; z-index: 40; }
+.login-dock-toggle { width: 100%; padding: 1rem; border: 1px solid #64748b; border-radius: .8rem; background: #0b1f3f; color: white; font-weight: 700; cursor: pointer; }
+.login-dock .password-card { width: 100%; margin-top: .5rem; color: #0f172a; }
+.shared-alert-notice { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 1000; max-width: calc(100% - 2rem); padding: 1rem 1.5rem; border-radius: .8rem; background: #be123c; color: white; font-weight: 700; box-shadow: 0 10px 40px #0005; }
+body.shared-alert-active #root { animation: shared-alert-shake .55s ease-in-out; }
+@keyframes shared-alert-shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { body.shared-alert-active #root { animation: none; } }
+@media (max-height: 600px) { .password-screen { justify-content: flex-start; } .shared-alert-button { width: 8rem; margin: .5rem; } }
+
 
 </style>
 </head>
@@ -6546,23 +6564,163 @@ const DEEP_DIVE_PANELS = [
       )
     );
   }
-  function PasswordGate({ onUnlock }) {
+  function sharedAlertRequest(action, extra = {}) {
+    return new Promise((resolve, reject) => {
+      const callback = `__pkeAlert_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+      const script = document.createElement("script");
+      let timer;
+      const cleanup = () => { clearTimeout(timer); script.remove(); delete window[callback]; };
+      window[callback] = payload => {
+        cleanup();
+        if (payload && payload.ok) resolve(payload);
+        else reject(new Error(payload && payload.error || "Alerta partilhado indisponível."));
+      };
+      script.onerror = () => { cleanup(); reject(new Error("Sem ligação ao alerta partilhado.")); };
+      script.src = `${TASK_LOG_WRITE_ENDPOINT}?${new URLSearchParams({ action, callback, token: TASK_LOG_WRITE_TOKEN, ...extra })}`;
+      timer = setTimeout(() => { cleanup(); reject(new Error("Sem resposta do alerta partilhado.")); }, 12000);
+      document.head.appendChild(script);
+    });
+  }
+  function useSharedAlert() {
+    const [connected, setConnected] = useState(false);
+    const [sending, setSending] = useState(false);
+    const [soundEnabled, setSoundEnabled] = useState(false);
+    const [status, setStatus] = useState("A ligar ao alerta partilhado…");
+    const cursor = useRef(null);
+    const audio = useRef(null);
+    const alive = useRef(true);
+    const busy = useRef(false);
+    const seen = useRef(new Set());
+    const visual = useRef(null);
+    const visualTimer = useRef(null);
+    const oldTitle = useRef(null);
+    const signal = useCallback(event => {
+      if (!alive.current || seen.current.has(event.id)) return;
+      seen.current.add(event.id);
+      if (seen.current.size > 100) seen.current.delete(seen.current.values().next().value);
+      if (Date.now() - event.at > 60000) return;
+      document.body.classList.remove("shared-alert-active");
+      void document.body.offsetWidth;
+      document.body.classList.add("shared-alert-active");
+      if (!visual.current) {
+        const notice = document.createElement("div");
+        notice.className = "shared-alert-notice";
+        notice.setAttribute("role", "alert");
+        notice.textContent = "🔔 Alguém está a chamar a equipa!";
+        document.body.appendChild(notice);
+        visual.current = notice;
+        oldTitle.current = document.title;
+      }
+      document.title = "🔔 Alerta PKE";
+      clearTimeout(visualTimer.current);
+      visualTimer.current = setTimeout(() => {
+        document.body.classList.remove("shared-alert-active");
+        if (visual.current) visual.current.remove();
+        visual.current = null;
+        if (oldTitle.current !== null) document.title = oldTitle.current;
+        oldTitle.current = null;
+      }, 5000);
+      if (navigator.vibrate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        try { navigator.vibrate([180, 100, 180]); } catch (_) {}
+      }
+      const ctx = audio.current;
+      if (ctx && ctx.state === "running") {
+        [0, .28, .56].forEach(delay => {
+          const oscillator = ctx.createOscillator();
+          const gain = ctx.createGain();
+          oscillator.frequency.value = 880;
+          gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+          gain.gain.linearRampToValueAtTime(.16, ctx.currentTime + delay + .02);
+          gain.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + delay + .22);
+          oscillator.connect(gain); gain.connect(ctx.destination);
+          oscillator.start(ctx.currentTime + delay); oscillator.stop(ctx.currentTime + delay + .24);
+        });
+      } else {
+        setSoundEnabled(false);
+      }
+    }, []);
+    const enableSound = async () => {
+      try {
+        const Audio = window.AudioContext || window.webkitAudioContext;
+        if (!Audio) throw new Error("unsupported");
+        if (!audio.current) audio.current = new Audio();
+        await audio.current.resume();
+        if (audio.current.state !== "running") throw new Error("blocked");
+        if (alive.current) setSoundEnabled(true);
+      } catch (_) {
+        if (alive.current) setStatus("O browser não permitiu o som. Os avisos visuais continuam ativos.");
+      }
+    };
+    useEffect(() => {
+      alive.current = true;
+      let stopped = false;
+      let timer;
+      const poll = async () => {
+        try {
+          const result = await sharedAlertRequest("alertRead", cursor.current === null ? {} : { after: String(cursor.current) });
+          if (stopped) return;
+          if (cursor.current !== null) (result.events || []).forEach(signal);
+          cursor.current = Math.max(cursor.current || 0, result.sequence);
+          setConnected(true);
+          setStatus("Ligado · o alerta chega às páginas abertas em poucos segundos.");
+        } catch (_) {
+          if (stopped) return;
+          setConnected(false);
+          setStatus("Sem ligação ao alerta partilhado. A tentar novamente…");
+        }
+        if (!stopped) timer = setTimeout(poll, 4000);
+      };
+      poll();
+      return () => {
+        stopped = true; alive.current = false; clearTimeout(timer); clearTimeout(visualTimer.current);
+        if (visual.current) visual.current.remove();
+        document.body.classList.remove("shared-alert-active");
+        if (oldTitle.current !== null) document.title = oldTitle.current;
+        if (audio.current) audio.current.close().catch(() => {});
+      };
+    }, [signal]);
+    const send = async () => {
+      if (busy.current || !connected) return;
+      busy.current = true; setSending(true);
+      // Resume audio within the button's user gesture, before the network request.
+      enableSound();
+      try {
+        const result = await sharedAlertRequest("alertSend", { id: window.crypto.randomUUID() });
+        signal(result.event);
+        if (alive.current) setStatus("Alerta enviado à equipa.");
+      } catch (_) {
+        if (alive.current) setStatus("Não foi possível confirmar o envio. Tenta novamente.");
+      } finally {
+        busy.current = false;
+        if (alive.current) setSending(false);
+      }
+    };
+    return { connected, sending, soundEnabled, status, enableSound, send };
+  }
+  function PasswordGate({ onUnlock, alert }) {
     const [password, setPassword] = useState("");
     const [error, setError] = useState(false);
-    const submit = (e) => {
+    const [expanded, setExpanded] = useState(false);
+    const submit = e => {
       e.preventDefault();
-      if (password === DASHBOARD_PASSWORD) {
-        setError(false);
-        onUnlock();
-        return;
-      }
-      setError(true);
-      setPassword("");
+      if (password === DASHBOARD_PASSWORD) { setError(false); onUnlock(); return; }
+      setError(true); setPassword("");
     };
-    return h("div", { className: "password-screen" }, h("form", { className: "password-card bg-white rounded-xl border border-slate-200", onSubmit: submit }, h("div", { className: "text-xs text-slate-500 font-semibold" }, "PKE Marketing Control Panel"), h("h1", { className: "text-xl font-bold text-slate-900" }, "Acesso protegido"), h("p", { className: "text-sm text-slate-400" }, "Introduz a password para aceder ao painel de marketing."), h("label", { className: "task-field" }, h("span", null, "Password"), h("input", { type: "password", inputMode: "numeric", value: password, onChange: (e) => {
-      setPassword(e.target.value);
-      setError(false);
-    }, autoFocus: true })), error && h("p", { className: "text-xs text-red-600 font-semibold" }, "Password incorreta."), h("button", { type: "submit", className: "task-primary-btn password-submit" }, "Entrar")));
+    return h("div", { className: "password-screen" },
+      h("main", { className: "shared-alert-panel" },
+        h("h1", null, "PKE Marketing Control Panel"),
+        h("p", null, "Precisas de chamar a atenção da equipa?"),
+        h("button", { type: "button", className: "shared-alert-button", onClick: alert.send, disabled: !alert.connected || alert.sending, "aria-label": "Enviar alerta à equipa" }, alert.sending ? "A enviar…" : "🔔 Chamar"),
+        h("div", null, h("button", { type: "button", className: "alert-sound-toggle", onClick: alert.enableSound, disabled: alert.soundEnabled }, alert.soundEnabled ? "Som ativado neste browser" : "Ativar som neste browser")),
+        h("p", { className: "shared-alert-status", role: "status" }, alert.status),
+        h("p", { className: "text-xs text-slate-400" }, "Ativa o som para ouvir os alertas. Vibração disponível nos dispositivos compatíveis.")),
+      h("section", { className: "login-dock", "aria-label": "Acesso ao painel" },
+        h("button", { type: "button", className: "login-dock-toggle", "aria-expanded": expanded, "aria-controls": "password-form", onClick: () => setExpanded(!expanded) }, expanded ? "Fechar acesso ao painel ▾" : "Abrir acesso ao painel ▴"),
+        expanded && h("form", { id: "password-form", className: "password-card bg-white rounded-xl border border-slate-200", onSubmit: submit },
+          h("h2", { className: "text-xl font-bold text-slate-900" }, "Acesso protegido"),
+          h("label", { className: "task-field" }, h("span", null, "Password"), h("input", { type: "password", inputMode: "numeric", autoComplete: "current-password", value: password, onChange: e => { setPassword(e.target.value); setError(false); }, autoFocus: true })),
+          error && h("p", { role: "alert", className: "text-xs text-red-600 font-semibold" }, "Password incorreta."),
+          h("button", { type: "submit", className: "task-primary-btn password-submit" }, "Entrar"))));
   }
   function TaskReminderToast({ notice, notificationPermission, onOpen, onSnooze, onDismiss, onEnableNotifications }) {
     if (!notice) return null;
@@ -10977,6 +11135,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
     );
   }
   function App() {
+    const sharedAlert = useSharedAlert();
     const [authenticated, setAuthenticated] = useState(false);
     const [selected, setSelected] = useState("Dashboard MKT");
     const [activeDeepPanel, setActiveDeepPanel] = useState("Resultados Totais");
@@ -11345,7 +11504,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
     };
     const activeSheet = SHEETS.find((s) => s.name === selected) || SHEETS[0];
     if (!authenticated) {
-      return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true) });
+      return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true), alert: sharedAlert });
     }
     const showPeriodFilter = selected !== "Ferramentas" || activeToolPanel === "Gerador de Relatórios";
     return /* @__PURE__ */ React.createElement("div", { className: `min-h-screen bg-slate-100 flex app-shell theme-${visualTheme} ${helpMode ? "help-mode-on" : ""} ${win98Mode ? "win98-mode" : ""}`, style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
