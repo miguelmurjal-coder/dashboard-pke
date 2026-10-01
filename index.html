@@ -4109,66 +4109,75 @@ input::placeholder { color: #7f93b3; }
 .task-agenda-card-almoco { border-left-color: #FBBF24; }
 .task-agenda-card-outro { border-left-color: #94A3B8; }
 
-/* Password gate */
+/* Login and shared team space */
 .password-screen {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  background:
-    radial-gradient(circle at top left, rgba(14,165,233,0.18), transparent 32rem),
-    linear-gradient(160deg, #0a0e1a 0%, #0B1F3F 100%);
+  min-height: 100svh; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 2.5rem 1.25rem 8rem; color: #263b34;
+  background: radial-gradient(ellipse at 15% 15%, #e7eee680, transparent 55%), #f5f6f2;
 }
-.password-card {
-  width: min(24rem, 100%);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  box-shadow: 0 24px 70px rgba(0,0,0,0.45);
+.shared-alert-panel {
+  width: min(28rem, 100%); padding: 2.5rem; text-align: center;
+  background: #fff; border: 1px solid #e1e7df; border-radius: 1.5rem;
+  box-shadow: 0 20px 65px #24392f08;
 }
+.login-brand { display: flex; justify-content: center; align-items: center; gap: .75rem; margin-bottom: 1.5rem; }
+.login-brand-mark { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: .8rem; background: #294b40; color: #fff; font-size: .75rem; letter-spacing: .04em; font-weight: 800; }
+.login-brand-label { font-size: .65rem; text-transform: uppercase; letter-spacing: .17em; color: #63746a; }
+.shared-alert-panel h1 { font-size: clamp(1.6rem, 4vw, 1.85rem); line-height: 1.2; font-weight: 650; letter-spacing: -.04em; margin: 0 0 .65rem; color: #23372e; }
+.login-intro { font-size: .9rem; line-height: 1.6; color: #64746b; margin: 0; }
+.panel-nickname { text-align: left; margin: 1.8rem 0; }
+.panel-nickname label { display: block; font-size: .8rem; font-weight: 600; margin-bottom: .5rem; color: #42574a; }
+.panel-nickname input { width: 100%; padding: .8rem .9rem; border-radius: .65rem; border: 1px solid #dce3da; background: #fafbf8; color: #263b34; font: inherit; font-size: .9rem; }
+.panel-nickname input::placeholder { color: #7c897f; }
+.panel-nickname small { display: block; margin-top: .5rem; font-size: .7rem; line-height: 1.5; color: #6c7b70; }
+.login-alert-area { border-top: 1px solid #e9ede6; padding-top: 1.6rem; }
+.login-alert-caption { color: #617167; font-size: .8rem; line-height: 1.5; margin: 0 0 1rem; }
+.shared-alert-button {
+  display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+  min-height: 3rem; padding: .8rem 1.5rem; border-radius: .8rem; border: 1px solid #294b40;
+  background: #294b40; color: #fff; font: inherit; font-size: .9rem; font-weight: 600;
+  cursor: pointer; transition: background .15s, box-shadow .15s;
+}
+.shared-alert-button svg { width: 1.1rem; height: 1.1rem; flex-shrink: 0; }
+.shared-alert-button:hover:not(:disabled) { background: #1f3d33; box-shadow: 0 4px 12px #294b4020; }
+.shared-alert-button:active:not(:disabled) { background: #163027; }
+.shared-alert-button:disabled { opacity: .5; cursor: default; }
+.shared-alert-button:focus-visible, .login-dock-toggle:focus-visible, .alert-sound-toggle:focus-visible,
+.panel-chat-toggle:focus-visible, .panel-nickname input:focus-visible, .panel-chat input:focus-visible,
+.panel-chat textarea:focus-visible { outline: 3px solid #8eb7a4; outline-offset: 3px; }
+.alert-sound-toggle { border: 0; border-radius: .5rem; padding: .6rem .5rem; margin-top: .5rem; background: transparent; color: #496556; font: inherit; font-size: .75rem; cursor: pointer; }
+.alert-sound-toggle:hover:not(:disabled) { background: #f0f4ed; }
+.alert-sound-toggle:disabled { color: #65796c; cursor: default; }
+.shared-alert-status { min-height: 2.4rem; margin: 1rem 0 .5rem; color: #67776c; font-size: .72rem; line-height: 1.5; }
+.login-alert-help { font-size: .65rem; line-height: 1.5; color: #6e7d72; margin: 0; }
+.login-dock { position: fixed; bottom: max(1rem, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(22rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; z-index: 40; }
+.login-dock-toggle { width: 100%; padding: .85rem 1rem; border: 1px solid #dbe3d7; border-radius: .8rem; background: #ffffffed; color: #496051; font: inherit; font-size: .8rem; font-weight: 500; cursor: pointer; box-shadow: 0 4px 16px #24392f05; }
+.password-card { padding: 1.4rem; display: flex; flex-direction: column; gap: .85rem; box-shadow: 0 8px 30px #24392f12; }
+.login-dock .password-card { width: 100%; margin-top: .5rem; color: #263b34; background: #fff; border: 1px solid #dbe3d7; border-radius: .9rem; }
 .password-submit { width: 100%; }
-.password-screen { flex-direction: column; color: #fff; padding-bottom: 8rem; }
-.shared-alert-panel { text-align: center; width: min(30rem, 100%); }
-.shared-alert-panel h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); margin: 0 0 1rem; }
-.shared-alert-button { width: clamp(10rem, 35vw, 15rem); aspect-ratio: 1; border-radius: 50%; border: 6px solid #fda4af; background: linear-gradient(145deg, #fb7185, #be123c); color: #fff; font-size: 1.4rem; font-weight: 800; box-shadow: 0 0 60px #fb718540, 0 12px 0 #881337; cursor: pointer; margin: 1.5rem 0; }
-.shared-alert-button:active { transform: translateY(5px); box-shadow: 0 7px 0 #881337; }
-.shared-alert-button:disabled { opacity: .55; cursor: wait; }
-.shared-alert-button:focus-visible, .login-dock-toggle:focus-visible, .alert-sound-toggle:focus-visible { outline: 3px solid #38bdf8; outline-offset: 5px; }
-.alert-sound-toggle { border: 1px solid #94a3b8; border-radius: .6rem; padding: .6rem 1rem; background: #ffffff12; color: #fff; cursor: pointer; }
-.shared-alert-status { min-height: 3rem; margin: 1rem 0; color: #cbd5e1; font-size: .9rem; }
-.login-dock { position: fixed; bottom: max(1rem, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(24rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); overflow: auto; z-index: 40; }
-.login-dock-toggle { width: 100%; padding: 1rem; border: 1px solid #64748b; border-radius: .8rem; background: #0b1f3f; color: white; font-weight: 700; cursor: pointer; }
-.login-dock .password-card { width: 100%; margin-top: .5rem; color: #0f172a; }
-.shared-alert-notice { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 1000; max-width: calc(100% - 2rem); padding: 1rem 1.5rem; border-radius: .8rem; background: #be123c; color: white; font-weight: 700; box-shadow: 0 10px 40px #0005; }
+.login-dock .password-submit { background: #294b40; }
+.shared-alert-notice { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 1000; max-width: calc(100% - 2rem); padding: 1rem 1.5rem; border: 1px solid #b9d4c4; border-radius: .8rem; background: #e7f1e9; color: #294b40; font-weight: 600; box-shadow: 0 8px 30px #24392f15; }
 body.shared-alert-active #root { animation: shared-alert-shake .55s ease-in-out; }
 @keyframes shared-alert-shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
-@media (prefers-reduced-motion: reduce) { body.shared-alert-active #root { animation: none; } }
-@media (max-height: 600px) { .password-screen { justify-content: flex-start; } .shared-alert-button { width: 8rem; margin: .5rem; } }
-
-
-.panel-chat { position: fixed; right: 1rem; bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 45; width: min(22rem, calc(100% - 2rem)); color: #e2e8f0; background: #0b1f3f; border: 1px solid #64748b; border-radius: .85rem; box-shadow: 0 14px 45px #0005; font-family: system-ui, sans-serif; }
-.panel-chat-toggle { display: flex; align-items: center; justify-content: space-between; gap: .7rem; width: 100%; background: none; border: 0; color: inherit; padding: 1rem; cursor: pointer; font-weight: 700; }
-.panel-chat-toggle:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; border-radius: .85rem; }
-.panel-chat-online { font-size: .8rem; color: #86efac; font-weight: 500; text-align: right; overflow-wrap: anywhere; min-width: 0; }
-.panel-nickname { text-align: left; max-width: 20rem; margin: 1rem auto 0; }
-.panel-nickname label { display: block; font-size: .85rem; margin-bottom: .35rem; }
-.panel-nickname input { width: 100%; padding: .7rem; border-radius: .6rem; border: 1px solid #64748b; background: #081629; color: white; font: inherit; }
-.panel-nickname small { display: block; margin-top: .35rem; color: #94a3b8; }
+.panel-chat { position: fixed; right: 1rem; bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 45; width: min(22rem, calc(100% - 2rem)); color: #31493a; background: #fff; border: 1px solid #dbe3d7; border-radius: 1rem; box-shadow: 0 8px 35px #24392f0d; font-family: system-ui, sans-serif; }
+.panel-chat-toggle { display: flex; align-items: center; justify-content: space-between; gap: .7rem; width: 100%; background: none; border: 0; color: inherit; padding: 1rem; cursor: pointer; font-size: .85rem; font-weight: 600; }
+.panel-chat-online { font-size: .7rem; color: #4b7460; font-weight: 400; text-align: right; overflow-wrap: anywhere; min-width: 0; }
 .panel-chat-body { padding: 0 1rem 1rem; max-height: calc(100dvh - 12rem); overflow: auto; }
-.panel-chat-messages { height: min(14rem, 28dvh); overflow-y: auto; border: 1px solid #334155; border-radius: .5rem; padding: .7rem; margin: .75rem 0; background: #081629; }
+.panel-chat-messages { height: min(14rem, 28dvh); overflow-y: auto; border: 1px solid #e3e9df; border-radius: .65rem; padding: .8rem; margin: .75rem 0; background: #f7f9f4; }
 .panel-chat-message { margin-bottom: .8rem; overflow-wrap: anywhere; }
-.panel-chat-message p { white-space: pre-wrap; margin: .2rem 0 0; font-size: .9rem; }
-.panel-chat-message time { color: #94a3b8; margin-left: .5rem; font-size: .7rem; }
-.panel-chat label { display: block; font-size: .8rem; }
-.panel-chat input, .panel-chat textarea { display: block; width: 100%; padding: .55rem; margin-top: .3rem; border: 1px solid #64748b; border-radius: .4rem; color: #f8fafc; background: #081629; font: inherit; }
+.panel-chat-message p { white-space: pre-wrap; margin: .2rem 0 0; font-size: .85rem; }
+.panel-chat-message time { color: #6e7f73; margin-left: .5rem; font-size: .65rem; }
+.panel-chat label { display: block; font-size: .75rem; margin-top: .5rem; }
+.panel-chat input, .panel-chat textarea { display: block; width: 100%; padding: .65rem; margin-top: .3rem; border: 1px solid #dce3da; border-radius: .55rem; color: #263b34; background: #fff; font: inherit; font-size: .85rem; }
 .panel-chat textarea { resize: vertical; min-height: 3.5rem; max-height: 8rem; }
-.panel-chat button[type=submit] { margin-top: .5rem; background: #0369a1; color: white; padding: .6rem 1rem; border: 0; border-radius: .4rem; cursor: pointer; }
+.panel-chat button[type=submit] { margin-top: .6rem; background: #294b40; color: white; padding: .6rem 1rem; border: 0; border-radius: .55rem; cursor: pointer; font-size: .8rem; }
 .panel-chat button:disabled { opacity: .5; cursor: default; }
-.panel-chat-hint { font-size: .75rem; color: #94a3b8; margin: .6rem 0 0; }
-.panel-chat-error { color: #fda4af; font-size: .8rem; }
+.panel-chat-hint { font-size: .7rem; line-height: 1.5; color: #6c7c70; margin: .6rem 0 0; }
+.panel-chat-error { color: #a53c3c; font-size: .75rem; }
+@media (prefers-reduced-motion: reduce) { body.shared-alert-active #root { animation: none; } .shared-alert-button { transition: none; } }
 @media (max-width: 1100px) { .panel-chat--login { bottom: 5rem; } }
+@media (max-width: 480px) { .shared-alert-panel { padding: 1.8rem 1.4rem; border-radius: 1.15rem; } .password-screen { padding-top: 1.5rem; padding-bottom: 10rem; } }
+@media (max-height: 700px) { .password-screen { justify-content: flex-start; } }
 
 </style>
 </head>
@@ -6886,16 +6895,21 @@ const DEEP_DIVE_PANELS = [
     return h("div", { className: "password-screen" },
       h(PanelChat, { chat, login: true }),
       h("main", { className: "shared-alert-panel" },
-        h("h1", null, "PKE Marketing Control Panel"),
+        h("div", { className: "login-brand" }, h("span", { className: "login-brand-mark", "aria-hidden": "true" }, "PKE"), h("span", { className: "login-brand-label" }, "Espaço da equipa")),
+        h("h1", null, "Marketing Control Panel"),
+        h("p", { className: "login-intro" }, "A equipa, à distância de um toque."),
         h("div", { className: "panel-nickname" },
           h("label", { htmlFor: "panel-access-nickname" }, "O teu nickname"),
           h("input", { id: "panel-access-nickname", autoComplete: "nickname", maxLength: 24, placeholder: "Ex.: Verónica", value: chat.name, onChange: e => chat.updateName(e.target.value) }),
           h("small", null, "Guardado neste browser · usado no chat e na lista online.")),
-        h("p", null, "Precisas de chamar a atenção da equipa?"),
-        h("button", { type: "button", className: "shared-alert-button", onClick: alert.send, disabled: !alert.connected || alert.sending, "aria-label": "Enviar alerta à equipa" }, alert.sending ? "A enviar…" : "🔔 Chamar"),
+        h("div", { className: "login-alert-area" },
+        h("p", { className: "login-alert-caption" }, "Envia um alerta a quem tem esta página aberta."),
+        h("button", { type: "button", className: "shared-alert-button", onClick: alert.send, disabled: !alert.connected || alert.sending, "aria-label": "Enviar alerta à equipa" },
+          h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, h("path", { d: "M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" })),
+          alert.sending ? "A enviar…" : "Chamar a equipa"),
         h("div", null, h("button", { type: "button", className: "alert-sound-toggle", onClick: alert.enableSound, disabled: alert.soundEnabled }, alert.soundEnabled ? "Som ativado neste browser" : "Ativar som neste browser")),
         h("p", { className: "shared-alert-status", role: "status" }, alert.status),
-        h("p", { className: "text-xs text-slate-400" }, "Ativa o som para ouvir os alertas. Vibração disponível nos dispositivos compatíveis.")),
+        h("p", { className: "login-alert-help" }, "Som e vibração nos dispositivos compatíveis."))),
       h("section", { className: "login-dock", "aria-label": "Acesso ao painel" },
         h("button", { type: "button", className: "login-dock-toggle", "aria-expanded": expanded, "aria-controls": "password-form", onClick: () => setExpanded(!expanded) }, expanded ? "Fechar acesso ao painel ▾" : "Abrir acesso ao painel ▴"),
         expanded && h("form", { id: "password-form", className: "password-card bg-white rounded-xl border border-slate-200", onSubmit: submit },
