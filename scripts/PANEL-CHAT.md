@@ -97,3 +97,21 @@ implementada: Web Push com service worker e servidor de envio, ou um serviço
 com aplicação móvel de notificações. No iPhone, Web Push requer iOS/iPadOS 16.4+
 e uma web app adicionada ao ecrã principal, com permissão de notificações.
 A escolha depende do telefone e de se é necessário receber em segundo plano.
+
+## Recuperação de ligação
+
+A página envia pedidos de chat e alertas em sequência, para reduzir concorrência
+no lock partilhado do Apps Script. Cada pedido pode aguardar até 25 segundos.
+Uma falha transitória após uma leitura recente mostra **A restabelecer ligação**;
+as mensagens anteriores são conservadas, mas o total anterior é identificado
+como **Última leitura**, em vez de apresentado como presença atual.
+
+Após três falhas seguidas ou 90 segundos sem sucesso, o serviço fica indisponível.
+Erros explícitos de configuração devolvidos pelo servidor ficam indisponíveis
+imediatamente. A reconexão é automática, com um intervalo maior entre tentativas
+quando há falhas. A mensagem de erro devolvida passa a aparecer no ecrã para
+permitir diagnosticar o problema; estas medidas não garantem disponibilidade do
+Apps Script nem demonstram a causa das falhas no serviço publicado.
+
+Esta atualização exige apenas publicar o HTML; não requer alterar o Apps Script.
+Teste adicional: `node scripts/test-panel-connection.cjs`.

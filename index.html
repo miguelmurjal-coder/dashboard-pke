@@ -6586,22 +6586,42 @@ const DEEP_DIVE_PANELS = [
       )
     );
   }
+  // Serialize requests: alert and chat use the same Apps Script lock.
+  let panelRequestQueue = Promise.resolve();
   function sharedAlertRequest(action, extra = {}) {
-    return new Promise((resolve, reject) => {
+    const request = () => new Promise((resolve, reject) => {
       const callback = `__pkeAlert_${Date.now()}_${Math.random().toString(16).slice(2)}`;
       const script = document.createElement("script");
       let timer;
-      const cleanup = () => { clearTimeout(timer); script.remove(); delete window[callback]; };
+      const cleanup = (late = false) => {
+        clearTimeout(timer); script.remove();
+        if (late) {
+          // A late JSONP response must not throw after a timeout or network failure.
+          window[callback] = () => {};
+          setTimeout(() => { delete window[callback]; }, 60000);
+        } else delete window[callback];
+      };
       window[callback] = payload => {
         cleanup();
         if (payload && payload.ok) resolve(payload);
-        else reject(new Error(payload && payload.error || "Alerta partilhado indisponível."));
+        else {
+          const error = new Error(payload && payload.error || "Serviço partilhado indisponível.");
+          error.permanent = !/ocupado|too many|temporariamente/i.test(error.message);
+          reject(error);
+        }
       };
-      script.onerror = () => { cleanup(); reject(new Error("Sem ligação ao alerta partilhado.")); };
+      script.onerror = () => { cleanup(true); reject(new Error("Falha de rede ao contactar o serviço partilhado.")); };
       script.src = `${TASK_LOG_WRITE_ENDPOINT}?${new URLSearchParams({ action, callback, token: TASK_LOG_WRITE_TOKEN, ...extra })}`;
-      timer = setTimeout(() => { cleanup(); reject(new Error("Sem resposta do alerta partilhado.")); }, 12000);
+      timer = setTimeout(() => { cleanup(true); reject(new Error("O serviço partilhado demorou demasiado a responder.")); }, 25000);
       document.head.appendChild(script);
     });
+    const result = panelRequestQueue.then(request);
+    panelRequestQueue = result.catch(() => {});
+    return result;
+  }
+  function panelConnectionFailed(state, error, now = Date.now()) {
+    state.failures += 1;
+    return !!error.permanent || state.lastSuccess === null || state.failures >= 3 || now - state.lastSuccess >= 90000;
   }
   function useSharedAlert() {
     const [connected, setConnected] = useState(false);
@@ -6609,6 +6629,7 @@ const DEEP_DIVE_PANELS = [
     const [soundEnabled, setSoundEnabled] = useState(false);
     const [status, setStatus] = useState("A ligar ao alerta partilhado…");
     const cursor = useRef(null);
+    const connection = useRef({ lastSuccess: null, failures: 0 });
     const audio = useRef(null);
     const alive = useRef(true);
     const busy = useRef(false);
@@ -6683,14 +6704,18 @@ const DEEP_DIVE_PANELS = [
           if (stopped) return;
           if (cursor.current !== null) (result.events || []).forEach(signal);
           cursor.current = Math.max(cursor.current || 0, result.sequence);
+          connection.current = { lastSuccess: Date.now(), failures: 0 };
           setConnected(true);
           setStatus("Ligado · o alerta chega às páginas abertas em poucos segundos.");
-        } catch (_) {
+        } catch (error) {
           if (stopped) return;
-          setConnected(false);
-          setStatus("Sem ligação ao alerta partilhado. A tentar novamente…");
+          const offline = panelConnectionFailed(connection.current, error);
+          setConnected(!offline);
+          setStatus(offline
+            ? `Sem ligação ao alerta. ${error.message} A tentar novamente…`
+            : "Resposta atrasada · a restabelecer a ligação ao alerta…");
         }
-        if (!stopped) timer = setTimeout(poll, 4000);
+        if (!stopped) timer = setTimeout(poll, Math.min(20000, 4000 * (1 + connection.current.failures)));
       };
       poll();
       return () => {
@@ -6734,6 +6759,9 @@ const DEEP_DIVE_PANELS = [
     const [messages, setMessages] = useState([]);
     const [online, setOnline] = useState(null);
     const [users, setUsers] = useState([]);
+    const [recovering, setRecovering] = useState(false);
+    const [connectionError, setConnectionError] = useState("");
+    const connection = useRef({ lastSuccess: null, failures: 0 });
     const [connected, setConnected] = useState(false);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState("");
@@ -6751,6 +6779,8 @@ const DEEP_DIVE_PANELS = [
         revision.current = result.revision;
         setMessages(result.messages || []);
       }
+      connection.current = { lastSuccess: Date.now(), failures: 0 };
+      setRecovering(false); setConnectionError("");
       setOnline(result.online);
       setUsers(Array.isArray(result.users) ? result.users : []);
       setConnected(true);
@@ -6763,10 +6793,13 @@ const DEEP_DIVE_PANELS = [
         try {
           const result = await sharedAlertRequest("chatRead", { ...identity, name: name.trim() });
           if (!stopped) receive(result);
-        } catch (_) {
-          if (!stopped) { setConnected(false); setOnline(null); setUsers([]); }
+        } catch (error) {
+          if (!stopped) {
+            const offline = panelConnectionFailed(connection.current, error);
+            setConnected(!offline); setRecovering(true); setConnectionError(error.message);
+          }
         }
-        if (!stopped) timer = setTimeout(poll, 15000);
+        if (!stopped) timer = setTimeout(poll, Math.min(30000, 15000 + connection.current.failures * 5000));
       };
       // Debounce nickname edits so typing does not send one request per key.
       timer = setTimeout(poll, 600);
@@ -6807,7 +6840,7 @@ const DEEP_DIVE_PANELS = [
         if (alive.current) setSending(false);
       }
     };
-    return { messages, online, users, connected, sending, error, name, updateName, sendMessage };
+    return { messages, online, users, connected, recovering, connectionError, sending, error, name, updateName, sendMessage };
   }
   function PanelChat({ chat, login = false }) {
     const [open, setOpen] = useState(false);
@@ -6825,7 +6858,7 @@ const DEEP_DIVE_PANELS = [
     return h("aside", { className: `panel-chat${login ? " panel-chat--login" : ""}`, "aria-label": "Chat da equipa" },
       h("button", { type: "button", className: "panel-chat-toggle", onClick: () => setOpen(!open), "aria-expanded": open, "aria-controls": "panel-chat-body" },
         h("span", null, `💬 Chat ${open ? "▾" : "▴"}`),
-        h("span", { className: "panel-chat-online", title: "Browsers com atividade nos últimos 90 segundos; várias tabs do mesmo browser contam uma vez." }, chat.online === null ? "Ligação indisponível" : `${chat.online} ${chat.online === 1 ? "User Online" : "Users Online"}${chat.users.length ? " — " + chat.users.join(", ") : ""}`)),
+        h("span", { className: "panel-chat-online", title: "Browsers com atividade nos últimos 90 segundos; várias tabs do mesmo browser contam uma vez." }, chat.recovering ? (chat.connected ? "A restabelecer ligação…" : "Ligação indisponível") : chat.online === null ? "A ligar…" : `${chat.online} ${chat.online === 1 ? "User Online" : "Users Online"}${chat.users.length ? " — " + chat.users.join(", ") : ""}`)),
       open && h("div", { id: "panel-chat-body", className: "panel-chat-body" },
         h("p", { className: "panel-chat-hint" }, "Partilhado com quem abre esta página. Evita informação privada."),
         h("div", { className: "panel-chat-messages", role: "log", "aria-label": "Mensagens da equipa", "aria-live": "polite", "aria-relevant": "additions", ref: list, onScroll: e => {
@@ -6839,7 +6872,7 @@ const DEEP_DIVE_PANELS = [
           h("textarea", { id: "panel-chat-text", value: text, maxLength: 280, onChange: e => setText(e.target.value), required: true, disabled: chat.sending }),
           chat.error && h("p", { role: "alert", className: "panel-chat-error" }, chat.error),
           h("button", { type: "submit", disabled: !chat.connected || chat.sending || !chat.name.trim() || !text.trim() }, chat.sending ? "A enviar…" : "Enviar")),
-        h("p", { className: "panel-chat-hint", role: "status" }, chat.connected ? "Atualiza a cada 15 s · histórico recente, até 24 h." : "Sem ligação ao chat. A tentar novamente…")));
+        h("p", { className: "panel-chat-hint", role: "status" }, chat.recovering ? `${chat.connectionError} A tentar novamente…${chat.online !== null ? " Última leitura: " + chat.online + " online — " + chat.users.join(", ") + "." : ""}` : chat.connected ? "Atualiza a cada 15 s · histórico recente, até 24 h." : "A ligar ao chat…")));
   }
   function PasswordGate({ onUnlock, alert, chat }) {
     const [password, setPassword] = useState("");
