@@ -410,6 +410,10 @@ function doGet(e) {
       return taskLogJsonp_(callback, { ok: false, error: 'Token inválido.' });
     }
 
+    if (p.action === 'chatRead' || p.action === 'chatSend') {
+      return taskLogJsonp_(callback, sharedPanelChat_(p));
+    }
+
     if (p.action === 'alertRead' || p.action === 'alertSend') {
       return taskLogJsonp_(callback, sharedPanelAlert_(p));
     }

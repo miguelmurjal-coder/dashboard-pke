@@ -4148,6 +4148,24 @@ body.shared-alert-active #root { animation: shared-alert-shake .55s ease-in-out;
 @media (max-height: 600px) { .password-screen { justify-content: flex-start; } .shared-alert-button { width: 8rem; margin: .5rem; } }
 
 
+.panel-chat { position: fixed; right: 1rem; bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 45; width: min(22rem, calc(100% - 2rem)); color: #e2e8f0; background: #0b1f3f; border: 1px solid #64748b; border-radius: .85rem; box-shadow: 0 14px 45px #0005; font-family: system-ui, sans-serif; }
+.panel-chat-toggle { display: flex; align-items: center; justify-content: space-between; gap: .7rem; width: 100%; background: none; border: 0; color: inherit; padding: 1rem; cursor: pointer; font-weight: 700; }
+.panel-chat-toggle:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; border-radius: .85rem; }
+.panel-chat-online { font-size: .8rem; color: #86efac; font-weight: 500; }
+.panel-chat-body { padding: 0 1rem 1rem; max-height: calc(100dvh - 12rem); overflow: auto; }
+.panel-chat-messages { height: min(14rem, 28dvh); overflow-y: auto; border: 1px solid #334155; border-radius: .5rem; padding: .7rem; margin: .75rem 0; background: #081629; }
+.panel-chat-message { margin-bottom: .8rem; overflow-wrap: anywhere; }
+.panel-chat-message p { white-space: pre-wrap; margin: .2rem 0 0; font-size: .9rem; }
+.panel-chat-message time { color: #94a3b8; margin-left: .5rem; font-size: .7rem; }
+.panel-chat label { display: block; font-size: .8rem; }
+.panel-chat input, .panel-chat textarea { display: block; width: 100%; padding: .55rem; margin-top: .3rem; border: 1px solid #64748b; border-radius: .4rem; color: #f8fafc; background: #081629; font: inherit; }
+.panel-chat textarea { resize: vertical; min-height: 3.5rem; max-height: 8rem; }
+.panel-chat button[type=submit] { margin-top: .5rem; background: #0369a1; color: white; padding: .6rem 1rem; border: 0; border-radius: .4rem; cursor: pointer; }
+.panel-chat button:disabled { opacity: .5; cursor: default; }
+.panel-chat-hint { font-size: .75rem; color: #94a3b8; margin: .6rem 0 0; }
+.panel-chat-error { color: #fda4af; font-size: .8rem; }
+@media (max-width: 1100px) { .panel-chat--login { bottom: 5rem; } }
+
 </style>
 </head>
 <body>
@@ -6697,7 +6715,116 @@ const DEEP_DIVE_PANELS = [
     };
     return { connected, sending, soundEnabled, status, enableSound, send };
   }
-  function PasswordGate({ onUnlock, alert }) {
+  function panelVisitorId() {
+    try {
+      let id = localStorage.getItem("pke-panel-visitor");
+      if (!id || !/^[a-zA-Z0-9-]{16,80}$/.test(id)) {
+        id = window.crypto.randomUUID();
+        localStorage.setItem("pke-panel-visitor", id);
+      }
+      return id;
+    } catch (_) { return window.crypto.randomUUID(); }
+  }
+  function usePanelChat() {
+    const [identity] = useState(() => ({ visitor: panelVisitorId(), client: window.crypto.randomUUID() }));
+    const [messages, setMessages] = useState([]);
+    const [online, setOnline] = useState(null);
+    const [connected, setConnected] = useState(false);
+    const [sending, setSending] = useState(false);
+    const [error, setError] = useState("");
+    const [name, setName] = useState(() => {
+      try { return localStorage.getItem("pke-panel-chat-name") || ""; } catch (_) { return ""; }
+    });
+    const alive = useRef(true);
+    const pending = useRef(null);
+    const busy = useRef(false);
+    const revision = useRef(-1);
+    const receive = useCallback(result => {
+      if (!alive.current) return;
+      // A heartbeat started before a send can return later. Never replace newer messages.
+      if (result.revision >= revision.current) {
+        revision.current = result.revision;
+        setMessages(result.messages || []);
+      }
+      setOnline(result.online);
+      setConnected(true);
+    }, []);
+    useEffect(() => {
+      alive.current = true;
+      let stopped = false;
+      let timer;
+      const poll = async () => {
+        try {
+          const result = await sharedAlertRequest("chatRead", identity);
+          if (!stopped) receive(result);
+        } catch (_) {
+          if (!stopped) { setConnected(false); setOnline(null); }
+        }
+        if (!stopped) timer = setTimeout(poll, 15000);
+      };
+      poll();
+      return () => { stopped = true; alive.current = false; clearTimeout(timer); };
+    }, [identity, receive]);
+    const updateName = value => {
+      setName(value);
+      try { localStorage.setItem("pke-panel-chat-name", value); } catch (_) {}
+    };
+    const sendMessage = async text => {
+      const trimmed = text.trim();
+      if (busy.current || !connected || !name.trim() || !trimmed) return false;
+      busy.current = true; setSending(true); setError("");
+      // Keep the same ID on a retry after an uncertain response to prevent duplicates.
+      if (!pending.current || pending.current.text !== trimmed || pending.current.name !== name.trim()) {
+        pending.current = { id: window.crypto.randomUUID(), name: name.trim(), text: trimmed };
+      }
+      try {
+        const result = await sharedAlertRequest("chatSend", { ...identity, ...pending.current });
+        receive(result);
+        pending.current = null;
+        return true;
+      } catch (err) {
+        if (alive.current) setError(err.message || "Não foi possível enviar. Tenta novamente.");
+        return false;
+      } finally {
+        busy.current = false;
+        if (alive.current) setSending(false);
+      }
+    };
+    return { messages, online, connected, sending, error, name, updateName, sendMessage };
+  }
+  function PanelChat({ chat, login = false }) {
+    const [open, setOpen] = useState(false);
+    const [text, setText] = useState("");
+    const list = useRef(null);
+    const nearBottom = useRef(true);
+    useEffect(() => {
+      if (list.current && nearBottom.current) list.current.scrollTop = list.current.scrollHeight;
+    }, [chat.messages, open]);
+    const submit = async e => {
+      e.preventDefault();
+      const sent = text;
+      if (await chat.sendMessage(sent)) setText(current => current === sent ? "" : current);
+    };
+    return h("aside", { className: `panel-chat${login ? " panel-chat--login" : ""}`, "aria-label": "Chat da equipa" },
+      h("button", { type: "button", className: "panel-chat-toggle", onClick: () => setOpen(!open), "aria-expanded": open, "aria-controls": "panel-chat-body" },
+        h("span", null, `💬 Chat ${open ? "▾" : "▴"}`),
+        h("span", { className: "panel-chat-online", title: "Browsers com atividade nos últimos 90 segundos; várias tabs do mesmo browser contam uma vez." }, chat.online === null ? "Ligação indisponível" : `${chat.online} online`)),
+      open && h("div", { id: "panel-chat-body", className: "panel-chat-body" },
+        h("p", { className: "panel-chat-hint" }, "Partilhado com quem abre esta página. Evita informação privada."),
+        h("div", { className: "panel-chat-messages", role: "log", "aria-label": "Mensagens da equipa", "aria-live": "polite", "aria-relevant": "additions", ref: list, onScroll: e => {
+          const el = e.currentTarget; nearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+        } }, chat.messages.length ? chat.messages.map(message => h("article", { className: "panel-chat-message", key: message.id },
+          h("strong", null, message.name), h("time", { dateTime: new Date(message.at).toISOString() }, new Date(message.at).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })), h("p", null, message.text))) : h("p", { className: "panel-chat-hint" }, "Ainda não há mensagens.")),
+        h("form", { onSubmit: submit },
+          h("label", { htmlFor: "panel-chat-name" }, "O teu nome"),
+          h("input", { id: "panel-chat-name", value: chat.name, maxLength: 24, autoComplete: "nickname", onChange: e => chat.updateName(e.target.value), required: true }),
+          h("label", { htmlFor: "panel-chat-text" }, "Mensagem"),
+          h("textarea", { id: "panel-chat-text", value: text, maxLength: 280, onChange: e => setText(e.target.value), required: true, disabled: chat.sending }),
+          chat.error && h("p", { role: "alert", className: "panel-chat-error" }, chat.error),
+          h("button", { type: "submit", disabled: !chat.connected || chat.sending || !chat.name.trim() || !text.trim() }, chat.sending ? "A enviar…" : "Enviar")),
+        h("p", { className: "panel-chat-hint", role: "status" }, chat.connected ? "Atualiza a cada 15 s · histórico recente, até 24 h." : "Sem ligação ao chat. A tentar novamente…")));
+  }
+  function PasswordGate({ onUnlock, alert, chat }) {
     const [password, setPassword] = useState("");
     const [error, setError] = useState(false);
     const [expanded, setExpanded] = useState(false);
@@ -6707,6 +6834,7 @@ const DEEP_DIVE_PANELS = [
       setError(true); setPassword("");
     };
     return h("div", { className: "password-screen" },
+      h(PanelChat, { chat, login: true }),
       h("main", { className: "shared-alert-panel" },
         h("h1", null, "PKE Marketing Control Panel"),
         h("p", null, "Precisas de chamar a atenção da equipa?"),
@@ -11136,6 +11264,7 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
   }
   function App() {
     const sharedAlert = useSharedAlert();
+    const panelChat = usePanelChat();
     const [authenticated, setAuthenticated] = useState(false);
     const [selected, setSelected] = useState("Dashboard MKT");
     const [activeDeepPanel, setActiveDeepPanel] = useState("Resultados Totais");
@@ -11504,10 +11633,10 @@ function AprofundarDadosView({ selectedMonths, activePanel, setActivePanel }) {
     };
     const activeSheet = SHEETS.find((s) => s.name === selected) || SHEETS[0];
     if (!authenticated) {
-      return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true), alert: sharedAlert });
+      return /* @__PURE__ */ React.createElement(PasswordGate, { onUnlock: () => setAuthenticated(true), alert: sharedAlert, chat: panelChat });
     }
     const showPeriodFilter = selected !== "Ferramentas" || activeToolPanel === "Gerador de Relatórios";
-    return /* @__PURE__ */ React.createElement("div", { className: `min-h-screen bg-slate-100 flex app-shell theme-${visualTheme} ${helpMode ? "help-mode-on" : ""} ${win98Mode ? "win98-mode" : ""}`, style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: `min-h-screen bg-slate-100 flex app-shell theme-${visualTheme} ${helpMode ? "help-mode-on" : ""} ${win98Mode ? "win98-mode" : ""}`, style: { fontFamily: "system-ui, -apple-system, sans-serif" } }, h(PanelChat, { chat: panelChat }), /* @__PURE__ */ React.createElement(
       "aside",
       {
         className: `app-sidebar fixed md:static z-30 inset-y-0 left-0 w-64 flex flex-col transform ${mobileNavOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 transition-transform`,
