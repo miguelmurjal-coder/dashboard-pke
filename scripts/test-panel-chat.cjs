@@ -25,6 +25,7 @@ const a = { visitor: id(1), client: id(2), name: 'Verónica' };
 const b = { visitor: id(3), client: id(4), name: 'smudge44' };
 const request = p => JSON.parse(JSON.stringify(context.sharedPanelChat_(p)));
 assert.equal(request({ action: 'chatRead', ...a }).online, 1);
+assert.equal(values.PKE_PANEL_CHAT, undefined, 'Connecting must not rewrite chat history');
 assert.equal(request({ action: 'chatRead', ...a, client: id(5) }).online, 1, 'Multiple tabs in one browser count once');
 assert.equal(request({ action: 'chatRead', ...b }).online, 2, 'Independent browsers count separately');
 assert.deepEqual(request({ action: 'chatRead', ...a }).users, ['smudge44', 'Verónica']);

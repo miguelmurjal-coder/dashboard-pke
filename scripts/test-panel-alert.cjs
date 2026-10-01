@@ -33,7 +33,8 @@ assert.equal(request({ action: 'alertRead' }).sequence, 2, 'Sequence survives ev
 assert.throws(() => request({ action: 'alertSend', id: 'invalid' }), /inválido/);
 const releasesBefore = released;
 locked = false;
-assert.throws(() => request({ action: 'alertRead' }), /ocupado/);
+assert.equal(request({ action: 'alertRead' }).ok, true, 'Reads must succeed while a writer holds the lock');
+assert.throws(() => request({ action: 'alertSend', id: 'cccccccc-cccc-cccc-cccc-cccccccccccc' }), /ocupado/);
 assert.equal(released, releasesBefore);
 // Exercise the actual endpoint routing and its existing token check without exposing the token.
 vm.runInContext(`

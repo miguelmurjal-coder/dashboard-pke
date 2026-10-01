@@ -6595,8 +6595,8 @@ const DEEP_DIVE_PANELS = [
       )
     );
   }
-  // Serialize requests: alert and chat use the same Apps Script lock.
-  let panelRequestQueue = Promise.resolve();
+  // Separate background reads from writes so a slow refresh never queues a click.
+  const panelRequestQueues = new Map();
   function sharedAlertRequest(action, extra = {}) {
     const request = () => new Promise((resolve, reject) => {
       const callback = `__pkeAlert_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -6624,8 +6624,9 @@ const DEEP_DIVE_PANELS = [
       timer = setTimeout(() => { cleanup(true); reject(new Error("O serviço partilhado demorou demasiado a responder.")); }, 25000);
       document.head.appendChild(script);
     });
-    const result = panelRequestQueue.then(request);
-    panelRequestQueue = result.catch(() => {});
+    const lane = action.endsWith("Send") ? "write" : action;
+    const result = (panelRequestQueues.get(lane) || Promise.resolve()).then(request);
+    panelRequestQueues.set(lane, result.catch(() => {}));
     return result;
   }
   function panelConnectionFailed(state, error, now = Date.now()) {
@@ -6766,6 +6767,7 @@ const DEEP_DIVE_PANELS = [
   function usePanelChat() {
     const [identity] = useState(() => ({ visitor: panelVisitorId(), client: window.crypto.randomUUID() }));
     const [messages, setMessages] = useState([]);
+    const [open, setOpen] = useState(false);
     const [online, setOnline] = useState(null);
     const [users, setUsers] = useState([]);
     const [recovering, setRecovering] = useState(false);
@@ -6781,6 +6783,7 @@ const DEEP_DIVE_PANELS = [
     const pending = useRef(null);
     const busy = useRef(false);
     const revision = useRef(-1);
+    const lastPolledName = useRef(name);
     const receive = useCallback(result => {
       if (!alive.current) return;
       // A heartbeat started before a send can return later. Never replace newer messages.
@@ -6808,12 +6811,14 @@ const DEEP_DIVE_PANELS = [
             setConnected(!offline); setRecovering(true); setConnectionError(error.message);
           }
         }
-        if (!stopped) timer = setTimeout(poll, Math.min(30000, 15000 + connection.current.failures * 5000));
+        if (!stopped) timer = setTimeout(poll, Math.min(30000, (open ? 5000 : 15000) + connection.current.failures * 5000));
       };
-      // Debounce nickname edits so typing does not send one request per key.
-      timer = setTimeout(poll, 600);
+      // Connect immediately; debounce only actual nickname edits.
+      const nameChanged = lastPolledName.current !== name;
+      lastPolledName.current = name;
+      timer = setTimeout(poll, nameChanged ? 600 : 0);
       return () => { stopped = true; alive.current = false; clearTimeout(timer); };
-    }, [identity, receive, name]);
+    }, [identity, receive, name, open]);
     useEffect(() => {
       const syncName = event => {
         if (event.key === "pke-panel-chat-name" || event.key === null) {
@@ -6849,10 +6854,10 @@ const DEEP_DIVE_PANELS = [
         if (alive.current) setSending(false);
       }
     };
-    return { messages, online, users, connected, recovering, connectionError, sending, error, name, updateName, sendMessage };
+    return { messages, open, setOpen, online, users, connected, recovering, connectionError, sending, error, name, updateName, sendMessage };
   }
   function PanelChat({ chat, login = false }) {
-    const [open, setOpen] = useState(false);
+    const { open, setOpen } = chat;
     const [text, setText] = useState("");
     const list = useRef(null);
     const nearBottom = useRef(true);
@@ -6881,7 +6886,7 @@ const DEEP_DIVE_PANELS = [
           h("textarea", { id: "panel-chat-text", value: text, maxLength: 280, onChange: e => setText(e.target.value), required: true, disabled: chat.sending }),
           chat.error && h("p", { role: "alert", className: "panel-chat-error" }, chat.error),
           h("button", { type: "submit", disabled: !chat.connected || chat.sending || !chat.name.trim() || !text.trim() }, chat.sending ? "A enviar…" : "Enviar")),
-        h("p", { className: "panel-chat-hint", role: "status" }, chat.recovering ? `${chat.connectionError} A tentar novamente…${chat.online !== null ? " Última leitura: " + chat.online + " online — " + chat.users.join(", ") + "." : ""}` : chat.connected ? "Atualiza a cada 15 s · histórico recente, até 24 h." : "A ligar ao chat…")));
+        h("p", { className: "panel-chat-hint", role: "status" }, chat.recovering ? `${chat.connectionError} A tentar novamente…${chat.online !== null ? " Última leitura: " + chat.online + " online — " + chat.users.join(", ") + "." : ""}` : chat.connected ? `Atualiza a cada ${open ? 5 : 15} s · histórico recente, até 24 h.` : "A ligar ao chat…")));
   }
   function PasswordGate({ onUnlock, alert, chat }) {
     const [password, setPassword] = useState("");

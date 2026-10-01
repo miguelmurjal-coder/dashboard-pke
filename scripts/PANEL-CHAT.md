@@ -100,8 +100,9 @@ A escolha depende do telefone e de se é necessário receber em segundo plano.
 
 ## Recuperação de ligação
 
-A página envia pedidos de chat e alertas em sequência, para reduzir concorrência
-no lock partilhado do Apps Script. Cada pedido pode aguardar até 25 segundos.
+A página mantém filas independentes para leituras de chat, leituras de alertas e
+envios. Um envio começa sem esperar por leituras lentas; os envios entre si
+continuam em sequência. Cada pedido pode aguardar até 25 segundos.
 Uma falha transitória após uma leitura recente mostra **A restabelecer ligação**;
 as mensagens anteriores são conservadas, mas o total anterior é identificado
 como **Última leitura**, em vez de apresentado como presença atual.
@@ -115,3 +116,26 @@ Apps Script nem demonstram a causa das falhas no serviço publicado.
 
 Esta atualização exige apenas publicar o HTML; não requer alterar o Apps Script.
 Teste adicional: `node scripts/test-panel-connection.cjs`.
+
+
+## Otimização de ligação e envio
+
+A ligação inicial do chat começa imediatamente. Com o chat aberto, a consulta
+é feita a cada 5 segundos após a resposta; recolhido, a cada 15 segundos. A
+consulta de alertas mantém o intervalo de 4 segundos após a resposta. Tempos
+reais incluem a latência do Apps Script e browsers suspensos podem atrasar tudo.
+Não há uma promessa de entrega instantânea.
+
+O HTML otimizado é compatível com os deployments anteriores. Para aplicar a
+redução de trabalho no servidor, substituir SOMENTE os ficheiros `PanelAlert.gs`
+e `PanelChat.gs` pelos ficheiros `panel-alert-apps-script-extension.gs` e
+`panel-chat-apps-script-extension.gs`, respetivamente. Manter `Code.gs` e o seu
+`doGet`, que não precisam de novas ações. Guardar e atualizar a implementação
+existente para **New version → Deploy**.
+
+A leitura de alertas passa a consultar uma cópia consistente das Script
+Properties sem aguardar pelo lock de gravação. Os envios mantêm o lock para
+não perder eventos concorrentes. As consultas de chat atualizam a presença,
+mas deixam de regravar o histórico de mensagens; as gravações de mensagens
+continuam protegidas pelo lock. Estes ficheiros mantêm as chaves e os dados
+existentes. A aplicação da otimização no servidor exige este deployment manual.

@@ -13,10 +13,10 @@ function sharedPanelChat_(p) {
   try {
     const props = PropertiesService.getScriptProperties();
     const now = Date.now();
-    const state = JSON.parse(props.getProperty('PKE_PANEL_CHAT') || '{"revision":0,"messages":[]}');
+    const visits = props.getProperties();
+    const state = JSON.parse(visits.PKE_PANEL_CHAT || '{"revision":0,"messages":[]}');
     state.messages = state.messages.filter(message => now - message.at < 24 * 60 * 60 * 1000);
     const prefix = 'PKE_PANEL_VISIT_';
-    const visits = props.getProperties();
     const visitors = {};
     Object.keys(visits).forEach(key => {
       if (key.indexOf(prefix) !== 0) return;
@@ -51,7 +51,7 @@ function sharedPanelChat_(p) {
       state.messages.shift();
       serialized = JSON.stringify(state);
     }
-    props.setProperty('PKE_PANEL_CHAT', serialized);
+    if (p.action === 'chatSend') props.setProperty('PKE_PANEL_CHAT', serialized);
     return {
       ok: true, revision: state.revision, online: Object.keys(visitors).length,
       users: Object.keys(visitors).map(id => visitors[id].name || 'Sem nickname').sort((a, b) => a.localeCompare(b, 'pt')),

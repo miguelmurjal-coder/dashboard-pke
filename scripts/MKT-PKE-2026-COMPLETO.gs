@@ -947,6 +947,12 @@ function taskLogJsonp_(callback, payload) {
 
 // Shared login-screen alerts. Script properties are shared by all Web App users.
 function sharedPanelAlert_(p) {
+  if (p.action === 'alertRead') {
+    const state = JSON.parse(PropertiesService.getScriptProperties().getProperty('PKE_PANEL_ALERT') || '{"sequence":0,"events":[]}');
+    const now = Date.now();
+    const after = Number(p.after);
+    return { ok: true, sequence: state.sequence, events: p.after === undefined ? [] : state.events.filter(event => now - event.at < 60000 && event.sequence > after) };
+  }
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(5000)) throw new Error('Alerta ocupado. Tenta novamente.');
   try {
@@ -954,10 +960,6 @@ function sharedPanelAlert_(p) {
     const state = JSON.parse(props.getProperty('PKE_PANEL_ALERT') || '{"sequence":0,"events":[]}');
     const now = Date.now();
     state.events = state.events.filter(event => now - event.at < 60000);
-    if (p.action === 'alertRead') {
-      const after = Number(p.after);
-      return { ok: true, sequence: state.sequence, events: p.after === undefined ? [] : state.events.filter(event => event.sequence > after) };
-    }
     if (!/^[a-zA-Z0-9-]{16,80}$/.test(String(p.id || ''))) throw new Error('ID de alerta inválido.');
     const existing = state.events.find(event => event.id === p.id);
     if (existing) return { ok: true, event: existing, sequence: state.sequence };
