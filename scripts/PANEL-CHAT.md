@@ -136,6 +136,6 @@ existente para **New version → Deploy**.
 A leitura de alertas passa a consultar uma cópia consistente das Script
 Properties sem aguardar pelo lock de gravação. Os envios mantêm o lock para
 não perder eventos concorrentes. As consultas de chat atualizam a presença,
-mas deixam de regravar o histórico de mensagens; as gravações de mensagens
+mas só regravam o histórico quando existem mensagens expiradas; as gravações de mensagens
 continuam protegidas pelo lock. Estes ficheiros mantêm as chaves e os dados
 existentes. A aplicação da otimização no servidor exige este deployment manual.

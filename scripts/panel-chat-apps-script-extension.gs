@@ -15,7 +15,9 @@ function sharedPanelChat_(p) {
     const now = Date.now();
     const visits = props.getProperties();
     const state = JSON.parse(visits.PKE_PANEL_CHAT || '{"revision":0,"messages":[]}');
+    const previousCount = state.messages.length;
     state.messages = state.messages.filter(message => now - message.at < 24 * 60 * 60 * 1000);
+    const historyExpired = state.messages.length < previousCount;
     const prefix = 'PKE_PANEL_VISIT_';
     const visitors = {};
     Object.keys(visits).forEach(key => {
@@ -51,7 +53,7 @@ function sharedPanelChat_(p) {
       state.messages.shift();
       serialized = JSON.stringify(state);
     }
-    if (p.action === 'chatSend') props.setProperty('PKE_PANEL_CHAT', serialized);
+    if (p.action === 'chatSend' || historyExpired) props.setProperty('PKE_PANEL_CHAT', serialized);
     return {
       ok: true, revision: state.revision, online: Object.keys(visitors).length,
       users: Object.keys(visitors).map(id => visitors[id].name || 'Sem nickname').sort((a, b) => a.localeCompare(b, 'pt')),

@@ -56,6 +56,7 @@ for (let n = 20; n < 60; n++) {
 assert.ok(JSON.parse(values.PKE_PANEL_CHAT).messages.length <= 30);
 now += 24 * 60 * 60 * 1000 + 1;
 assert.equal(request({ action: 'chatRead', ...b }).messages.length, 0, 'History expires after 24 hours');
+assert.equal(JSON.parse(values.PKE_PANEL_CHAT).messages.length, 0, 'Expired messages are also removed from persistent storage');
 assert.equal(values.PKE_PANEL_ALERT, 'existing-alert-state');
 assert.equal(values.unrelated, 'preserve');
 const releaseCount = releases;
