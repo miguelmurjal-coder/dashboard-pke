@@ -63,3 +63,37 @@ node scripts/test-panel-alert.cjs
 node scripts/test-task-log.cjs
 PYTHONDONTWRITEBYTECODE=1 python3 scripts/test-task-capture.py
 ```
+
+
+## Nickname guardado e nomes online
+
+O campo **O teu nickname**, no ecrã de entrada, usa o mesmo nome do chat.
+Fica guardado em `localStorage` e volta a aparecer após recarregar ou reabrir o
+browser, até ser alterado ou os dados do site serem apagados. Não é uma conta
+nem substitui a password. Alterações ao nickname sincronizam-se entre tabs do
+mesmo browser. Perfis e dispositivos diferentes têm armazenamento independente.
+
+O contador mostra, por exemplo, **3 Users Online — Verónica, smudge44, Tiago**.
+Quem ainda não escolheu um nome aparece como **Sem nickname**. O nome escolhido
+passa a aparecer nas novas mensagens; as mensagens antigas mantêm o nome usado
+na altura do envio. Os nomes, tal como as mensagens, são renderizados como texto.
+
+Se já instalaste `PanelChat.gs`, atualiza SOMENTE esse ficheiro com o conteúdo
+atual de `panel-chat-apps-script-extension.gs` e publica uma nova versão da
+implementação existente. Não alteres `Code.gs` nem `PanelAlert.gs`; o bloco de
+encaminhamento `chatRead`/`chatSend` continua igual. A atualização conserva o
+histórico e as restantes Script Properties. Com a versão anterior do backend,
+o chat funciona e mostra apenas o total, até a lista de nomes estar disponível.
+
+## Alertas no telefone
+
+Com a página aberta e ativa, tocar em **Ativar som neste browser** permite
+ouvir os alertas. A vibração depende do dispositivo e do browser; não há suporte
+uniforme no iPhone. Com o browser suspenso, a página fechada ou o ecrã bloqueado,
+o polling e o áudio não garantem a entrega.
+
+Para receber nesses casos é necessária uma integração de push, ainda não
+implementada: Web Push com service worker e servidor de envio, ou um serviço
+com aplicação móvel de notificações. No iPhone, Web Push requer iOS/iPadOS 16.4+
+e uma web app adicionada ao ecrã principal, com permissão de notificações.
+A escolha depende do telefone e de se é necessário receber em segundo plano.

@@ -21,12 +21,16 @@ for (const file of ['MKT-PKE-2026-COMPLETO.gs', 'panel-chat-apps-script-extensio
   vm.runInContext(fs.readFileSync(path.join(__dirname, file), 'utf8'), context);
 }
 const id = suffix => `00000000-0000-0000-0000-${String(suffix).padStart(12, '0')}`;
-const a = { visitor: id(1), client: id(2) };
-const b = { visitor: id(3), client: id(4) };
+const a = { visitor: id(1), client: id(2), name: 'Verónica' };
+const b = { visitor: id(3), client: id(4), name: 'smudge44' };
 const request = p => JSON.parse(JSON.stringify(context.sharedPanelChat_(p)));
 assert.equal(request({ action: 'chatRead', ...a }).online, 1);
 assert.equal(request({ action: 'chatRead', ...a, client: id(5) }).online, 1, 'Multiple tabs in one browser count once');
 assert.equal(request({ action: 'chatRead', ...b }).online, 2, 'Independent browsers count separately');
+assert.deepEqual(request({ action: 'chatRead', ...a }).users, ['smudge44', 'Verónica']);
+assert.deepEqual(request({ action: 'chatRead', ...a, name: 'Tiago' }).users, ['smudge44', 'Tiago'], 'Nickname edits replace the online name');
+assert.deepEqual(request({ action: 'chatRead', visitor: a.visitor, client: id(5) }).users, ['smudge44', 'Tiago'], 'Older clients preserve known nicknames');
+assert.deepEqual(request({ action: 'chatRead', ...a, name: '' }).users, ['Sem nickname', 'smudge44'], 'Unnamed visitors are counted explicitly');
 const message = { action: 'chatSend', ...a, id: id(10), name: 'Miguel', text: '<img src=x onerror=alert(1)> Olá 👋' };
 const sent = request(message);
 assert.equal(sent.messages.length, 1);
@@ -62,4 +66,4 @@ vm.runInContext('taskLogJsonp_ = (_callback, payload) => payload;', context);
 context.testIdentity = a;
 assert.equal(vm.runInContext("doGet({parameter:{action:'chatRead',token:TASK_LOG_TOKEN,...testIdentity}}).ok", context), true);
 assert.equal(vm.runInContext("doGet({parameter:{action:'chatRead',token:'invalid',...testIdentity}}).ok", context), false);
-console.log('Chat checks passed: shared history, browser/tab counting, presence expiry, retry deduplication, validation, cooldown, Unicode storage limits, history expiry, locking, routing and preservation of existing data');
+console.log('Chat checks passed: shared history, browser/tab counting, presence expiry, nickname updates and legacy compatibility, retry deduplication, validation, cooldown, Unicode storage limits, history expiry, locking, routing and preservation of existing data');

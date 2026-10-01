@@ -4151,7 +4151,11 @@ body.shared-alert-active #root { animation: shared-alert-shake .55s ease-in-out;
 .panel-chat { position: fixed; right: 1rem; bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 45; width: min(22rem, calc(100% - 2rem)); color: #e2e8f0; background: #0b1f3f; border: 1px solid #64748b; border-radius: .85rem; box-shadow: 0 14px 45px #0005; font-family: system-ui, sans-serif; }
 .panel-chat-toggle { display: flex; align-items: center; justify-content: space-between; gap: .7rem; width: 100%; background: none; border: 0; color: inherit; padding: 1rem; cursor: pointer; font-weight: 700; }
 .panel-chat-toggle:focus-visible { outline: 3px solid #38bdf8; outline-offset: 2px; border-radius: .85rem; }
-.panel-chat-online { font-size: .8rem; color: #86efac; font-weight: 500; }
+.panel-chat-online { font-size: .8rem; color: #86efac; font-weight: 500; text-align: right; overflow-wrap: anywhere; min-width: 0; }
+.panel-nickname { text-align: left; max-width: 20rem; margin: 1rem auto 0; }
+.panel-nickname label { display: block; font-size: .85rem; margin-bottom: .35rem; }
+.panel-nickname input { width: 100%; padding: .7rem; border-radius: .6rem; border: 1px solid #64748b; background: #081629; color: white; font: inherit; }
+.panel-nickname small { display: block; margin-top: .35rem; color: #94a3b8; }
 .panel-chat-body { padding: 0 1rem 1rem; max-height: calc(100dvh - 12rem); overflow: auto; }
 .panel-chat-messages { height: min(14rem, 28dvh); overflow-y: auto; border: 1px solid #334155; border-radius: .5rem; padding: .7rem; margin: .75rem 0; background: #081629; }
 .panel-chat-message { margin-bottom: .8rem; overflow-wrap: anywhere; }
@@ -6729,11 +6733,12 @@ const DEEP_DIVE_PANELS = [
     const [identity] = useState(() => ({ visitor: panelVisitorId(), client: window.crypto.randomUUID() }));
     const [messages, setMessages] = useState([]);
     const [online, setOnline] = useState(null);
+    const [users, setUsers] = useState([]);
     const [connected, setConnected] = useState(false);
     const [sending, setSending] = useState(false);
     const [error, setError] = useState("");
     const [name, setName] = useState(() => {
-      try { return localStorage.getItem("pke-panel-chat-name") || ""; } catch (_) { return ""; }
+      try { return (localStorage.getItem("pke-panel-chat-name") || "").slice(0, 24); } catch (_) { return ""; }
     });
     const alive = useRef(true);
     const pending = useRef(null);
@@ -6747,6 +6752,7 @@ const DEEP_DIVE_PANELS = [
         setMessages(result.messages || []);
       }
       setOnline(result.online);
+      setUsers(Array.isArray(result.users) ? result.users : []);
       setConnected(true);
     }, []);
     useEffect(() => {
@@ -6755,17 +6761,28 @@ const DEEP_DIVE_PANELS = [
       let timer;
       const poll = async () => {
         try {
-          const result = await sharedAlertRequest("chatRead", identity);
+          const result = await sharedAlertRequest("chatRead", { ...identity, name: name.trim() });
           if (!stopped) receive(result);
         } catch (_) {
-          if (!stopped) { setConnected(false); setOnline(null); }
+          if (!stopped) { setConnected(false); setOnline(null); setUsers([]); }
         }
         if (!stopped) timer = setTimeout(poll, 15000);
       };
-      poll();
+      // Debounce nickname edits so typing does not send one request per key.
+      timer = setTimeout(poll, 600);
       return () => { stopped = true; alive.current = false; clearTimeout(timer); };
-    }, [identity, receive]);
+    }, [identity, receive, name]);
+    useEffect(() => {
+      const syncName = event => {
+        if (event.key === "pke-panel-chat-name" || event.key === null) {
+          setName((event.key === null ? "" : event.newValue || "").slice(0, 24));
+        }
+      };
+      window.addEventListener("storage", syncName);
+      return () => window.removeEventListener("storage", syncName);
+    }, []);
     const updateName = value => {
+      value = value.slice(0, 24);
       setName(value);
       try { localStorage.setItem("pke-panel-chat-name", value); } catch (_) {}
     };
@@ -6790,7 +6807,7 @@ const DEEP_DIVE_PANELS = [
         if (alive.current) setSending(false);
       }
     };
-    return { messages, online, connected, sending, error, name, updateName, sendMessage };
+    return { messages, online, users, connected, sending, error, name, updateName, sendMessage };
   }
   function PanelChat({ chat, login = false }) {
     const [open, setOpen] = useState(false);
@@ -6808,7 +6825,7 @@ const DEEP_DIVE_PANELS = [
     return h("aside", { className: `panel-chat${login ? " panel-chat--login" : ""}`, "aria-label": "Chat da equipa" },
       h("button", { type: "button", className: "panel-chat-toggle", onClick: () => setOpen(!open), "aria-expanded": open, "aria-controls": "panel-chat-body" },
         h("span", null, `💬 Chat ${open ? "▾" : "▴"}`),
-        h("span", { className: "panel-chat-online", title: "Browsers com atividade nos últimos 90 segundos; várias tabs do mesmo browser contam uma vez." }, chat.online === null ? "Ligação indisponível" : `${chat.online} online`)),
+        h("span", { className: "panel-chat-online", title: "Browsers com atividade nos últimos 90 segundos; várias tabs do mesmo browser contam uma vez." }, chat.online === null ? "Ligação indisponível" : `${chat.online} ${chat.online === 1 ? "User Online" : "Users Online"}${chat.users.length ? " — " + chat.users.join(", ") : ""}`)),
       open && h("div", { id: "panel-chat-body", className: "panel-chat-body" },
         h("p", { className: "panel-chat-hint" }, "Partilhado com quem abre esta página. Evita informação privada."),
         h("div", { className: "panel-chat-messages", role: "log", "aria-label": "Mensagens da equipa", "aria-live": "polite", "aria-relevant": "additions", ref: list, onScroll: e => {
@@ -6816,7 +6833,7 @@ const DEEP_DIVE_PANELS = [
         } }, chat.messages.length ? chat.messages.map(message => h("article", { className: "panel-chat-message", key: message.id },
           h("strong", null, message.name), h("time", { dateTime: new Date(message.at).toISOString() }, new Date(message.at).toLocaleTimeString("pt-PT", { hour: "2-digit", minute: "2-digit" })), h("p", null, message.text))) : h("p", { className: "panel-chat-hint" }, "Ainda não há mensagens.")),
         h("form", { onSubmit: submit },
-          h("label", { htmlFor: "panel-chat-name" }, "O teu nome"),
+          h("label", { htmlFor: "panel-chat-name" }, "Nickname"),
           h("input", { id: "panel-chat-name", value: chat.name, maxLength: 24, autoComplete: "nickname", onChange: e => chat.updateName(e.target.value), required: true }),
           h("label", { htmlFor: "panel-chat-text" }, "Mensagem"),
           h("textarea", { id: "panel-chat-text", value: text, maxLength: 280, onChange: e => setText(e.target.value), required: true, disabled: chat.sending }),
@@ -6837,6 +6854,10 @@ const DEEP_DIVE_PANELS = [
       h(PanelChat, { chat, login: true }),
       h("main", { className: "shared-alert-panel" },
         h("h1", null, "PKE Marketing Control Panel"),
+        h("div", { className: "panel-nickname" },
+          h("label", { htmlFor: "panel-access-nickname" }, "O teu nickname"),
+          h("input", { id: "panel-access-nickname", autoComplete: "nickname", maxLength: 24, placeholder: "Ex.: Verónica", value: chat.name, onChange: e => chat.updateName(e.target.value) }),
+          h("small", null, "Guardado neste browser · usado no chat e na lista online.")),
         h("p", null, "Precisas de chamar a atenção da equipa?"),
         h("button", { type: "button", className: "shared-alert-button", onClick: alert.send, disabled: !alert.connected || alert.sending, "aria-label": "Enviar alerta à equipa" }, alert.sending ? "A enviar…" : "🔔 Chamar"),
         h("div", null, h("button", { type: "button", className: "alert-sound-toggle", onClick: alert.enableSound, disabled: alert.soundEnabled }, alert.soundEnabled ? "Som ativado neste browser" : "Ativar som neste browser")),

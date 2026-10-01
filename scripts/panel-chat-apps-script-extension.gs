@@ -23,10 +23,15 @@ function sharedPanelChat_(p) {
       let visit;
       try { visit = JSON.parse(visits[key]); } catch (_) {}
       if (!visit || !validId(visit.visitor) || now - visit.at >= 90000) props.deleteProperty(key);
-      else visitors[visit.visitor] = true;
+      else if (!visitors[visit.visitor] || visit.at > visitors[visit.visitor].at) {
+        visitors[visit.visitor] = { name: String(visit.name || '').slice(0, 24), at: visit.at };
+      }
     });
-    props.setProperty(prefix + p.client, JSON.stringify({ visitor: p.visitor, at: now }));
-    visitors[p.visitor] = true;
+    // Older deployed clients omit name; preserve the last known nickname for them.
+    const nickname = p.name === undefined ? (visitors[p.visitor] && visitors[p.visitor].name || '') : String(p.name).trim();
+    if (nickname.length > 24) throw new Error('Preenche o nickname com até 24 caracteres.');
+    props.setProperty(prefix + p.client, JSON.stringify({ visitor: p.visitor, name: nickname, at: now }));
+    visitors[p.visitor] = { name: nickname, at: now };
     if (p.action === 'chatSend') {
       const name = String(p.name || '').trim();
       const text = String(p.text || '').trim();
@@ -49,6 +54,7 @@ function sharedPanelChat_(p) {
     props.setProperty('PKE_PANEL_CHAT', serialized);
     return {
       ok: true, revision: state.revision, online: Object.keys(visitors).length,
+      users: Object.keys(visitors).map(id => visitors[id].name || 'Sem nickname').sort((a, b) => a.localeCompare(b, 'pt')),
       messages: state.messages.map(message => ({ id: message.id, name: message.name, text: message.text, at: message.at }))
     };
   } finally { lock.releaseLock(); }
